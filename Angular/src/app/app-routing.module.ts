@@ -14,6 +14,8 @@ import { ViewdetailsComponent } from './shared/components/Project/Admin/viewdeta
 import { PdfComponent } from './shared/components/Project/User/pdf/pdf.component';
 
 import {NoAuthGuard} from './shared/services/no-auth.guard';
+import { AddForumComponent } from './views/Forum/add-forum/add-forum.component';
+import { UploadFileComponent } from './views/Admission/upload-file/upload-file.component';
 
 
 const userRoutes: Routes = [
@@ -42,6 +44,10 @@ const userRoutes: Routes = [
       loadChildren: () => import('./views/forms/forms.module').then(m => m.AppFormsModule)
     },
     {
+      path: 'chatgroups',
+      loadChildren: () => import('./views/groups/groups.module').then(m => m.GroupsModule)
+    },
+    {
       path: 'invoice',
       loadChildren: () => import('./views/invoice/invoice.module').then(m => m.InvoiceModule)
     },
@@ -62,6 +68,18 @@ const userRoutes: Routes = [
       loadChildren: () => import('./views/contacts/contacts.module').then(m => m.ContactsModule)
     },
     {
+      path: 'admission',
+      loadChildren: () => import('./views/Admission/list.module').then(m => m.ListModule)
+    },
+    {
+      path: 'admissionteacher',
+      loadChildren: () => import('./views/AdmissionTeacher/admissionteacher.module').then(m => m.AdmissionteacherModule)
+    },
+    {
+      path: 'studentadmission',
+      loadChildren: () => import('./views/AdmissionStudent/admissionstudent.module').then(m => m.AdmissionstudentModule)
+    },
+    {
       path: 'tables',
       loadChildren: () => import('./views/data-tables/data-tables.module').then(m => m.DataTablesModule)
     },
@@ -72,7 +90,6 @@ const userRoutes: Routes = [
     {
         path: 'icons',
         loadChildren: () => import('./views/icons/icons.module').then(m => m.IconsModule)
-
     } ,
     { path: 'getallprojects', component: ProjectComponent},
     { path: 'projectdetails', component: ProjectdetailsComponent},
@@ -81,10 +98,17 @@ const userRoutes: Routes = [
     { path: 'addprojects', component: AddProjectComponent, canActivate: [AuthGuard], data: { roles: ['TEACHER'] }},
     { path: 'project/:id', component: ViewdetailsComponent, canActivate: [AuthGuard], data: { roles: ['TEACHER'] }},
     { path: 'pdf', component: PdfComponent },
+    { path: 'addforum', component: AddForumComponent},
+    { path: 'uploadfile', component: UploadFileComponent},
+
     {
         path: 'settings',
         loadChildren: () => import('./views/settings/settings.module').then(m => m.SettingsModule)
     },
+    {
+      path: 'forum',
+      loadChildren: () => import('./views/Forum/forum.module').then(m => m.ForumModule)
+  },
     {
         path: 'tools',
         loadChildren: () => import('./views/tools/tools.module').then(m => m.ToolsModule),
