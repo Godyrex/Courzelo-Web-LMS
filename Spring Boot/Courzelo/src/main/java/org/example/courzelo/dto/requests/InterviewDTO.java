@@ -11,7 +11,7 @@ public class InterviewDTO {
 
     private List<String> interviewee;
 
-    private String admission;
+    private String institution;
 
     public String getId() {
         return id;
@@ -37,11 +37,11 @@ public class InterviewDTO {
         this.interviewee = interviewee;
     }
 
-    public String getAdmission() {
-        return admission;
+    public String getInstitution() {
+        return institution;
     }
 
-    public void setAdmission(String admission) {
-        this.admission = admission;
+    public void setinstitution(String institution) {
+        this.institution = institution;
     }
 }

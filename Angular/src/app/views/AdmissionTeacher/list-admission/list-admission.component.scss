@@ -65,3 +65,14 @@
     font-size: 1.25rem;
     color: #777;
 }
+.input-group {
+    width: 100%;
+  }
+  
+  .input-group .btn {
+    margin-left: auto; /* Push button to the right */
+  }
+  
+  .form-control{
+    width: 105px;
+  }

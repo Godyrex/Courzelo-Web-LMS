@@ -26,6 +26,11 @@ public class MailService implements IMailExchange {
     }
 
     @Override
+    public MailExchange updateMail(MailExchange mailExchange) {
+        return mailExchangeRepository.save(mailExchange);
+    }
+
+    @Override
     public List<MailExchange> getAllMails() {
         return mailExchangeRepository.findAll();
     }

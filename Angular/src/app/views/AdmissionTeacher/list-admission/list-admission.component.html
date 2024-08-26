@@ -1,19 +1,29 @@
 <div class="container mt-4">
     <!-- Check if Admissions array is defined and has elements -->
-    <div *ngIf="admissions && admissions.length > 0">
+    <div *ngIf="users && users.length > 0">
       <ul class="list-group">
-        <li *ngFor="let admission of admissions" class="list-group-item admission-item">
+        <div>
+          <button (click)="update()">AAA</button>
+        </div>
+        <li *ngFor="let item of users" class="list-group-item admission-item">
           <!-- Card inside the list item -->
           <div class="card admission-card shadow-sm mb-3">
             <div class="card-body">
-              <h5 class="card-title mb-2"><strong>Title:</strong> {{ admission.title }}</h5>
-              <p class="card-text mb-2"><strong>Status:</strong> {{ admission.status | titlecase }}</p>
-              <div class="admission-dates mb-2">
-                <p><strong>Start Date:</strong> <span class="date">{{ admission.starDate | date:'fullDate' }}</span></p>
-                <p><strong>End Date:</strong> <span class="date">{{ admission.endDate | date:'fullDate' }}</span></p>
+              <div class="profile-info">
+                <p class="info"><strong>Name:</strong> {{ item.name }}</p>
+                <p class="info"><strong>Last Name:</strong> {{ item.lastname }}</p>
+                <p class="info mb-1"><strong>Email:</strong> {{ item.email }}</p>
+                <div *ngIf="!item.note">
+                  <input type="number" id="note{{ item.id }}" 
+                         placeholder="note" 
+                         min="0" max="20" step="0.01">
+                  <button class="btn btn-primary ms-2" (click)="save(item.id)">Save</button>
+                </div>
+                <div *ngIf="item.note">
+                    <!-- Content to show if application.note exists -->
+                    <p>Note: {{ item.note }}</p>
+                  </div>
               </div>
-              <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-              <a [routerLink]="['/admissionteacher/note', admission.id]" class="btn btn-primary">Check Interview</a>
             </div>
           </div>
         </li>
@@ -21,8 +31,8 @@
     </div>
   
     <!-- Display this message if Admissions array is empty or undefined -->
-    <div *ngIf="!admissions || admissions.length === 0" class="text-center mt-4">
-      <p class="lead">You don't have any created admissions.</p>
+    <div *ngIf="!users || users.length === 0" class="text-center mt-4">
+      <p class="lead">You don't have any Interview.</p>
     </div>
   </div>
   

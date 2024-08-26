@@ -5,7 +5,9 @@ import org.example.courzelo.dto.requests.InterviewDTO;
 import org.example.courzelo.models.Application.Admission;
 import org.example.courzelo.models.Application.Interview;
 import org.example.courzelo.models.User;
+import org.example.courzelo.models.institution.Institution;
 import org.example.courzelo.repositories.Application.AdmissionRepository;
+import org.example.courzelo.repositories.InstitutionRepository;
 import org.example.courzelo.repositories.UserRepository;
 import org.example.courzelo.services.Application.InterviewService;
 import org.springframework.http.HttpStatus;
@@ -23,7 +25,7 @@ public class InterviewController {
 
     private final InterviewService service;
     private final UserRepository userRepository;
-    private final AdmissionRepository admissionRepository;
+    private final InstitutionRepository institutionRepository;
 
     @GetMapping("/all")
     public List<Interview> getAll(){
@@ -72,11 +74,7 @@ public class InterviewController {
         }
 
         interview.setInterviewee(interviewees);
-
-        // Save the updated interview back to the database
         Interview updatedInterview = service.saveInterview(interview);
-
-        // Return the updated interview
         return updatedInterview;
     }
 
@@ -94,11 +92,11 @@ public class InterviewController {
 
             // Retrieve interviewee and admission details
             System.out.println("Le INTERVIEWEES FRONT DETAILS: " + interview.getInterviewee());
-            System.out.println("Le ADMISSION FRONT DETAILS: " + interview.getAdmission());
+            System.out.println("Le institution FRONT DETAILS: " + interview.getInstitution());
 
             // Retrieve admission from repository
-            Admission admis = admissionRepository.findById(interview.getAdmission())
-                    .orElseThrow(() -> new Exception("Admission not found"));
+            Institution inst = institutionRepository.findById(interview.getInstitution())
+                    .orElseThrow(() -> new Exception("institution not found"));
 
             // Log email for debugging
             System.out.println("Attempting to find user by email: '" + email + "'");
@@ -112,7 +110,7 @@ public class InterviewController {
 
             // Create and log interview
             Interview interview1 = new Interview();
-            interview1.setAdmission(admis);
+            interview1.setInstitution(inst);
             interview1.setInterviewee(interview.getInterviewee());
             interview1.setInterviewer(user);
             System.out.println("Le INTERVIEW DETAILS: " + interview1);
@@ -124,9 +122,6 @@ public class InterviewController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while processing the request.");
         }
     }
-
-
-
 
     @PutMapping
     public ResponseEntity<?> updateInterview(@RequestBody InterviewDTO interv){
@@ -152,4 +147,18 @@ public class InterviewController {
                     .body(Collections.singletonMap("message", "Failed to delete Admission"));
         }
     }
+
+    @PostMapping("/add/dto")
+    public ResponseEntity<?> createInterviewdto(@RequestBody InterviewDTO interview) {
+        try {
+            System.out.println("Received Interview DTO: " + interview);
+            // The rest of your logic
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while processing the request.");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(" the request.");
+
+    }
+
 }

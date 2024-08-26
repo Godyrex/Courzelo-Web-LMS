@@ -4,12 +4,15 @@ import { CreateAdmissionComponent } from './create-admission/create-admission.co
 import { ListAdmissionComponent } from './list-admission/list-admission.component';
 import { ListApplicationsComponent } from './list-applications/list-applications.component';
 import { ScheduleComponent } from './schedule/schedule.component';
+import { UploadFileComponent } from './upload-file/upload-file.component';
 
 const routes: Routes = [
   {path:"create",component:CreateAdmissionComponent},
   {path:"list",component:ListAdmissionComponent},
   {path:"applications/:id",component:ListApplicationsComponent},
   {path:"schedule",component:ScheduleComponent},
+  {path:"upload",component:UploadFileComponent},
+
 ];
 
 @NgModule({

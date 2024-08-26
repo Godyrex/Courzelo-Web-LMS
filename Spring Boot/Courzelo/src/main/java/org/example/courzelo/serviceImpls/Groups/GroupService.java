@@ -31,6 +31,10 @@ public class GroupService {
         return groupRepository.save(group);
     }
 
+    public void deleteGroup(String id ){
+        groupRepository.deleteById(id);
+    }
+
     public List<String> getMembersByGroup(String id) {
         // Find the group by its ID
         Optional<Group> groupOptional = groupRepository.findById(id);

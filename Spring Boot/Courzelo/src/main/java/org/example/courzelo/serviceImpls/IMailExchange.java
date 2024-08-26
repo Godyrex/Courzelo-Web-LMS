@@ -7,6 +7,7 @@ import java.util.List;
 public interface IMailExchange {
 
     MailExchange saveMail(MailExchange mailExchange) ;
+    MailExchange updateMail(MailExchange mailExchange) ;
 
     public List<MailExchange> getAllMails();
     List<MailExchange> getMailsByRecipient(String recipientId) ;

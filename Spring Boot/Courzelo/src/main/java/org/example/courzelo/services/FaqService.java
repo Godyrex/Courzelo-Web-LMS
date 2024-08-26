@@ -37,8 +37,18 @@ public class FaqService implements IFaqService {
     }
 
     @Override
+    public FAQ saveFAQ1(FAQ faq) {
+        return faqRepository.save(faq);
+    }
+
+    @Override
     public void updateFAQ(FAQ faq) {
         faqRepository.save(faq);
+    }
+
+    @Override
+    public FAQ updateFAQ1(FAQ faq) {
+        return faqRepository.save(faq);
     }
 
     @Override

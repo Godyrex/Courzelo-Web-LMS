@@ -256,7 +256,8 @@ export class NavigationService {
                 icon: 'i-File-Horizontal-Text',
                 sub: [
                     { icon: 'i-Support', name: 'List Offers', state: '/studentadmission/list', type: 'link' , roles: ['STUDENT'] },
-                    { icon: 'i-Hand', name: 'Admissions', state: '/admission/list', type: 'link', roles: ['ADMIN'] },
+                    { icon: 'i-Hand', name: 'Create Applications', state: '/admissionadmin', type: 'link', roles: ['ADMIN'] },
+                    { icon: 'i-Hand', name: 'Show Applications', state: '/admissionadmin/list', type: 'link', roles: ['ADMIN'] },
                     { icon: 'i-Hand', name: 'Interviews', state: '/admissionteacher/note', type: 'link', roles: ['TEACHER','STUDENT'] },
                 ]
             },
