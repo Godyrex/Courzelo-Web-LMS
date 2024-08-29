@@ -34,7 +34,7 @@ export class EventService {
       );
   }
   // modified here 
-  updateEvent(id: string, event: CalendarEvent): Observable<Event> {
+  updateEvent(id: string, event: Event): Observable<Event> {
     console.log(`Updating event with ID ${id}:`, event);
     return this.http.put<Event>(`${this.apiUrl}/updateevent/${id}`, event)
       .pipe(
