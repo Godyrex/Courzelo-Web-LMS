@@ -186,6 +186,29 @@ export class NavigationService {
                 ]
             },
             {
+                name: 'Project',
+                description: '',
+                type: 'dropDown',
+                icon: 'i-File-Horizontal-Text',
+                sub: [
+                    { icon: 'i-File-Horizontal-Text', name: 'Project Dashboard', state: 'projects', type: 'link' , roles: ['STUDENT','TEACHER'] },
+                    { icon: 'i-Full-View-Window', name: 'Projects', state: '/getallprojects', type: 'link', roles: ['TEACHER','STUDENT'] },
+                   
+                ]
+            },
+
+            {
+                name: 'Revision',
+                description: '',
+                type: 'dropDown',
+                icon: 'i-File-Horizontal-Text',
+                sub: [
+                    { icon: 'i-File-Horizontal-Text', name: 'Revision Dashboard ', state: 'revision', type: 'link' , roles: ['STUDENT','TEACHER'] },
+                    { icon: 'i-Full-View-Window', name: 'Revision', state: '/clientrevision', type: 'link', roles: ['TEACHER','STUDENT'] },
+                   
+                ]
+            },
+            {
                 name: 'Tools',
                 description: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit.',
                 type: 'dropDown',
