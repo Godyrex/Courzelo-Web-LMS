@@ -115,24 +115,6 @@ export class NavigationService {
                 ]
             },
             {
-                name: 'Internships',
-                description: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit.',
-                type: 'dropDown',
-                icon: 'i-Computer-Secure',
-                sub: [
-                    { icon: 'i-Add-File', name: 'Internship', state: '/stages/stages', type: 'link' }
-                ]
-            },
-            {
-                name: 'Transportation',
-                description: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit.',
-                type: 'dropDown',
-                icon: 'i-Jeep',
-                sub: [
-                    { icon: 'i-Jeep', name: 'Transportation', state: '/transports/transports', type: 'link' }
-                ]
-            },
-            {
                 name: 'Apps',
                 description: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit.',
                 type: 'dropDown',
