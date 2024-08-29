@@ -41,13 +41,13 @@ export class ProjectCalendarComponent implements OnInit {
     this.actions = [
       {
         label: '<i class="i-Edit m-1 text-secondary"></i>',
-        onClick: ({ event }: { event: Event }): void => {
+        onClick: ({ event }: { event: CalendarEvent  }): void => {
           this.handleEvent('edit', event);
         }
       },
       {
         label: '<i class="i-Close m-1 text-danger"></i>',
-        onClick: ({ event }: { event: Event }): void => {
+        onClick: ({ event }: { event: CalendarEvent  }): void => {
           this.removeEvent(event);
         }
       }
@@ -128,7 +128,7 @@ export class ProjectCalendarComponent implements OnInit {
     ];
   }
 
-  public removeEvent(event: Event): void {
+  public removeEvent(event: CalendarEvent): void {
     this.modalService.open(this.eventDeleteConfirm, { ariaLabelledBy: 'modal-basic-title', centered: true })
       .result.then((result) => {
         if (result === 'Ok') {
@@ -137,7 +137,7 @@ export class ProjectCalendarComponent implements OnInit {
             console.error('No event ID provided');
             return;
           }
-          this.eventService.deleteEvent(event.id).subscribe(
+          this.eventService.deleteEvent(event.id.toString()).subscribe(
             () => {
               this.events = this.events.filter(e => e.id !== event.id);
               this.refresh.next();
@@ -194,7 +194,7 @@ export class ProjectCalendarComponent implements OnInit {
       });
   }
 
-  public handleEvent(action: string, event: Event): void {
+  public handleEvent(action: string, event: CalendarEvent): void {
     console.log('Handling event:', event);
   
     const dialogRef = this.modalService.open(CalendarFormProjectComponent, { centered: true });
