@@ -34,6 +34,10 @@ getAllInscriptions(): Observable<any> {
   return this.http.get(`${this.baseURL}/all`);
 }
 
+isNoted(institutionID:any): Observable<any> {
+  return this.http.get(`${this.baseURL}/institution/${institutionID}`);
+}
+
 getAllInscriptionsByInstitutions(id:any): Observable<any> {
   return this.http.get(`${this.baseURL}/all/${id}`);
 }

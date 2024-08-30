@@ -34,6 +34,7 @@ distribution: { teacher: string, students: string[] }[] = [];
   ngOnInit(): void {
     this.connectedUser = this.sessionStorageService.getUserFromSession();
     this.loadData();
+    this.isNoted();
   }
   loadData() {
     this.getTeachers();
@@ -69,6 +70,12 @@ distribution: { teacher: string, students: string[] }[] = [];
     console.log("Distribution:", this.distribution);
   }
 
+  isNoted(){
+    this.InscriptionService.isNoted(this.connectedUser.education.institutionID).subscribe((res)=>{
+      console.log(res);
+      console.log(typeof(res))
+    })
+  }
 
   getTeachers(): void {
     this.InscriptionService.getTeachers(this.connectedUser.education.institutionID).subscribe({

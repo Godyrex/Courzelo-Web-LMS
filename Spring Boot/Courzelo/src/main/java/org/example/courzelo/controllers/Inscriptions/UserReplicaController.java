@@ -9,7 +9,6 @@ import org.example.courzelo.repositories.InstitutionRepository;
 import org.example.courzelo.serviceImpls.Inscriptions.userExel;
 import org.example.courzelo.services.Inscriptions.UserReplicaService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.multipart.MultipartFile;

@@ -42,4 +42,7 @@ export class AcceptComponent implements OnInit{
 
     console.log("lol")
   }
+  onClose(){
+    this.dialogRef.close();
+  }
 }
