@@ -16,8 +16,8 @@ create(interview: any): Observable<any> {
   return this.http.post(`${this.baseURL}/add`, interview);
 }
 
-getInterviewByUser(user: string): Observable<Interview[]> {
-  return this.http.get<Interview[]>(`${this.baseURL}/user/${user}`);
+getInterviewByUser(user: string): Observable<any> {
+  return this.http.get(`${this.baseURL}/user/${user}`);
 }
 
 getAllAdmissions(): Observable<any> {

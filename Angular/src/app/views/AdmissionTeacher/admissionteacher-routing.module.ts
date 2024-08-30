@@ -4,7 +4,6 @@ import { NoteApplicationComponent } from './note-application/note-application.co
 import { ListAdmissionComponent } from './list-admission/list-admission.component';
 
 const routes: Routes = [
-  {path:"note/:id",component:NoteApplicationComponent},
   {path:"list",component:ListAdmissionComponent},
 ];
 

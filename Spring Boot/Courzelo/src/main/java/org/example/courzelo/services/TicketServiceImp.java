@@ -46,11 +46,21 @@ public class TicketServiceImp implements ITicketService {
         ticketRepository.save(ticket);
     }
 
+    public Ticket saveTicket1(Ticket ticket) {
+       return ticketRepository.save(ticket);
+    }
+
+
 
     @Override
     public void updateTicket(Ticket ticket) {
         ticketRepository.save(ticket);
     }
+    public Ticket updateTicket2(Ticket ticket) {
+       return ticketRepository.save(ticket);
+    }
+
+
 
     public Ticket updateTicket1(String id, String sujet, String details) {
         Ticket ticket = ticketRepository.findById(id)

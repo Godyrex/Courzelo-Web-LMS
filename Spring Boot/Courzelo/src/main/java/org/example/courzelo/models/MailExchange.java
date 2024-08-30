@@ -31,7 +31,7 @@ public class MailExchange {
     private LocalDateTime dateCreation = LocalDateTime.now();
 
     @DBRef
-    private User sender; // Email as string
+    private User sender;
     @DBRef
-    private User recipient; // Email as string
+    private User recipient;
 }

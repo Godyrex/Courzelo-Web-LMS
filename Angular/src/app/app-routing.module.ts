@@ -72,6 +72,10 @@ const userRoutes: Routes = [
       loadChildren: () => import('./views/Admission/list.module').then(m => m.ListModule)
     },
     {
+      path: 'admissionadmin',
+      loadChildren: () => import('./views/AdmissionAdmin/admission-admin.module').then(m => m.AdmissionAdminModule)
+    },
+    {
       path: 'admissionteacher',
       loadChildren: () => import('./views/AdmissionTeacher/admissionteacher.module').then(m => m.AdmissionteacherModule)
     },

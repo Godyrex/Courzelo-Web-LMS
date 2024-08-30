@@ -16,8 +16,11 @@ public interface ITicketService {
 
 
     void saveTicket(Ticket ticket);
+    Ticket saveTicket1(Ticket ticket);
     List<Ticket> getTicketsByType(String typeId);
 
     void updateTicket(Ticket ticket);
+    Ticket updateTicket2(Ticket ticket);
+
     Ticket updateTicket1(String id, String sujet, String details);
 }

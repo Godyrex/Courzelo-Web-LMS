@@ -164,7 +164,7 @@ export class ListApplicationsComponent implements OnInit {
           id: this.generateUniqueId(), // Generate a unique ID for each interview
           interviewer: sanitizedInterviewer, // Use sanitized interviewer
           interviewee: entry.students || [], // Default to empty array if null
-          admission: this.admissionID // Assuming you have an admission ID to associate
+          institution: this.admissionID // Assuming you have an admission ID to associate
         };
 
         // Debugging: Log interview details before sending

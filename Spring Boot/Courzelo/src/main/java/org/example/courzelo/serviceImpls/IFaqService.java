@@ -14,8 +14,11 @@ public interface IFaqService {
 
 
     void saveFAQ(FAQ faq);
+    FAQ saveFAQ1(FAQ faq);
 
     void updateFAQ(FAQ faq);
+    FAQ updateFAQ1(FAQ faq);
+
     Boolean existbyID(String id );
 
     FAQ updateFAQ1 (String id, String anwser, String question);

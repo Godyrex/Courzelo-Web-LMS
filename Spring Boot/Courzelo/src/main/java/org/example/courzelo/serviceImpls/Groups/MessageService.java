@@ -25,4 +25,8 @@ public class MessageService {
         System.out.println("Saving message: " + message);
         return messageRepository.save(message);
     }
+
+    public void deleteMessage(String id){
+        messageRepository.deleteById(id);
+    }
 }
