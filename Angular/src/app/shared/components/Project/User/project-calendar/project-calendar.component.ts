@@ -5,7 +5,7 @@ import { CalendarEvent, CalendarEventAction, CalendarEventTimesChangedEvent } fr
 import { isSameDay, isSameMonth } from 'date-fns';
 import { Subject } from 'rxjs';
 import { SharedAnimations } from 'src/app/shared/animations/shared-animations';
-import { CalendarAppEvent } from 'src/app/shared/models/calendar-event.model';
+
 import { Event } from 'src/app/shared/models/Project/Event';
 import { Project } from 'src/app/shared/models/Project/Project';
 import { EventService } from 'src/app/shared/services/Project/event.service';

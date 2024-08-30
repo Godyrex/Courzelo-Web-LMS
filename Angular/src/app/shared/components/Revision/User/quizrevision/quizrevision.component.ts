@@ -36,23 +36,7 @@ export class QuizrevisionComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-      this.route.paramMap.subscribe(params => {
-          let userEmail = params.get('email');
-          //if (!userEmail) {
-             //   userEmail = this.sessionStorageService.getUser();
-        //  }
-          this.userService.getUserProfileByEmail(userEmail).subscribe((user: LoginResponse) => {
-                this.user = user.user;
-                this.userService.getProfileImageBlobUrl(this.user.email).subscribe((blob: Blob) => {
-                    const objectURL = URL.createObjectURL(blob);
-                    this.imageSrc = this.sanitizer.bypassSecurityTrustUrl(objectURL);
-                });
-          }, error => {
-              this.HandleResponse.handleError(error);
-              this.router.navigateByUrl('/others/404');
-          });
-      });
-
+ 
       this.route.paramMap.subscribe(params => {
         this.quizRevisionId = params.get('id')!;
   

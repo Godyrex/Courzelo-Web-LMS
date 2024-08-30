@@ -186,7 +186,7 @@ export class NavigationService {
                 icon: 'i-File-Horizontal-Text',
                 sub: [
                     { icon: 'i-File-Horizontal-Text', name: 'Revision Dashboard ', state: 'revision', type: 'link' , roles: ['STUDENT','TEACHER'] },
-                    { icon: 'i-Full-View-Window', name: 'Revision', state: '/clientrevision', type: 'link', roles: ['TEACHER','STUDENT'] },
+                    { icon: 'i-Full-View-Window', name: 'Revision', state: '/clientrevision', type: 'link' },
                    
                 ]
             },

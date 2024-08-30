@@ -97,7 +97,7 @@ export class ParticipateRevisionComponent  implements OnInit {
     });
 }
 QandA(id: string): void {
-  console.log('Navigating to ConsultRevisionComponent with ID:', id);
+  console.log('Navigating to ConsultRevisionComponent with ID:');
   this.router.navigate(['/QandA', id]);
 }
 }
