@@ -4,9 +4,10 @@ import org.example.courzelo.models.Forum.Comment;
 import org.example.courzelo.models.Forum.Post;
 import org.example.courzelo.models.User;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
-
+@Repository("projectCommentRepository")
 public interface CommentRepository extends MongoRepository<Comment, String> {
     List<Comment> findByUser(User user);
     List<Comment> findByPost(Post post);
