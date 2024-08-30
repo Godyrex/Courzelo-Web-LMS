@@ -16,6 +16,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { StagesComponent } from './stages/stages.component';
 
 import {CreateQuizComponent} from '../forms/Quiz/create-quiz/create-quiz.component';
+import { DashboardV5Component } from './dashboard-v5/dashboard-v5.component';
 
 @NgModule({
   imports: [
@@ -28,6 +29,6 @@ import {CreateQuizComponent} from '../forms/Quiz/create-quiz/create-quiz.compone
     AppFormsModule,
     ReactiveFormsModule
   ],
-  declarations: [StagesComponent, TransportsComponent, DashboadDefaultComponent, DashboardV2Component, DashboardV3Component, DashboardV4Component]
+  declarations: [StagesComponent, TransportsComponent, DashboadDefaultComponent, DashboardV2Component, DashboardV3Component, DashboardV4Component,DashboardV5Component]
 })
 export class DashboardModule { }
