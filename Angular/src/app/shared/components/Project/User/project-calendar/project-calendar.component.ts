@@ -11,7 +11,7 @@ import { Project } from 'src/app/shared/models/Project/Project';
 import { EventService } from 'src/app/shared/services/Project/event.service';
 import { ProjectService } from 'src/app/shared/services/Project/project.service';
 import { Utils } from 'src/app/shared/utils';
-import { CalendarAppService } from 'src/app/views/calendar/calendar-app.service';
+
 import { CalendarFormProjectComponent } from '../calendar-form-project/calendar-form-project.component';
 
 @Component({
