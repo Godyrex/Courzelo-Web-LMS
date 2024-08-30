@@ -1,14 +1,46 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { AuthLayoutComponent } from './shared/components/layouts/auth-layout/auth-layout.component';
-import { AuthGaurd } from './shared/services/auth.gaurd';
+import { AuthGuard } from './shared/services/auth-guard.service';
 import { BlankLayoutComponent } from './shared/components/layouts/blank-layout/blank-layout.component';
 import { AdminLayoutSidebarCompactComponent } from './shared/components/layouts/admin-layout-sidebar-compact/admin-layout-sidebar-compact.component';
 
-const adminRoutes: Routes = [
+
+import {NoAuthGuard} from './shared/services/no-auth.guard';
+import { DashboardProjectComponent } from './shared/components/Project/Admin/dashboard-project/dashboard-project.component';
+import { AddProjectComponent } from './shared/components/Project/Admin/add-project/add-project.component';
+import { ViewdetailsComponent } from './shared/components/Project/Admin/viewdetails/viewdetails.component';
+import { PdfComponent } from './shared/components/Project/User/pdf/pdf.component';
+import { AddForumComponent } from './views/Forum/add-forum/add-forum.component';
+import { UploadFileComponent } from './views/Admission/upload-file/upload-file.component';
+import { ProjectCalendarComponent } from './shared/components/Project/User/project-calendar/project-calendar.component';
+import { ProjectComponent } from './shared/components/Project/User/project/project.component';
+import { ProjectDetailsComponent } from './shared/components/Project/User/projectdetails/projectdetails.component';
+import { ProgressDashboardComponent } from './shared/components/Project/User/progress-dashboard/progress-dashboard.component';
+import { PublicationComponent } from './shared/components/Project/User/publication/publication.component';
+import { RevisionComponent } from './shared/components/Revision/Teacher/revision/revision.component';
+import { ConsultRevisionComponent } from './shared/components/Revision/Teacher/consult-revision/consult-revision.component';
+import { ClientRevisionComponent } from './shared/components/Revision/User/client-revision/client-revision.component';
+import { ParticipateRevisionComponent } from './shared/components/Revision/User/participate-revision/participate-revision.component';
+import { QuizrevisionComponent } from './shared/components/Revision/User/quizrevision/quizrevision.component';
+
+
+const userRoutes: Routes = [
     {
       path: 'dashboard',
       loadChildren: () => import('./views/dashboard/dashboard.module').then(m => m.DashboardModule)
+    },
+    {
+      path: 'tickets',
+      loadChildren: () => import('./views/tickets/tickets.module').then(m => m.TicketsModule)
+    },
+    {
+      path: 'mailing',
+      loadChildren: () => import('./views/Mail/mail.module').then(m => m.MailModule)
+    },
+    {
+      path: 'ticketsStudent',
+      loadChildren: () => import('./views/ticketsStudent/ticket-student.module').then(m => m.TicketStudentModule)
     },
     {
       path: 'uikits',
@@ -17,6 +49,10 @@ const adminRoutes: Routes = [
     {
       path: 'forms',
       loadChildren: () => import('./views/forms/forms.module').then(m => m.AppFormsModule)
+    },
+    {
+      path: 'chatgroups',
+      loadChildren: () => import('./views/groups/groups.module').then(m => m.GroupsModule)
     },
     {
       path: 'invoice',
@@ -39,6 +75,22 @@ const adminRoutes: Routes = [
       loadChildren: () => import('./views/contacts/contacts.module').then(m => m.ContactsModule)
     },
     {
+      path: 'admission',
+      loadChildren: () => import('./views/Admission/list.module').then(m => m.ListModule)
+    },
+    {
+      path: 'admissionadmin',
+      loadChildren: () => import('./views/AdmissionAdmin/admission-admin.module').then(m => m.AdmissionAdminModule)
+    },
+    {
+      path: 'admissionteacher',
+      loadChildren: () => import('./views/AdmissionTeacher/admissionteacher.module').then(m => m.AdmissionteacherModule)
+    },
+    {
+      path: 'studentadmission',
+      loadChildren: () => import('./views/AdmissionStudent/admissionstudent.module').then(m => m.AdmissionstudentModule)
+    },
+    {
       path: 'tables',
       loadChildren: () => import('./views/data-tables/data-tables.module').then(m => m.DataTablesModule)
     },
@@ -47,9 +99,65 @@ const adminRoutes: Routes = [
       loadChildren: () => import('./views/pages/pages.module').then(m => m.PagesModule)
     },
     {
+      path: 'transports',
+      loadChildren: () => import('./views/transports/transports.module').then(m => m.TransportsModule)
+    },
+    {
+      path: 'stages',
+      loadChildren: () => import('./views/stages/stages.module').then(m => m.StagesModule)
+    },
+    {
         path: 'icons',
         loadChildren: () => import('./views/icons/icons.module').then(m => m.IconsModule)
+    } ,
+    { path: 'getallprojects', component: ProjectComponent},
+    { path: 'ProgressDashboard', component: ProgressDashboardComponent},
+    { path: 'projects', component: DashboardProjectComponent, canActivate: [AuthGuard], data: { roles: ['TEACHER'] }},
+    { path: 'addprojects', component: AddProjectComponent, canActivate: [AuthGuard], data: { roles: ['TEACHER'] }},
+    { path: 'project/:id', component: ViewdetailsComponent, canActivate: [AuthGuard], data: { roles: ['TEACHER'] }},
+    { path: 'pdf', component: PdfComponent },
+    { path: 'addforum', component: AddForumComponent},
+    { path: 'uploadfile', component: UploadFileComponent},
+
+    { path: 'projects', component: DashboardProjectComponent},//teacher
+    { path: 'addprojects', component: AddProjectComponent},//teacher
+    { path: 'project/:id', component: ViewdetailsComponent},//teacher
+
+    { path: 'pdf', component: PdfComponent},
+    { path: 'projectcalendar/:id', component: ProjectCalendarComponent },//user
+    { path: 'getallprojects', component: ProjectComponent},//user
+    { path: 'projectdetails/:id', component: ProjectDetailsComponent},//user
+    { path: 'ProgressDashboard/:id', component: ProgressDashboardComponent},//user
+    { path: 'publication/:id', component: PublicationComponent},//user
+    
+ ///////////////////////////////////////////////////////
+     { path: 'revision', component:RevisionComponent },//teacher
+     { path: 'consultrevision/:id', component:ConsultRevisionComponent },//teacher
+     { path: 'clientrevision', component:ClientRevisionComponent
+      },//user
+     { path: 'participaterevision/:id', component:ParticipateRevisionComponent },//user
+     { path: 'QandA/:id', component:QuizrevisionComponent },//user
+   
+    {
+        path: 'settings',
+        loadChildren: () => import('./views/settings/settings.module').then(m => m.SettingsModule)
+    },
+    {
+      path: 'forum',
+      loadChildren: () => import('./views/Forum/forum.module').then(m => m.ForumModule)
+  },
+    {
+        path: 'tools',
+        loadChildren: () => import('./views/tools/tools.module').then(m => m.ToolsModule),
+        canActivate: [AuthGuard],
+        data: { roles: ['SUPERADMIN'] }
+    },
+    {
+        path: 'institution',
+        loadChildren: () => import('./views/institution/institution.module').then(m => m.InstitutionModule),
+        canActivate: [AuthGuard],
     }
+
   ];
 
 const routes: Routes = [
@@ -64,7 +172,8 @@ const routes: Routes = [
     children: [
       {
         path: 'sessions',
-        loadChildren: () => import('./views/sessions/sessions.module').then(m => m.SessionsModule)
+          canLoad: [NoAuthGuard],
+          loadChildren: () => import('./views/sessions/sessions.module').then(m => m.SessionsModule)
       }
     ]
   },
@@ -81,13 +190,14 @@ const routes: Routes = [
   {
     path: '',
     component: AdminLayoutSidebarCompactComponent,
-    canActivate: [AuthGaurd],
-    children: adminRoutes
+    canActivate: [AuthGuard],
+    children: userRoutes,
   },
+
   {
     path: '**',
     redirectTo: 'others/404'
-  }
+  },
 ];
 
 @NgModule({

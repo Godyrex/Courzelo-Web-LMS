@@ -27,8 +27,7 @@
             "allowedCommonJsDependencies": [
                 "echarts",
                 "highlight.js",
-                "angular2-text-mask",
-                "quill"
+                "angular2-text-mask"
             ],
             "outputPath": "dist",
             "index": "src/index.html",
@@ -45,7 +44,7 @@
             ],
             "scripts": [
               "node_modules/echarts/dist/echarts.min.js"
-            ],
+                   ],
             "vendorChunk": true,
             "extractLicenses": false,
             "buildOptimizer": false,
@@ -81,7 +80,8 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "gull:build"
+            "browserTarget": "gull:build",
+            "proxyConfig": "src/proxy.conf.json"
           },
           "configurations": {
             "production": {
