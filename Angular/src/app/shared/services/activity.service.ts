@@ -7,7 +7,7 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root'
 })
 export class ActivityService {
-  private apiUrl = 'http://localhost:8080/api/stages';
+  private apiUrl = 'http://localhost:8080/api';
 
   constructor(
     private http: HttpClient
