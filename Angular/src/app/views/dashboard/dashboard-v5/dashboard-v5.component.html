@@ -46,13 +46,13 @@
 	<div class="col-md-4">
 	  <div class="d-flex justify-content-between mb-2">
 		<div class="flex-grow-1">
-		  <p class="text-small text-muted m-0">Activities in current month</p>
-		  <p class="text-24 mb-3"><i class="i-Arrow-Up-in-Circle text-success"></i> 80765</p>
+		  <p class="text-small text-muted m-0">Finished Activities </p>
+		  <p class="text-24 mb-3"><i class="i-Arrow-Up-in-Circle text-success"></i> {{ finishedActivitiesCount }}</p>
 		</div>
 		<div class="flex-grow-1">
-		  <p class="text-small text-muted m-0">Activities in last month</p>
-		  <p class="text-24 mb-3"><i class="i-Arrow-Down-in-Circle text-danger"></i> 10765</p>
-		</div>
+			<p class="text-small text-muted m-0">Canceled Activities</p>
+			<p class="text-24 mb-3"><i class="i-Arrow-Down-in-Circle text-danger"></i> {{ canceledActivitiesCount }}</p>
+		  </div>
 	  </div>
 	  <div class="d-flex justify-content-between border-bottom p-2">
 		<div class="flex-grow-1">
@@ -80,10 +80,42 @@
 	  </div>
 	</div>
   
-	<div class="col-md-12">
-	  <div echarts [options]="lineChart1" [autoResize]="true" style="height: 180px;"></div>
-	</div>
+	
   </div> 
+  
+<div class="row">
+	<div class="col-lg-4 col-sm-12">
+	  <div class="card mb-4">
+		<div class="card-body">
+		  <div class="card-title">Activity Category</div>
+		  <div
+			echarts
+			[options]="categoryChartPie"
+			[autoResize]="true"
+			style="height: 300px"
+		  ></div>
+		</div>
+	  </div>
+	</div>
+
+
+
+	<div class="col-lg-4 col-sm-12">
+	  <div class="card mb-4">
+		<div class="card-body">
+		  <div class="card-title">Activity status</div>
+		  <div
+			echarts
+			[options]="statusChartPie"
+			[autoResize]="true"
+			style="height: 300px"
+		  ></div>
+		</div>
+	  </div>
+	</div>
+
+
+  </div>
  <!-- Form for adding a new activity-->
 <div class="row">
 	<div class="col-md-12">
