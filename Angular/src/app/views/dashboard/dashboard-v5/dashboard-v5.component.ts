@@ -3,6 +3,8 @@ import { echartStyles } from 'src/app/shared/echart-styles';
 import { ActivityService } from 'src/app/shared/services/activity.service';
 import { FormBuilder, FormGroup,Validators } from '@angular/forms';
 import { Activity } from 'src/app/shared/models/activity.model';
+import { EChartOption } from 'echarts';
+
 @Component({
   selector: 'app-dashboard-v5',
   templateUrl: './dashboard-v5.component.html',
@@ -11,8 +13,14 @@ import { Activity } from 'src/app/shared/models/activity.model';
 export class DashboardV5Component implements OnInit {
   chartLineSmall1: any;
   lineChart1: any;
+  domainChartPie: EChartOption;
+  statusChartPie: EChartOption;
+  categoryChartPie: EChartOption;
   activities: any[] = [];
   activityForm: FormGroup;
+  canceledActivitiesCount: number = 0; // Property to store the number of canceled activities
+  finishedActivitiesCount: number = 0; // Property to store the number of canceled activities
+
 
   constructor(
     private activityService: ActivityService,
@@ -95,6 +103,12 @@ export class DashboardV5Component implements OnInit {
       (data: any[]) => {
         console.log('Activities:', data);
         this.activities = data;
+        this.generateDataAndChart_category(data);
+        this.generateDataAndChart_status(data);
+
+        this.calculateCanceledActivities(); // Calculate canceled activities
+        this.calculateFinishedActivities(); // Calculate canceled activities
+
       },
       (error) => {
         console.error('Error loading activities:', error);
@@ -171,5 +185,115 @@ update(row: any): void {
       default:
         return '';
     }
+  }
+  generateDataAndChart_category(data: any[]): void {
+    const nameCounts = data.reduce((acc, data) => {
+      acc[data.category] = (acc[data.category] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+  
+    // Ensure 'value' is of type 'number' using type assertion
+    const chartData = Object.entries(nameCounts).map(([name, value]) => ({ name, value: value as number }));
+  
+    this.Chart4(chartData);
+  }
+  generateDataAndChart_status(data: any[]): void {
+    const nameCounts = data.reduce((acc, data) => {
+      acc[data.status] = (acc[data.status] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+  
+    // Ensure 'value' is of type 'number' using type assertion
+    const chartData = Object.entries(nameCounts).map(([name, value]) => ({ name, value: value as number }));
+  
+    this.Chart5(chartData);
+  }
+  
+  
+  Chart4(data: { name: string, value: number }[]): void {
+    this.categoryChartPie = {
+      color: ['#62549c', '#7566b5', '#7d6cbb', '#8877bd', '#9181bd', '#6957af'],
+      tooltip: {
+        show: true,
+        backgroundColor: 'rgba(0, 0, 0, .8)'
+      },
+      xAxis: [{
+        axisLine: {
+          show: false
+        },
+        splitLine: {
+          show: false
+        }
+      }],
+      yAxis: [{
+        axisLine: {
+          show: false
+        },
+        splitLine: {
+          show: false
+        }
+      }],
+      series: [{
+        name: 'Category of activity',
+        type: 'pie',
+        radius: '75%',
+        center: ['50%', '50%'],
+        data,
+        itemStyle: {
+          emphasis: {
+            shadowBlur: 10,
+            shadowOffsetX: 0,
+            shadowColor: 'rgba(0, 0, 0, 0.5)'
+          }
+        }
+      }]
+    };
+  }
+  Chart5(data: { name: string, value: number }[]): void {
+    this.statusChartPie = {
+      color: ['#62549c', '#7566b5', '#7d6cbb', '#8877bd', '#9181bd', '#6957af'],
+      tooltip: {
+        show: true,
+        backgroundColor: 'rgba(0, 0, 0, .8)'
+      },
+      xAxis: [{
+        axisLine: {
+          show: false
+        },
+        splitLine: {
+          show: false
+        }
+      }],
+      yAxis: [{
+        axisLine: {
+          show: false
+        },
+        splitLine: {
+          show: false
+        }
+      }],
+      series: [{
+        name: 'Status of activity',
+        type: 'pie',
+        radius: '75%',
+        center: ['50%', '50%'],
+        data,
+        itemStyle: {
+          emphasis: {
+            shadowBlur: 10,
+            shadowOffsetX: 0,
+            shadowColor: 'rgba(0, 0, 0, 0.5)'
+          }
+        }
+      }]
+    };
+  }
+  calculateCanceledActivities(): void {
+    const canceledActivities = this.activities.filter(activity => activity.status === 'ANNULEE');
+    this.canceledActivitiesCount = canceledActivities.length;
+  }
+  calculateFinishedActivities(): void {
+    const finishedActivities = this.activities.filter(activity => activity.status === 'TERMINEE');
+    this.finishedActivitiesCount = finishedActivities.length;
   }
 }
