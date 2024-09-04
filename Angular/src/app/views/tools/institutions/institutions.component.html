@@ -12,7 +12,7 @@
             </div>
         </div>
         <div class="col-mb-3" style="height: 4vh;">
-            <button (click)="addInstitutionModel(add)" class="btn  btn-success btn-rounded btn-sm m-1 " >Add Institution</button>
+            <button (click)="addInstitutionModel(add)" class="btn  btn-success btn-rounded btn-sm m-1 " ><i class="i-Add"></i> Add</button>
         </div>
         <div class="col-md-12">
             <div class="card o-hidden">
@@ -29,7 +29,7 @@
                             class="material fullscreen"
                             [columnMode]="'force'"
                             [columns]="[{ name: 'Name' }, { name: 'Slogan' }, { name: 'Country' }, { name: 'Address' }, { name: 'Description' }, { name: 'Website' },
-                                    { name: 'Actions', prop: 'id', cellTemplate: deleteBtnTemplate, width: 250 }]"
+                                    { name: 'Actions', prop: 'id', cellTemplate: deleteBtnTemplate, width: 270 }]"
                             [headerHeight]="50"
                             [footerHeight]="50"
                             [rowHeight]="80"
@@ -41,9 +41,9 @@
                             [limit]="itemsPerPage"
                             [rows]="institutions | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }">
                         <ng-template #deleteBtnTemplate let-row="row" let-value="value">
-                            <button class=" btn btn-danger m-1" (click)="deleteInstitutionModal(modalConfirm,row)">Delete</button>
-                            <button class=" btn btn-primary m-1" (click)="editInstitutionModel(edit,row)">Edit</button>
-                            <button class=" btn btn-primary m-1" (click)="toggleInstitutionUsersTable(row)">Users List</button>
+                            <button class=" btn btn-danger btn-rounded m-1" (click)="deleteInstitutionModal(modalConfirm,row)"><i class="i-Remove"></i> Delete</button>
+                            <button class=" btn btn-warning btn-rounded m-1" (click)="editInstitutionModel(edit,row)"><i class="i-Pen-2"></i> Edit</button>
+                            <button class=" btn btn-success btn-rounded m-1" (click)="toggleInstitutionUsersTable(row)"><i class="i-Find-User"></i> Users</button>
                         </ng-template>
                     </ngx-datatable>
                 </div>
@@ -317,7 +317,7 @@
                     </div>
                 </div>
                 <div class="col-md-2 btn-group-sm " style="height: 4vh;">
-                    <button (click)="addUserModel(addUser,currentInstitution)" class="btn btn-success btn-sm m-1 " >Invite user</button>
+                    <button (click)="addUserModel(addUser,currentInstitution)" class="btn btn-success btn-rounded btn-sm m-1 " ><i class="i-Add-User"></i> Invite user</button>
                 </div>
                 <div class="col-md-12">
                     <div class="card o-hidden">
@@ -350,7 +350,7 @@
                                     </div>
                                 </ng-template>
                                 <ng-template #deleteBtnTemplate let-row="row" let-value="value">
-                                    <button class=" btn btn-danger  m-1" (click)="modalConfirmUserFunction(modalConfirmUser,row)">Remove</button>
+                                    <button class=" btn btn-danger btn-rounded  m-1" (click)="modalConfirmUserFunction(modalConfirmUser,row)"><i class="i-Remove"></i> Remove</button>
                                 </ng-template>
                                 <ng-template #editBtnTemplate let-row="row" let-value="value">
                                     <form (ngSubmit)="changeUserRole(row)">
@@ -359,7 +359,7 @@
                                                 <option *ngFor="let role of availableRoles" [value]="role">{{ role }}</option>
                                             </select>
                                         </div>
-                                        <button class="btn btn-primary m-1" type="submit"><i class="fas fa-user-edit mr-2"></i>Edit</button>
+                                        <button class="btn btn-warning m-1" type="submit"><i class="i-Pen-2 mr-2"></i>Edit</button>
                                     </form>
                                 </ng-template>
                             </ngx-datatable>

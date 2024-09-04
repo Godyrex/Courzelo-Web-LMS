@@ -161,6 +161,9 @@ export class UsersComponent implements OnInit {
         this.handleResponse.handleError(error);
         this.loadingUsers = false;
       });
+    } else {
+        this.toastr.error('Please select a role');
+        this.loadingUsers = false;
     }
   }
 }

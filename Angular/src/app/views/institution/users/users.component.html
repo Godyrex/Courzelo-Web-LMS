@@ -15,7 +15,7 @@
         </div>
     </div>
     <div class="col-md-2 btn-group-sm " style="height: 4vh;">
-        <button (click)="addUserModel(addUser)" class="btn btn-success btn-sm m-1 " >Invite User</button>
+        <button (click)="addUserModel(addUser)" class="btn btn-success btn-rounded btn-sm m-1 " ><i class="i-Add-User"></i> Invite User</button>
     </div>
     <div class="col-md-12">
         <div class="card o-hidden">
@@ -48,7 +48,7 @@
                         </div>
                     </ng-template>
                     <ng-template #deleteBtnTemplate let-row="row" let-value="value">
-                        <button class=" btn btn-danger  m-1" (click)="modalConfirmUserFunction(modalConfirmUser,row)">Remove</button>
+                        <button class=" btn btn-danger btn-rounded m-1" (click)="modalConfirmUserFunction(modalConfirmUser,row)"><i class="i-Remove-User"></i> Remove</button>
                     </ng-template>
                     <ng-template #editBtnTemplate let-row="row" let-value="value">
                         <form (ngSubmit)="changeUserRole(row)">
@@ -57,7 +57,7 @@
                                     <option *ngFor="let role of availableRoles" [value]="role">{{ role }}</option>
                                 </select>
                             </div>
-                            <button class="btn btn-primary m-1" type="submit"><i class="fas fa-user-edit mr-2"></i>Edit</button>
+                            <button class="btn btn-warning btn-rounded m-1" type="submit"><i class="i-Pen-2"></i> Edit</button>
                         </form>
                     </ng-template>
                 </ngx-datatable>

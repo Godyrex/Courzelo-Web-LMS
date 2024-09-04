@@ -117,7 +117,7 @@
                         <label class="custom-file-label" for="inputGroupFile02" aria-describedby="inputGroupFileAddon02">{{ selectedFileName || "No file chosen" }}</label>
                     </div>
                     <div class="input-group-append">
-                        <button class="input-group-text" id="inputGroupFileAddon02" (click)="uploadLogo()" >Upload</button>
+                        <button class="input-group-text" id="inputGroupFileAddon02" (click)="uploadLogo()" ><i class="i-Upload1"></i> Upload</button>
                     </div>
                 </div>
 
@@ -185,9 +185,9 @@
                         </div>
                     </div>
                     <div class="box-footer">
-                        <button type="submit" class="btn btn-primary">Submit</button>
-                        <button type="button" (click)="addEvent()" class="btn btn-success">Add Event</button>
-                        <button type="button" (click)="downloadExcel()" class="btn btn-info">Download Calendar</button>
+                        <button type="submit" class="btn btn-primary btn-rounded">Submit</button>
+                        <button type="button" (click)="addEvent()" class="btn btn-success btn-rounded"><i class="i-Add"></i> Add Event</button>
+                        <button type="button" (click)="downloadExcel()" class="btn btn-info btn-rounded"><i class="i-Download"></i> Download Calendar</button>
                     </div>
                 </form>
             </div>

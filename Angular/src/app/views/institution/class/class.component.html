@@ -7,7 +7,7 @@
     <div class="separator-breadcrumb border-top"></div>
     <div class="row">
         <div class="col-md-2 btn-group-sm " >
-            <button (click)="createClassModel(createClass)" class="btn btn-success btn-sm m-1 " >Create class</button>
+            <button (click)="createClassModel(createClass)" class="btn btn-success btn-rounded btn-sm m-1 " ><i class="i-Add"></i> Create class</button>
         </div>
         <div class="col-md-12">
             <div class="card o-hidden">
@@ -26,7 +26,7 @@
         { name: 'Name' },
         { name: 'Students', cellTemplate: students, width: 200 },
         { name: 'Courses', cellTemplate: courses, width: 200 },
-        { name: 'Actions', prop: 'id', cellTemplate: deleteBtnTemplate, width: 250 }
+        { name: 'Actions', prop: 'id', cellTemplate: deleteBtnTemplate, width: 290 }
     ]"
                             [headerHeight]="50"
                             [footerHeight]="50"
@@ -41,13 +41,13 @@
 
                         <ng-template #students let-row="row" let-value="value">
                             <button class="btn btn-link" (click)="openModal('students', row.students)">
-                                Show Students
+                                <i class="i-Student-Hat-2"></i> Show Students
                             </button>
                         </ng-template>
 
                         <ng-template #courses let-row="row" let-value="value">
                             <button class="btn btn-link" (click)="openModal('courses', row.courses)">
-                                Show Courses
+                                <i class="i-Book"></i> Show Courses
                             </button>
                         </ng-template>
 
@@ -70,9 +70,9 @@
                         </ng-template>
 
                         <ng-template #deleteBtnTemplate let-row="row" let-value="value">
-                            <button class="btn btn-danger m-1" (click)="modalConfirmClassFunction(modalConfirmClass, row)">Remove</button>
-                            <button class="btn btn-primary m-1" (click)="openUserModal(addUserToClass, row)">Add</button>
-                            <button class="btn btn-primary m-1" (click)="openUserModal(removeUserFromClass, row)">remove</button>
+                            <button class="btn btn-danger btn-rounded m-1" (click)="modalConfirmClassFunction(modalConfirmClass, row)"><i class="i-Remove"></i> Delete class</button>
+                            <button class="btn btn-success btn-rounded m-1" (click)="openUserModal(addUserToClass, row)"><i class="i-Add-User"></i> Add user</button>
+                            <button class="btn btn-danger btn-rounded m-1" (click)="openUserModal(removeUserFromClass, row)"><i class="i-Remove-User"></i> Remove user</button>
                         </ng-template>
 
                     </ngx-datatable>

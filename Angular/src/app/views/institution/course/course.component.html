@@ -25,10 +25,10 @@
 <!-- Buttons Section -->
 <div *ngIf="course" class="container mt-3">
     <div class="d-flex justify-content-end mb-3">
-        <button class="btn btn-success mr-2" *ngIf="isUserTeacherInCourse()" (click)="addPostModel(ModalAddPost)"  >Add Post</button>
-        <button class="btn btn-success mr-2" *ngIf="isUserTeacherInCourse()" (click)="addQuizModel(ModalAddQuiz)"  >Add Quiz</button>
-        <button class="btn btn-warning mr-2" (click)="updateCourseModel(ModalUpdateCourse)"  *ngIf="isUserTeacherInCourse()" >Edit Course</button>
-        <button class="btn btn-danger mr-2" *ngIf="isUserTeacherInCourse()" (click)="deleteCourse(modalConfirmCourse)">Delete Course</button>
+        <button class="btn btn-success btn-rounded mr-2" *ngIf="isUserTeacherInCourse()" (click)="addPostModel(ModalAddPost)"  ><i class="i-Add"></i> Add Post</button>
+        <button class="btn btn-success btn-rounded mr-2" *ngIf="isUserTeacherInCourse()" (click)="addQuizModel(ModalAddQuiz)"  ><i class="i-Add"></i> Add Quiz</button>
+        <button class="btn btn-warning btn-rounded mr-2" (click)="updateCourseModel(ModalUpdateCourse)"  *ngIf="isUserTeacherInCourse()" ><i class="i-Pen-2"></i> Edit Course</button>
+        <button class="btn btn-danger btn-rounded mr-2" *ngIf="isUserTeacherInCourse()" (click)="deleteCourse(modalConfirmCourse)"><i class="i-Remove"></i> Delete Course</button>
     </div>
 </div>
 <!-- Main Content Section -->
@@ -48,11 +48,11 @@
                 <div class="card-body">
                     <p class="card-text">{{ post.description }}</p>
                     <div *ngIf="post.files && post.files.length > 0">
-                        <a *ngFor="let file of post.files" (click)="downloadFile(file)" class="btn btn-link">{{ file }}</a>
+                        <a *ngFor="let file of post.files" (click)="downloadFile(file)" class="btn btn-link"><i class="i-Download"></i> {{ file }}</a>
                     </div>
                 </div>
                 <div class="card-footer">
-                    <button class="btn btn-danger" *ngIf="isUserTeacherInCourse()" (click)="deletePostModal(modalConfirmDeletePost, post.id)">Delete Post</button>
+                    <button class="btn btn-danger btn-rounded" *ngIf="isUserTeacherInCourse()" (click)="deletePostModal(modalConfirmDeletePost, post.id)"><i class="i-Remove"></i> Delete Post</button>
                 </div>
             </div>
             <div *ngFor="let quiz of course.quizzes" class="card mb-3">
@@ -210,7 +210,7 @@
                     </div>
                 </div>
                 <div class="col-md-12">
-                    <btn-loading btnClass="btn-primary btn-rounded" [loading]="loading">update</btn-loading>
+                    <btn-loading btnClass="btn-warning btn-rounded" [loading]="loading">update</btn-loading>
                 </div>
             </div>
         </form>
@@ -259,7 +259,7 @@
                     <input type="file"  class="form-control" id="files" (change)="onFileSelected($event)" multiple>
                 </div>
                 <div class="col-md-12">
-                    <btn-loading btnClass="btn-primary btn-rounded" [loading]="loading">Add Post</btn-loading>
+                    <btn-loading btnClass="btn-success btn-rounded" [loading]="loading">Add Post</btn-loading>
                 </div>
             </div>
         </form>
@@ -342,7 +342,7 @@
             </div>
             <div class="text-right">
                 <button type="button" class="btn btn-secondary btn-rounded mr-2" (click)="resetForm()">Reset</button>
-                <btn-loading btnClass="btn-primary btn-rounded" [loading]="loading">Add Quiz</btn-loading>
+                <btn-loading btnClass="btn-success btn-rounded" [loading]="loading">Add Quiz</btn-loading>
             </div>
         </form>
     </div>

@@ -17,130 +17,6 @@
     </div>
     <div class="card-body">
         <ngb-tabset (tabChange)="onTabChange($event)" class="nav-center">
-            <ngb-tab title="Timeline">
-                <ng-template ngbTabContent>
-                    <ul class="timeline clearfix">
-                        <li class="timeline-line"></li>
-                        <li class="timeline-item">
-                            <div class="timeline-badge">
-                                <i class="badge-icon bg-primary text-white i-File-Pictures"></i>
-                            </div>
-                            <div class="timeline-card card">
-                                <div class="card-body">
-                                    <div class="mb-1">
-                                        <strong class="mr-1">Timothy Carlson</strong> added a new photo
-                                        <p class="text-muted">3 hours ago</p>
-                                    </div>
-                                    <img class="rounded mb-2" src="assets/images/photo-wide-1.jpg" alt="">
-                                    <div class="mb-3">
-                                        <a href="#" class="mr-1">Like</a>
-                                        <a href="#">Comment</a>
-                                    </div>
-                                    <div class="input-group">
-                                        <input type="text" class="form-control" placeholder="Write comment" aria-label="comment">
-                                        <div class="input-group-append">
-                                            <button class="btn btn-primary" type="button" id="button-comment1">Submit</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="timeline-item">
-                            <div class="timeline-badge">
-                                <img class="badge-img" src="assets/images/faces/1.jpg" alt="">
-                            </div>
-                            <div class="timeline-card card">
-                                <div class="card-body">
-                                    <div class="mb-1">
-                                        <strong class="mr-1">Timothy Carlson</strong> updated his sattus
-                                        <p class="text-muted">16 hours ago</p>
-                                    </div>
-                                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Modi dicta beatae illo
-                                        illum iusto iste mollitia explicabo quam officia. Quas ullam, quisquam
-                                        architecto
-                                        aspernatur enim iure debitis dignissimos suscipit
-                                        ipsa.
-                                    </p>
-                                    <div class="mb-3">
-                                        <a href="#" class="mr-1">Like</a>
-                                        <a href="#">Comment</a>
-                                    </div>
-                                    <div class="input-group">
-                                        <input type="text" class="form-control" placeholder="Write comment" aria-label="comment">
-                                        <div class="input-group-append">
-                                            <button class="btn btn-primary" type="button" id="button-comment2">Submit</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </li>
-                    </ul>
-                    <ul class="timeline clearfix">
-                        <li class="timeline-line"></li>
-                        <li class="timeline-group text-center">
-                            <button class="btn btn-icon-text btn-primary"><i class="i-Calendar-4"></i> 2018</button>
-                        </li>
-                    </ul>
-                    <ul class="timeline clearfix">
-                        <li class="timeline-line"></li>
-                        <li class="timeline-item">
-                            <div class="timeline-badge">
-                                <i class="badge-icon bg-danger text-white i-Love-User"></i>
-                            </div>
-                            <div class="timeline-card card">
-                                <div class="card-body">
-                                    <div class="mb-1">
-                                        <strong class="mr-1">New followers</strong>
-                                        <p class="text-muted">2 days ago</p>
-                                    </div>
-                                    <p><a href="#">Henry krick</a> and 16 others followed you</p>
-                                    <div class="mb-3">
-                                        <a href="#" class="mr-1">Like</a>
-                                        <a href="#">Comment</a>
-                                    </div>
-                                    <div class="input-group">
-                                        <input type="text" class="form-control" placeholder="Write comment" aria-label="comment">
-                                        <div class="input-group-append">
-                                            <button class="btn btn-primary" type="button" id="button-comment3">Submit</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="timeline-item">
-                            <div class="timeline-badge">
-                                <i class="badge-icon bg-primary text-white i-File-Pictures"></i>
-                            </div>
-                            <div class="timeline-card card">
-                                <div class="card-body">
-                                    <div class="mb-1">
-                                        <strong class="mr-1">Timothy Carlson</strong> added a new photo
-                                        <p class="text-muted">2 days ago</p>
-                                    </div>
-                                    <img class="rounded mb-2" src="assets/images/photo-wide-2.jpg" alt="">
-                                    <div class="mb-3">
-                                        <a href="#" class="mr-1">Like</a>
-                                        <a href="#">Comment</a>
-                                    </div>
-                                    <div class="input-group">
-                                        <input type="text" class="form-control" placeholder="Write comment" aria-label="comment">
-                                        <div class="input-group-append">
-                                            <button class="btn btn-primary" type="button" id="button-comment4">Submit</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </li>
-                    </ul>
-                    <ul class="timeline clearfix">
-                        <li class="timeline-line"></li>
-                        <li class="timeline-group text-center">
-                            <button class="btn btn-icon-text btn-warning"><i class="i-Calendar-4"></i> Joined
-                                in 2013</button>
-                        </li>
-                    </ul>
-                </ng-template>
-            </ngb-tab>
             <ngb-tab title="About">
                 <ng-template ngbTabContent>
                     <h4>Information</h4>
@@ -165,37 +41,6 @@
                         </div>
                     </div>
                     <hr>
-                    <h4>Other Info</h4>
-                    <p class="mb-4">Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsum dolore labore
-                        reiciendis
-                        ab quo ducimus reprehenderit natus debitis, provident ad iure sed aut animi dolor incidunt
-                        voluptatem. Blanditiis, nobis aut.</p>
-                    <div class="row">
-                        <div class="col-md-2 col-sm-4 col-6 text-center">
-                            <i class="i-Plane text-32 text-primary"></i>
-                            <p class="text-16 mt-1">Travelling</p>
-                        </div>
-                        <div class="col-md-2 col-sm-4 col-6 text-center">
-                            <i class="i-Camera text-32 text-primary"></i>
-                            <p class="text-16 mt-1">Photography</p>
-                        </div>
-                        <div class="col-md-2 col-sm-4 col-6 text-center">
-                            <i class="i-Car-3 text-32 text-primary"></i>
-                            <p class="text-16 mt-1">Driving</p>
-                        </div>
-                        <div class="col-md-2 col-sm-4 col-6 text-center">
-                            <i class="i-Gamepad-2 text-32 text-primary"></i>
-                            <p class="text-16 mt-1">Gaming</p>
-                        </div>
-                        <div class="col-md-2 col-sm-4 col-6 text-center">
-                            <i class="i-Music-Note-2 text-32 text-primary"></i>
-                            <p class="text-16 mt-1">Music</p>
-                        </div>
-                        <div class="col-md-2 col-sm-4 col-6 text-center">
-                            <i class="i-Shopping-Bag text-32 text-primary"></i>
-                            <p class="text-16 mt-1">Shopping</p>
-                        </div>
-                    </div>
                 </ng-template>
             </ngb-tab>
             <ngb-tab title="Map" id="mapTab">
@@ -214,14 +59,14 @@
             <ngb-tab *ngIf="currentInstitution.hasCalendar" title="Calendar" >
                 <ng-template ngbTabContent>
                     <div *ngIf="currentInstitution.hasCalendar" class="d-flex justify-content-center">
-                        <button type="button" (click)="downloadExcel()" class="btn btn-info">Download Calendar</button>
+                        <button type="button" (click)="downloadExcel()" class="btn btn-info btn-rounded"><i class="i-Download"></i> Download Calendar</button>
                     </div>
                 </ng-template>
             </ngb-tab>
             <ngb-tab *ngIf="currentUser.roles.includes('ADMIN')" title="Tools"  id="tools" >
                 <ng-template ngbTabContent>
                     <div *ngIf="currentUser.roles.includes('ADMIN')"  class="d-flex justify-content-center">
-                        <button type="button" (click)="addCourseModel(createCourse)" class="btn btn-info">Create Course</button>
+                        <button type="button" (click)="addCourseModel(createCourse)" class="btn btn-success"><i class="i-Add"></i> Create Course</button>
                     </div>
                 </ng-template>
             </ngb-tab>
