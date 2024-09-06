@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.example.courzelo.models.Forum.Comment;
 import org.example.courzelo.models.Forum.Post;
-import org.example.courzelo.repositories.Forum.CommentRepository;
+import org.example.courzelo.repositories.Forum.CommentsRepository;
 import org.example.courzelo.serviceImpls.Forum.CommentServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,7 @@ import java.util.List;
 public class CommentServiceTest {
 
     @Mock
-    private CommentRepository commentRepository;
+    private CommentsRepository commentsRepository;
 
     @InjectMocks
     private CommentServiceImpl commentService;
@@ -43,13 +43,13 @@ public class CommentServiceTest {
 
     @Test
     public void testCreateComment() {
-        when(commentRepository.save(comment)).thenReturn(comment);
+        when(commentsRepository.save(comment)).thenReturn(comment);
 
         Comment savedComment = commentService.saveComment(comment);
 
         assertThat(savedComment).isNotNull();
         assertThat(savedComment.getText()).isEqualTo("Test Comment");
-        verify(commentRepository).save(comment);
+        verify(commentsRepository).save(comment);
     }
 
     @Test
@@ -57,22 +57,22 @@ public class CommentServiceTest {
         List<Comment> comments = new ArrayList<>();
 
         comments.add(comment);
-        when(commentRepository.findByPost(post)).thenReturn(comments);
+        when(commentsRepository.findByPost(post)).thenReturn(comments);
 
         List<Comment> foundComments = commentService.getCommentByPost("1");
 
         assertThat(foundComments).hasSize(1);
         assertThat(foundComments.get(0).getText()).isEqualTo("Test Comment");
-        verify(commentRepository).findByPost(post);
+        verify(commentsRepository).findByPost(post);
     }
 
     @Test
     public void testDeleteComment() {
-        doNothing().when(commentRepository).deleteById("1");
+        doNothing().when(commentsRepository).deleteById("1");
 
         commentService.deleteComment("1");
 
-        verify(commentRepository).deleteById("1");
+        verify(commentsRepository).deleteById("1");
     }
 }
 

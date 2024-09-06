@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
 
-public interface CommentRepository extends MongoRepository<Comment, String> {
+public interface CommentsRepository extends MongoRepository<Comment, String> {
     List<Comment> findByUser(User user);
     List<Comment> findByPost(Post post);
 
