@@ -191,6 +191,17 @@ export class NavigationService {
                     { icon: 'i-Hand', name: 'Interviews', state: '/admissionteacher/list', type: 'link', roles: ['TEACHER', 'STUDENT'] },
                 ]
             },
+            {
+                name: 'Social',
+                description: 'Support Menu',
+                type: 'dropDown',
+                icon: 'i-File-Horizontal-Text',
+                sub: [
+                    { icon: 'i-Hand', name: 'Forums', state: '/forum/list', type: 'link', roles: ['TEACHER','STUDENT',"ADMIN"] },
+                    { icon: 'i-Hand', name: 'Groups Chat', state: '/chatgroups/chat', type: 'link', roles: ['TEACHER','STUDENT'] },
+                ]
+            },
+            
         ];
     }
     filterMenuItemsByUser(menuItems: IMenuItem[], user: UserResponse): IMenuItem[] {

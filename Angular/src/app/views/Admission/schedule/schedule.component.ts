@@ -79,6 +79,7 @@ loadMem(){
 }
   // Function to handle the button click event to schedule a meeting.
   scheduleMeeting() {
+    
     let appointmentTime = new Date(this.appointmentForm.value.appointmentTime);
     // Convert the date to the desired format with a custom offset (e.g., -07:00)
     const startTime = appointmentTime.toISOString().slice(0, 18) + '-07:00';

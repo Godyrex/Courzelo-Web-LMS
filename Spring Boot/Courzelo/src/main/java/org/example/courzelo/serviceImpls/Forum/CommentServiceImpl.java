@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.courzelo.models.Forum.Comment;
 import org.example.courzelo.models.Forum.Post;
 import org.example.courzelo.models.User;
-import org.example.courzelo.repositories.Forum.CommentRepository;
+import org.example.courzelo.repositories.Forum.CommentsRepository;
 import org.example.courzelo.repositories.Forum.PostRepository;
 import org.example.courzelo.services.Forum.ICommentService;
 import org.springframework.stereotype.Service;
@@ -19,7 +19,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 public class CommentServiceImpl implements ICommentService {
-    private final CommentRepository repository;
+    private final CommentsRepository repository;
     private final PostRepository postRepository;
 
     @Override

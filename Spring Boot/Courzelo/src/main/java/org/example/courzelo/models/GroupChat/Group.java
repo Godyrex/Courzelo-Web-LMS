@@ -6,6 +6,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -16,5 +17,5 @@ public class Group {
     private String name;
     @DBRef
     private User creator;
-    private List<String> members; // List of user IDs
+    private List<String> members = new ArrayList<>(); // Initialize with an empty list
 }

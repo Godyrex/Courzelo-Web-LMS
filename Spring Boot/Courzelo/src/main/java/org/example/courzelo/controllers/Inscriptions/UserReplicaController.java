@@ -3,6 +3,7 @@ package org.example.courzelo.controllers.Inscriptions;
 import lombok.RequiredArgsConstructor;
 import org.example.courzelo.dto.requests.UserReplicaREQ;
 import org.example.courzelo.models.Application.Admission;
+import org.example.courzelo.models.Inscriptions.Status;
 import org.example.courzelo.models.Inscriptions.UserReplica;
 import org.example.courzelo.models.institution.Institution;
 import org.example.courzelo.repositories.InstitutionRepository;
@@ -57,6 +58,9 @@ public class UserReplicaController {
          newReplica.setCountry(replica.getCountry());
          newReplica.setPassword(replica.getPassword());
          newReplica.setBirthDate(replica.getBirthDate());
+         Institution institution= institutionRepository.findById(replica.getInstitution()).get();
+         newReplica.setInstitution(institution);
+         newReplica.setStatus(Status.NOT_ACCEPTED);
         userReplicaService.addReplica(newReplica);
         return ResponseEntity.ok(newReplica);
     }
