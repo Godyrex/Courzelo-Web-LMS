@@ -14,4 +14,5 @@ public class QuestionDTO {
     private String correctAnswer;
     private QuestionType type;
     private String QuizID;
+    private int points;
 }

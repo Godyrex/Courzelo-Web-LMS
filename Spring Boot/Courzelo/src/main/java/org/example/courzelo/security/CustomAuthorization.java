@@ -1,6 +1,7 @@
 package org.example.courzelo.security;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.courzelo.models.CodeType;
 import org.example.courzelo.models.CodeVerification;
 import org.example.courzelo.models.institution.Course;
@@ -21,6 +22,7 @@ import java.util.NoSuchElementException;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class CustomAuthorization {
     private final InstitutionRepository institutionRepository;
     private final UserRepository userRepository;
@@ -73,17 +75,21 @@ public class CustomAuthorization {
         return institution.getTeachers().stream().anyMatch(teacher -> teacher.equals(userEmail));
     }
     public boolean canAccessCourse(String courseID) {
+        log.info("Checking if user can access course");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
         User user = userRepository.findUserByEmail(userEmail);
         if(user != null && user.getRoles().contains(Role.SUPERADMIN)){
+            log.info("User is superadmin");
             return true;
         }
         Course course= courseRepository.findById(courseID).orElse(null);
         if(course == null){
+            log.info("Course not found");
             return false;
         }
         if(course.getGroup()!=null) {
+            log.info("Course has group");
             Group group = groupRepository.findById(course.getGroup()).orElseThrow(() -> new NoSuchElementException("Group not found"));
             return course.getTeacher().equals(userEmail) || group.getStudents().stream().anyMatch(student -> student.equals(userEmail));
         }

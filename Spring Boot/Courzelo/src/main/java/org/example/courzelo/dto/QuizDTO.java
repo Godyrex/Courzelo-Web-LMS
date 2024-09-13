@@ -15,12 +15,6 @@ public class QuizDTO {
     private String title;
     private String description;
     private List<QuestionDTO> questions;
-    private String QuizID;
-    private boolean isSelected;
-    private double score;
-    private Status status;
-    private int duration; // in minutes
-    private int maxAttempts;
-    private String category;
+    private int duration;
     private String course;
 }

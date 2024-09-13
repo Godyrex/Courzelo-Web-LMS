@@ -5,6 +5,7 @@ import org.example.courzelo.exceptions.ResourceNotFoundException;
 import org.example.courzelo.models.Quiz;
 import org.example.courzelo.models.QuizSubmission;
 import org.example.courzelo.models.QuizSubmissionResult;
+import org.example.courzelo.security.CustomAuthorization;
 import org.example.courzelo.services.QuizService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,10 +23,12 @@ import java.util.List;
 @PreAuthorize("isAuthenticated()")
 public class QuizController {
     private final QuizService quizService;
+    private final CustomAuthorization customAuthorization;
 
     @Autowired
-    public QuizController(QuizService quizService) {
+    public QuizController(QuizService quizService, CustomAuthorization customAuthorization) {
         this.quizService = quizService;
+        this.customAuthorization = customAuthorization;
     }
 
     @GetMapping
@@ -34,12 +37,6 @@ public class QuizController {
         List<QuizDTO> quizzes = quizService.getAllQuizzes();
         return ResponseEntity.ok(quizzes);
     }
-
-    /*@PostMapping
-    public ResponseEntity<QuizDTO> createQuiz(@RequestBody QuizDTO quizDTO) {
-        QuizDTO createdQuiz = quizService.createQuiz(quizDTO);
-        return ResponseEntity.ok(createdQuiz);
-    }*/
 
     @PutMapping("/{quizId}")
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
@@ -51,9 +48,7 @@ public class QuizController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-    
 
-    
    @PutMapping("/state/{id}")
    @PreAuthorize("isAuthenticated()")
    public ResponseEntity<QuizDTO> updateQuizState(@PathVariable String id, @RequestBody Quiz updatedQuiz) {
@@ -76,9 +71,9 @@ public class QuizController {
             return ResponseEntity.notFound().build();
         }
     }
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
-    public ResponseEntity<QuizDTO> deleteQuiz(@PathVariable String id) {
+    @DeleteMapping("/{id}/{quizID}")
+    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')&&@customAuthorization.canAccessCourse(#quizID)")
+    public ResponseEntity<QuizDTO> deleteQuiz(@PathVariable String id, @PathVariable String quizID) {
         try {
             quizService.deleteQuiz(id);
             return ResponseEntity.noContent().build();

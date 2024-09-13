@@ -147,7 +147,6 @@ public class QuizService {
 
     public QuizDTO createQuizWithQuestions(QuizDTO quizDTO,String email) {
         Quiz quiz = mapToEntity(quizDTO, new Quiz());
-        quiz.setStatus(quizDTO.getStatus()); // explicitly set the status
         quiz.setUser(email);
         if(quizDTO.getCourse() != null) {
             quiz.setCourse(quizDTO.getCourse());
@@ -233,11 +232,6 @@ public class QuizService {
                 .map(this::mapToQuestionDTO)
                 .collect(Collectors.toList()));
         quizDTO.setDuration(quiz.getDuration());
-        quizDTO.setMaxAttempts(quiz.getMaxAttempts());
-        quizDTO.setScore(quiz.getScore());
-        quizDTO.setStatus(quiz.getStatus());
-        quizDTO.setCategory(quiz.getCategory());
-        quizDTO.setSelected(quiz.isSelected());
         quizDTO.setCourse(quiz.getCourse() != null ? quiz.getCourse() : null);
         return quizDTO;
     }
@@ -250,11 +244,6 @@ public class QuizService {
                 .map(this::mapToQuestionEntity)
                 .collect(Collectors.toList()));
         quiz.setDuration(quizDTO.getDuration());
-        quiz.setMaxAttempts(quizDTO.getMaxAttempts());
-        quiz.setScore(quizDTO.getScore());
-        quiz.setStatus(quizDTO.getStatus());
-        quiz.setCategory(quizDTO.getCategory());
-        quiz.setSelected(quizDTO.isSelected());
         quiz.setCourse(quizDTO.getCourse()!= null ? quizDTO.getCourse() : null);
         log.info("Quiz: {}", quiz);
         return quiz;
@@ -273,6 +262,7 @@ public class QuizService {
         questionDTO.setOptions(question.getOptions());
         questionDTO.setCorrectAnswer(question.getCorrectAnswer());
         questionDTO.setType(question.getType());
+        questionDTO.setPoints(question.getPoints());
         return questionDTO;
     }
 
@@ -282,6 +272,7 @@ public class QuizService {
         question.setOptions(questionDTO.getOptions());
         question.setCorrectAnswer(questionDTO.getCorrectAnswer());
         question.setType(questionDTO.getType());
+        question.setPoints(questionDTO.getPoints());
         return question;
     }
 }

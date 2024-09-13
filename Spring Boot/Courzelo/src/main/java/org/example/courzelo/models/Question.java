@@ -18,4 +18,5 @@ public class Question {
     private String correctAnswer;
     private QuestionType type;
     private List<Answer> answers;
+    private int points;
 }

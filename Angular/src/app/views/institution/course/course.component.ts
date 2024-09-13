@@ -15,7 +15,6 @@ import {UserService} from '../../../shared/services/user/user.service';
 import {CoursePostRequest} from '../../../shared/models/institution/CoursePostRequest';
 import {QuestionType} from '../../../shared/models/QuestionType';
 import {Quiz} from '../../../shared/models/Quiz';
-import {status} from '../../../shared/models/status';
 import {Question} from '../../../shared/models/Question';
 import {QuizService} from '../../../shared/services/quiz.service';
 
@@ -39,20 +38,16 @@ export class CourseComponent implements OnInit, OnDestroy {
         private quizService: QuizService
   ) { }
     quizToAdd: Quiz = {
-        status: status.COMPLETED, // Corrected property name from `Status` to `status`
-        category: '',
-        isSelected: false,
         id: '',
         userEmail: '',
         title: '',
         description: '',
         questions: [],
         duration: 0,
-        maxAttempts: 0,
-        score: 0,
         course: null,
         showSummary: false,
         finalScore: 0,
+        maxScore: 0
     };
     selectedAnswers: { [quizID: string]: { [questionId: string]: string[] | string } } = {};
     quizSubmissionStatus: { [key: string]: boolean } = {};
@@ -77,7 +72,6 @@ export class CourseComponent implements OnInit, OnDestroy {
     imageSrc: any;
 
     protected readonly QuestionType = QuestionType;
-    statuses = Object.values(status); // List of all possible statuses
     ngOnInit(): void {
       this.sessionstorage.getUser().subscribe(
             user => {
@@ -107,13 +101,15 @@ export class CourseComponent implements OnInit, OnDestroy {
 
     calculateScore(quiz: Quiz): void {
         let totalScore = 0;
+        quiz.maxScore = 0;
             quiz.questions.forEach(question => {
                 const studentAnswer = this.selectedAnswers[quiz.id][question.id];
-                if (question.type === 'MULTIPLE_CHOICE' && (studentAnswer as string[]).includes(question.correctAnswer)) {
-                    totalScore++;
-                } else if ((question.type === 'SHORT_ANSWER' || question.type === 'LONG_ANSWER') &&
-                    (studentAnswer as string).trim().toLowerCase() === question.correctAnswer.trim().toLowerCase()) {
-                    totalScore++;
+                console.log(question);
+                quiz.maxScore += question.points;
+                if ((question.type === 'MULTIPLE_CHOICE' && (studentAnswer as string[]).includes(question.correctAnswer)) ||
+                    ((question.type === 'SHORT_ANSWER' || question.type === 'LONG_ANSWER') &&
+                    (studentAnswer as string).trim().toLowerCase() === question.correctAnswer.trim().toLowerCase())) {
+                    totalScore += question.points;
                 }
             });
         quiz.finalScore = totalScore;
@@ -136,13 +132,6 @@ export class CourseComponent implements OnInit, OnDestroy {
                 question.type === 'MULTIPLE_CHOICE' ? [] : '';
             console.log('Selected answers:', this.selectedAnswers);
         });
-    }
-    // Submit short answer
-    submitShortAnswer(quizID: string): void {
-        if (!this.selectedAnswers[quizID]) {
-            this.selectedAnswers[quizID] = {};
-        }
-        this.toastr.success('Short answer submitted', 'Success');
     }
     validateQuizAnswers(quiz: Quiz): boolean {
         return quiz.questions.every(question => {
@@ -171,14 +160,6 @@ export class CourseComponent implements OnInit, OnDestroy {
              this.calculateScore(quiz);
         }
     }
-
-// Submit long answer
-    submitLongAnswer(quizIndex: string, questionId: string): void {
-        if (!this.selectedAnswers[quizIndex]) {
-            this.selectedAnswers[quizIndex] = {};
-        }
-        this.toastr.success('Long answer submitted', 'Success');
-    }
     toggleOptionSelection(quizID: string, questionId: string, option: string): void {
         if (!this.selectedAnswers[quizID]) {
             this.selectedAnswers[quizID] = {};
@@ -206,6 +187,7 @@ export class CourseComponent implements OnInit, OnDestroy {
             correctAnswer: '',
             type: QuestionType.MULTIPLE_CHOICE,
             answers: [],
+            points: 0
         };
         this.quizToAdd.questions.push(newQuestion);
     }
@@ -219,28 +201,22 @@ export class CourseComponent implements OnInit, OnDestroy {
     }
     addQuiz(): void {
         this.quizToAdd.course = this.courseID;
-        console.log('Quiz status before saving:', this.quizToAdd.status);
         this.quizService.saveQuiz(this.quizToAdd).subscribe(
             response => {
                 console.log('Quiz created:', response);
-                console.log('Quiz status after saving:', this.quizToAdd.status);
                 this.quizService.toastr.success('Quiz submitted successfully', 'Success');
                 this.quizToAdd = {
-                    status: status.COMPLETED, // Corrected property name from `Status` to `status`
-                    category: '',
-                    isSelected: false,
                     id: '',
                     userEmail: '',
                     title: '',
                     description: '',
                     questions: [],
                     duration: 0,
-                    maxAttempts: 0,
-                    score: 0,
                     course: null,
                     showSummary: false,
                     finalScore: 0,
                 };
+                this.fetchCourse();
             },
             error => {
                 console.error('Error creating quiz:', error);
@@ -251,17 +227,12 @@ export class CourseComponent implements OnInit, OnDestroy {
         this.modalService.open( content, { ariaLabelledBy: 'add Quiz' })
             .result.then((result) => {
                 this.quizToAdd = {
-                    status: status.COMPLETED, // Corrected property name from `Status` to `status`
-                    category: '',
-                    isSelected: false,
                     id: '',
                     userEmail: '',
                     title: '',
                     description: '',
                     questions: [],
                     duration: 0,
-                    maxAttempts: 0,
-                    score: 0,
                     course: null,
                     showSummary: false,
                     finalScore: 0,
@@ -271,17 +242,12 @@ export class CourseComponent implements OnInit, OnDestroy {
     }
     resetForm(): void {
 this.quizToAdd = {
-    status: status.COMPLETED, // Corrected property name from `Status` to `status`
-    category: '',
-    isSelected: false,
     id: '',
     userEmail: '',
     title: '',
     description: '',
     questions: [],
     duration: 0,
-    maxAttempts: 0,
-    score: 0,
     course: null,
     showSummary: false,
     finalScore: 0,
@@ -332,6 +298,16 @@ this.quizToAdd = {
             .result.then((result) => {
             if (result === 'Ok') {
                 this.deletePost(postID);
+            }
+        }, (reason) => {
+            console.log('Err!', reason);
+        });
+    }
+    deleteQuizModal(content: any, quizID: string) {
+        this.modalService.open(content, { ariaLabelledBy: 'delete post' })
+            .result.then((result) => {
+            if (result === 'Ok') {
+                this.deleteQuiz(quizID);
             }
         }, (reason) => {
             console.log('Err!', reason);
@@ -460,6 +436,17 @@ this.quizToAdd = {
             }, error => {
                 console.error('Error deleting post:', error);
                 this.toastr.error('Error deleting post');
+            }
+        );
+    }
+    deleteQuiz(quizID: string) {
+        this.quizService.deleteQuiz(quizID, this.courseID).subscribe(
+            () => {
+                this.toastr.success('Quiz deleted successfully');
+                this.fetchCourse();
+            }, error => {
+                console.error('Error deleting quiz:', error);
+                this.toastr.error('Error deleting quiz');
             }
         );
     }

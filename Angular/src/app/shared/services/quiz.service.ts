@@ -13,11 +13,6 @@ export class QuizService {
   private apiUrl = 'http://localhost:8080/api/quizzes';
   quizzes: Quiz[] = [];
   constructor(private http: HttpClient, public toastr: ToastrService) { }
-
-  createQuiz(quiz: Quiz): Observable<Quiz> {
-    return this.http.post<Quiz>(`${this.apiUrl}/create`, quiz);
-  }
-
   saveQuiz(quiz: Quiz): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/create`, quiz).pipe(
         catchError((error: HttpErrorResponse) => {
@@ -44,8 +39,8 @@ export class QuizService {
     const url = `${this.apiUrl}/quizzes/${id}`;
     return this.http.put<Quiz>(url, quiz);
   }
-  deleteQuiz(id: string): Observable<Quiz> {
-    return this.http.delete<Quiz>(`${this.apiUrl}/${id}`);
+  deleteQuiz(id: string,quizID: string): Observable<Quiz> {
+    return this.http.delete<Quiz>(`${this.apiUrl}/${id}/${quizID}`);
   }
   getQuizDuration (quiz: Quiz): Observable<number> {
     return this.http.get<number>(`${this.apiUrl}/duration,/${id}`);
