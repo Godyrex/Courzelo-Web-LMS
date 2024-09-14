@@ -14,6 +14,9 @@ export class Quiz {
     showSummary ? = false;
     finalScore ? = 0;
     maxScore ? = 0;
+    quizStarted = false;
+    quizEnded = false;
+    timeRemaining: number;
 }
 export class QuizSubmission {
     quizID: string;

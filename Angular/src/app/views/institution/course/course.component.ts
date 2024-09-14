@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, Pipe, PipeTransform} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ToastrService} from 'ngx-toastr';
 import {DomSanitizer} from '@angular/platform-browser';
@@ -17,7 +17,22 @@ import {QuestionType} from '../../../shared/models/QuestionType';
 import {Quiz} from '../../../shared/models/Quiz';
 import {Question} from '../../../shared/models/Question';
 import {QuizService} from '../../../shared/services/quiz.service';
+import {tr} from "date-fns/locale";
+@Pipe({
+    standalone: true,
+    name: 'timeRemaining'
+})
+export class TimeRemainingPipe implements PipeTransform {
+    transform(value: number): string {
+        const minutes: number = Math.floor(value / 60);
+        const seconds: number = value % 60;
+        return `${this.pad(minutes)}:${this.pad(seconds)}`;
+    }
 
+    private pad(num: number): string {
+        return num < 10 ? '0' + num : num.toString();
+    }
+}
 @Component({
   selector: 'app-course',
   templateUrl: './course.component.html',
@@ -47,7 +62,10 @@ export class CourseComponent implements OnInit, OnDestroy {
         course: null,
         showSummary: false,
         finalScore: 0,
-        maxScore: 0
+        maxScore: 0,
+        quizStarted: false,
+        quizEnded: false,
+        timeRemaining: 0
     };
     selectedAnswers: { [quizID: string]: { [questionId: string]: string[] | string } } = {};
     quizSubmissionStatus: { [key: string]: boolean } = {};
@@ -58,6 +76,8 @@ export class CourseComponent implements OnInit, OnDestroy {
   postRequest: CoursePostRequest = {} as CoursePostRequest;
   files: File[] = [];
   loading = false;
+    timer: any;
+    doingQuiz = false;
     updateCourseForm = this.formBuilder.group({
             name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(50)]],
             description: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
@@ -92,11 +112,27 @@ export class CourseComponent implements OnInit, OnDestroy {
             this.routeSub.unsubscribe();
         }
     }
+    startQuiz(quiz: any): void {
+        this.doingQuiz = true;
+        quiz.quizStarted = true;
+        quiz.quizEnded = false;
+        quiz.timeRemaining = quiz.duration * 60; // Convert minutes to seconds
+        console.log('Starting quiz:', quiz);
+        this.timer = setInterval(() => {
+            if (quiz.timeRemaining > 0) {
+                quiz.timeRemaining--;
+            } else {
+                this.toastr.warning('Time is up!', 'Time');
+                this.submitQuiz(quiz);
+            }
+        }, 1000);
+    }
     resetQuiz(quiz: Quiz): void {
         this.resetSelectAnswer(quiz);
         this.quizSubmissionStatus = {};
         quiz.showSummary = false;
         quiz.finalScore = 0;
+        this.startQuiz(quiz);
     }
 
     calculateScore(quiz: Quiz): void {
@@ -106,9 +142,7 @@ export class CourseComponent implements OnInit, OnDestroy {
                 const studentAnswer = this.selectedAnswers[quiz.id][question.id];
                 console.log(question);
                 quiz.maxScore += question.points;
-                if ((question.type === 'MULTIPLE_CHOICE' && (studentAnswer as string[]).includes(question.correctAnswer)) ||
-                    ((question.type === 'SHORT_ANSWER' || question.type === 'LONG_ANSWER') &&
-                    (studentAnswer as string).trim().toLowerCase() === question.correctAnswer.trim().toLowerCase())) {
+                if ((studentAnswer as string).trim().toLowerCase() === question.correctAnswer.trim().toLowerCase()) {
                     totalScore += question.points;
                 }
             });
@@ -119,8 +153,7 @@ export class CourseComponent implements OnInit, OnDestroy {
         this.course.quizzes.forEach((quiz) => {
             this.selectedAnswers[quiz.id] = {};
             quiz.questions.forEach(question => {
-                this.selectedAnswers[quiz.id][question.id] =
-                    question.type === 'MULTIPLE_CHOICE' ? [] : '';
+                this.selectedAnswers[quiz.id][question.id] = '';
                 console.log('Selected answers:', this.selectedAnswers);
             });
         });
@@ -128,8 +161,7 @@ export class CourseComponent implements OnInit, OnDestroy {
     resetSelectAnswer(quiz: Quiz) {
         this.selectedAnswers[quiz.id] = {};
         quiz.questions.forEach(question => {
-            this.selectedAnswers[quiz.id][question.id] =
-                question.type === 'MULTIPLE_CHOICE' ? [] : '';
+            this.selectedAnswers[quiz.id][question.id] = '';
             console.log('Selected answers:', this.selectedAnswers);
         });
     }
@@ -137,21 +169,14 @@ export class CourseComponent implements OnInit, OnDestroy {
         return quiz.questions.every(question => {
             const answer = this.selectedAnswers[quiz.id]?.[question.id];
             console.log('Answer:', answer);
-            if (question.type === 'MULTIPLE_CHOICE') {
-                return Array.isArray(answer) && answer.length > 0;
-            } else {
                 return typeof answer === 'string' && answer.trim().length > 0;
-            }
         });
     }
     submitQuiz(quiz: Quiz): void {
-        if (!this.validateQuizAnswers(quiz)) {
-            this.toastr.error('Please answer all questions before submitting the quiz.', 'Validation Error');
-            return;
-        }
-
         const currentQuiz = quiz;
         if (currentQuiz && currentQuiz.questions) {
+            clearInterval(this.timer);
+            this.doingQuiz = false;
             console.log('Submitting quiz:', currentQuiz);
             console.log('Selected answers:', this.selectedAnswers);
             this.quizSubmissionStatus[currentQuiz.id] = true;
@@ -215,6 +240,10 @@ export class CourseComponent implements OnInit, OnDestroy {
                     course: null,
                     showSummary: false,
                     finalScore: 0,
+                    maxScore: 0,
+                    quizStarted: false,
+                    quizEnded: false,
+                    timeRemaining: 0
                 };
                 this.fetchCourse();
             },
@@ -236,6 +265,9 @@ export class CourseComponent implements OnInit, OnDestroy {
                     course: null,
                     showSummary: false,
                     finalScore: 0,
+                    quizStarted: false,
+                    quizEnded: false,
+                    timeRemaining: 0
                 }; }, (reason) => {
             console.log('Err!', reason);
         });
@@ -251,6 +283,9 @@ this.quizToAdd = {
     course: null,
     showSummary: false,
     finalScore: 0,
+    quizStarted: false,
+    quizEnded: false,
+    timeRemaining: 0
 };
 
 }

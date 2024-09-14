@@ -10,7 +10,7 @@ import {NgxDatatableModule} from '@swimlane/ngx-datatable';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {SharedComponentsModule} from '../../shared/components/shared-components.module';
 import {NgbDatepickerModule, NgbTabsetModule} from '@ng-bootstrap/ng-bootstrap';
-import { CourseComponent } from './course/course.component';
+import {CourseComponent, TimeRemainingPipe} from './course/course.component';
 import { ClassComponent } from './class/class.component';
 
 
@@ -31,7 +31,8 @@ import { ClassComponent } from './class/class.component';
         ReactiveFormsModule,
         SharedComponentsModule,
         NgbTabsetModule,
-        NgbDatepickerModule
+        NgbDatepickerModule,
+        TimeRemainingPipe
     ]
 })
 export class InstitutionModule { }
