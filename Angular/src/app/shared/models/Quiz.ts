@@ -11,12 +11,23 @@ export class Quiz {
     questions: Question[] = [];
     duration: number;
     course: string;
+    studentSubmissions?: StudentSubmission[];
     showSummary ? = false;
+    showSimplifiedSummary ? = false;
     finalScore ? = 0;
     maxScore ? = 0;
-    quizStarted = false;
-    quizEnded = false;
-    timeRemaining: number;
+    quizStarted?: boolean;
+    quizEnded?: boolean ;
+    timeRemaining?: number;
+    createdAt?: Date;
+}
+export class StudentSubmission {
+     studentId?: string;
+     score?: number;
+     completed?: boolean;
+}
+export class StudentQuizAnswers {
+    questions?: Question[];
 }
 export class QuizSubmission {
     quizID: string;

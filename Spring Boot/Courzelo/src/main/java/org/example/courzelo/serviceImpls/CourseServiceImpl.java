@@ -7,7 +7,6 @@ import org.example.courzelo.dto.requests.CoursePostRequest;
 import org.example.courzelo.dto.requests.CourseRequest;
 import org.example.courzelo.dto.responses.CoursePostResponse;
 import org.example.courzelo.dto.responses.CourseResponse;
-import org.example.courzelo.models.Quiz;
 import org.example.courzelo.models.User;
 import org.example.courzelo.models.institution.Course;
 import org.example.courzelo.models.institution.CoursePost;
@@ -29,6 +28,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.security.Principal;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -175,7 +175,7 @@ public class CourseServiceImpl implements ICourseService {
         course.getPosts().add(CoursePost.builder()
                 .title(coursePostRequest.getTitle())
                 .description(coursePostRequest.getDescription())
-                .created(Instant.now())
+                .created(LocalDateTime.now())
                 .files(uploadFiles(files,course.getId(),institution))
                 .build());
         log.info("Post added to course");

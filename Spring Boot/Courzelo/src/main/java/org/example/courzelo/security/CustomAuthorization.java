@@ -2,17 +2,11 @@ package org.example.courzelo.security;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.courzelo.models.CodeType;
-import org.example.courzelo.models.CodeVerification;
+import org.example.courzelo.models.*;
 import org.example.courzelo.models.institution.Course;
 import org.example.courzelo.models.institution.Group;
 import org.example.courzelo.models.institution.Institution;
-import org.example.courzelo.models.Role;
-import org.example.courzelo.models.User;
-import org.example.courzelo.repositories.CourseRepository;
-import org.example.courzelo.repositories.GroupRepository;
-import org.example.courzelo.repositories.InstitutionRepository;
-import org.example.courzelo.repositories.UserRepository;
+import org.example.courzelo.repositories.*;
 import org.example.courzelo.serviceImpls.CodeVerificationService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -29,6 +23,7 @@ public class CustomAuthorization {
     private final CodeVerificationService codeVerificationService;
     private final CourseRepository courseRepository;
     private final GroupRepository groupRepository;
+    private final QuizRepository quizRepository;
     public boolean canAccessGroup(String groupID) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
@@ -94,5 +89,13 @@ public class CustomAuthorization {
             return course.getTeacher().equals(userEmail) || group.getStudents().stream().anyMatch(student -> student.equals(userEmail));
         }
         return course.getTeacher().equals(userEmail);
+    }
+    public boolean canAccessQuiz(String quizID) {
+        Quiz quiz = quizRepository.findById(quizID).orElseThrow(()->new NoSuchElementException("Quiz not found"));
+        if(quiz.getCourse()!=null){
+            return canAccessCourse(quiz.getCourse());
+        }else{
+            return false;
+        }
     }
 }

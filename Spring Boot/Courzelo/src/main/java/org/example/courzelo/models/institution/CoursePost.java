@@ -5,6 +5,7 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,7 +16,7 @@ public class CoursePost {
     private String title;
     private String description;
     private List<String> files;
-    private Instant created;
+    private LocalDateTime created;
     public static class CoursePostBuilder {
         public CoursePostBuilder() {
             this.id = UUID.randomUUID().toString();

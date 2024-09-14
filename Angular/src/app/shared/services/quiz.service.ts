@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
-import {Quiz} from '../models/Quiz';
+import {Quiz, StudentQuizAnswers} from '../models/Quiz';
 import {Observable, throwError} from 'rxjs';
 import {catchError} from 'rxjs/operators';
 import {ToastrService} from 'ngx-toastr';
@@ -46,8 +46,8 @@ export class QuizService {
     return this.http.get<number>(`${this.apiUrl}/duration,/${id}`);
   }
 
-  submitQuiz(quizId: string, answers: any[]): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/quizzes/${quizId}/submit`, { answers });
+  submitQuiz(quizId: string, studentQuizAnswers: StudentQuizAnswers): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${quizId}/submit`, studentQuizAnswers);
   }
 
   calculateScore(id: string, answers: string[]) {

@@ -14,10 +14,9 @@ import {CourseRequest} from '../../../shared/models/institution/CourseRequest';
 import {UserService} from '../../../shared/services/user/user.service';
 import {CoursePostRequest} from '../../../shared/models/institution/CoursePostRequest';
 import {QuestionType} from '../../../shared/models/QuestionType';
-import {Quiz} from '../../../shared/models/Quiz';
+import {Quiz, StudentQuizAnswers} from '../../../shared/models/Quiz';
 import {Question} from '../../../shared/models/Question';
 import {QuizService} from '../../../shared/services/quiz.service';
-import {tr} from "date-fns/locale";
 @Pipe({
     standalone: true,
     name: 'timeRemaining'
@@ -69,6 +68,7 @@ export class CourseComponent implements OnInit, OnDestroy {
     };
     selectedAnswers: { [quizID: string]: { [questionId: string]: string[] | string } } = {};
     quizSubmissionStatus: { [key: string]: boolean } = {};
+    selectedQuiz: Quiz;
   courseID: string;
   user: UserResponse;
   course: CourseResponse;
@@ -115,8 +115,7 @@ export class CourseComponent implements OnInit, OnDestroy {
     startQuiz(quiz: any): void {
         this.doingQuiz = true;
         quiz.quizStarted = true;
-        quiz.quizEnded = false;
-        quiz.timeRemaining = quiz.duration * 60; // Convert minutes to seconds
+        quiz.timeRemaining = quiz.duration * 60;
         console.log('Starting quiz:', quiz);
         this.timer = setInterval(() => {
             if (quiz.timeRemaining > 0) {
@@ -127,10 +126,14 @@ export class CourseComponent implements OnInit, OnDestroy {
             }
         }, 1000);
     }
+    canStartQuiz(quiz: Quiz) {
+        return !(this.doingQuiz || quiz.quizStarted || quiz.quizEnded);
+    }
     resetQuiz(quiz: Quiz): void {
         this.resetSelectAnswer(quiz);
         this.quizSubmissionStatus = {};
         quiz.showSummary = false;
+        quiz.showSimplifiedSummary = false;
         quiz.finalScore = 0;
         this.startQuiz(quiz);
     }
@@ -139,10 +142,9 @@ export class CourseComponent implements OnInit, OnDestroy {
         let totalScore = 0;
         quiz.maxScore = 0;
             quiz.questions.forEach(question => {
-                const studentAnswer = this.selectedAnswers[quiz.id][question.id];
                 console.log(question);
                 quiz.maxScore += question.points;
-                if ((studentAnswer as string).trim().toLowerCase() === question.correctAnswer.trim().toLowerCase()) {
+                if (question.answer.trim().toLowerCase() === question.correctAnswer.trim().toLowerCase()) {
                     totalScore += question.points;
                 }
             });
@@ -183,23 +185,26 @@ export class CourseComponent implements OnInit, OnDestroy {
             this.toastr.success('Quiz submitted successfully', 'Success');
              quiz.showSummary = true;
              this.calculateScore(quiz);
+             this.saveStudentSubmission(quiz);
         }
     }
-    toggleOptionSelection(quizID: string, questionId: string, option: string): void {
-        if (!this.selectedAnswers[quizID]) {
-            this.selectedAnswers[quizID] = {};
-        }
-        if (!this.selectedAnswers[quizID][questionId]) {
-            this.selectedAnswers[quizID][questionId] = [];  // Initialize as an array for multiple-choice
-        }
-
-        const selectedOptions = this.selectedAnswers[quizID][questionId] as string[];
-        const index = selectedOptions.indexOf(option);
-        if (index === -1) {
-            selectedOptions.push(option);
-        } else {
-            selectedOptions.splice(index, 1);
-        }
+    saveStudentSubmission(quiz: Quiz): void {
+        const studentQuizAnswers: StudentQuizAnswers = {
+            questions: []
+        };
+        studentQuizAnswers.questions = quiz.questions;
+        this.quizService.submitQuiz(quiz.id, studentQuizAnswers).subscribe(
+            response => {
+                console.log('Quiz submitted:', response);
+            }, error => {
+                console.error('Error submitting quiz:', error);
+            }
+        );
+    }
+    checkIfQuizSubmitted(quiz: Quiz): boolean {
+        console.log('user:', this.user.email);
+        console.log('student submissions:', quiz.studentSubmissions);
+        return this.user.email === quiz.studentSubmissions.find(submission => submission.studentId === this.user.email)?.studentId;
     }
     trackByIndex(index: number, obj: any): any {
         return index;
@@ -211,7 +216,7 @@ export class CourseComponent implements OnInit, OnDestroy {
             options: [''],
             correctAnswer: '',
             type: QuestionType.MULTIPLE_CHOICE,
-            answers: [],
+            answer: '',
             points: 0
         };
         this.quizToAdd.questions.push(newQuestion);
@@ -225,32 +230,52 @@ export class CourseComponent implements OnInit, OnDestroy {
         this.quizToAdd.questions[questionIndex].options.splice(optionIndex, 1);
     }
     addQuiz(): void {
-        this.quizToAdd.course = this.courseID;
-        this.quizService.saveQuiz(this.quizToAdd).subscribe(
-            response => {
-                console.log('Quiz created:', response);
-                this.quizService.toastr.success('Quiz submitted successfully', 'Success');
-                this.quizToAdd = {
-                    id: '',
-                    userEmail: '',
-                    title: '',
-                    description: '',
-                    questions: [],
-                    duration: 0,
-                    course: null,
-                    showSummary: false,
-                    finalScore: 0,
-                    maxScore: 0,
-                    quizStarted: false,
-                    quizEnded: false,
-                    timeRemaining: 0
-                };
-                this.fetchCourse();
-            },
-            error => {
-                console.error('Error creating quiz:', error);
-            }
-        );
+        if (this.quizIsValid(this.quizToAdd)) {
+            this.quizToAdd.course = this.courseID;
+            this.quizService.saveQuiz(this.quizToAdd).subscribe(
+                response => {
+                    console.log('Quiz created:', response);
+                    this.quizService.toastr.success('Quiz submitted successfully', 'Success');
+                    this.quizToAdd = {
+                        id: '',
+                        userEmail: '',
+                        title: '',
+                        description: '',
+                        questions: [],
+                        duration: 0,
+                        course: null,
+                        showSummary: false,
+                        finalScore: 0,
+                        maxScore: 0,
+                        quizStarted: false,
+                        quizEnded: false,
+                        timeRemaining: 0
+                    };
+                    this.fetchCourse();
+                },
+                error => {
+                    console.error('Error creating quiz:', error);
+                }
+            );
+        } else {
+            this.toastr.error('Please fill all fields correctly');
+        }
+    }
+    quizIsValid(quiz: Quiz) {
+        const title: boolean = quiz.title && quiz.title.trim().length > 0 && quiz.title.trim().length <= 50;
+        const description: boolean = quiz.description && quiz.description.trim().length > 0 && quiz.description.trim().length <= 100;
+        const duration: boolean = quiz.duration > 0;
+        const questions: boolean = quiz.questions.length > 0;
+        const questionsValid: boolean = quiz.questions.every(question => {
+            const text: boolean = question.text && question.text.trim().length > 0;
+            const options: boolean = question.options.length > 0;
+            const correctAnswer: boolean = question.correctAnswer && question.correctAnswer.trim().length > 0 &&
+                question.correctAnswer.trim().length <= 50 &&
+            question.type === QuestionType.MULTIPLE_CHOICE ? question.options.includes(question.correctAnswer) : true;
+            const points: boolean = question.points > 0;
+            return text && options && correctAnswer && points;
+        });
+        return title && description && duration && questions && questionsValid;
     }
     addQuizModel(content) {
         this.modalService.open( content, { ariaLabelledBy: 'add Quiz' })
@@ -293,7 +318,16 @@ this.quizToAdd = {
         this.courseService.getCourse(this.courseID).subscribe(
             course => {
                 this.course = course;
+                if (this.course.posts) {
+                    this.course.posts.forEach(post => {
+                        if (Array.isArray(post.created)) {
+                            const [year, month, day, hour, minute, second, nanosecond] = post.created;
+                            post.created = new Date(year, month - 1, day, hour, minute, second, nanosecond / 1000000);
+                        }
+                    });
+                }
                 console.log(this.course);
+
                 if (this.course.teacher) {
                     this.userService.getProfileImageBlobUrl(course.teacher).subscribe((blob: Blob) => {
                         const objectURL = URL.createObjectURL(blob);
@@ -301,7 +335,25 @@ this.quizToAdd = {
                     });
                 }
                 if (this.course.quizzes) {
+                    this.course.quizzes.forEach(quiz => {
+                        if (Array.isArray(quiz.createdAt)) {
+                            const [year, month, day, hour, minute, second, nanosecond] = quiz.createdAt;
+                            quiz.createdAt = new Date(year, month - 1, day, hour, minute, second, nanosecond / 1000000);
+                        }
+                    });
                     this.initializeSelectedAnswers();
+                    if (this.course.quizzes) {
+                        this.course.quizzes.forEach(quiz => {
+                            if (this.checkIfQuizSubmitted(quiz)) {
+                                quiz.showSummary = false;
+                                quiz.showSimplifiedSummary = true;
+                                quiz.quizEnded = true;
+                                quiz.finalScore = quiz.studentSubmissions.find(submission =>
+                                    submission.studentId === this.user.email)?.score;
+                                quiz.maxScore = quiz.questions.reduce((acc, question) => acc + question.points, 0);
+                            }
+                        });
+                    }
                 }
             }, error => {
                 console.error('Error fetching course:', error);
@@ -347,6 +399,19 @@ this.quizToAdd = {
         }, (reason) => {
             console.log('Err!', reason);
         });
+    }
+    quizSubmissionsModal(content: any, quiz: Quiz) {
+        if (quiz.studentSubmissions) {
+            this.selectedQuiz = quiz;
+            this.modalService.open(content, {ariaLabelledBy: 'quiz submissions'})
+                .result.then((result) => {
+                console.log(result);
+            }, (reason) => {
+                console.log('Err!', reason);
+            });
+        } else {
+            this.toastr.error('No submissions found');
+        }
     }
     isUserTeacherInCourse(): boolean {
         return this.course.teacher === this.user.email;
