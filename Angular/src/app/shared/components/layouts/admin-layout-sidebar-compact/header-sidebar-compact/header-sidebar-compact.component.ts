@@ -78,8 +78,10 @@ export class HeaderSidebarCompactComponent implements OnInit {
     this.user$.subscribe(user => {
       if (user && user.email) {
         this.userService.getProfileImageBlobUrl(user.email).subscribe((blob: Blob) => {
-          const objectURL = URL.createObjectURL(blob);
-          this.imageSrc = this.sanitizer.bypassSecurityTrustUrl(objectURL);
+          if (blob != null) {
+            const objectURL = URL.createObjectURL(blob);
+            this.imageSrc = this.sanitizer.bypassSecurityTrustUrl(objectURL);
+          }
         });
       }
     });

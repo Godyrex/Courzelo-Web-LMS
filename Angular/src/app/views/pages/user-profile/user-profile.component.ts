@@ -33,8 +33,10 @@ export class UserProfileComponent implements OnInit {
           this.userService.getUserProfileByEmail(userEmail).subscribe((user: LoginResponse) => {
                 this.user = user.user;
               this.userService.getProfileImageBlobUrl(this.user.email).subscribe((blob: Blob) => {
-                  const objectURL = URL.createObjectURL(blob);
-                  this.imageSrc = this.sanitizer.bypassSecurityTrustUrl(objectURL);
+                  if (blob != null) {
+                      const objectURL = URL.createObjectURL(blob);
+                      this.imageSrc = this.sanitizer.bypassSecurityTrustUrl(objectURL);
+                  }
               });
           }, error => {
               this.HandleResponse.handleError(error);

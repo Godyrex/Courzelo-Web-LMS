@@ -44,11 +44,15 @@ export class UserService {
     }
     return this.getProfileImage(email).pipe(
         map((arrayBuffer: ArrayBuffer) => {
-          const blob = new Blob([arrayBuffer], { type: 'image/jpeg' });
-          if (this.storedUser.email === email) {
-            this.image = blob;
+          if (arrayBuffer != null) {
+            const blob = new Blob([arrayBuffer], {type: 'image/jpeg'});
+            if (this.storedUser.email === email) {
+              this.image = blob;
+            }
+            return blob;
+          } else {
+            return null;
           }
-          return blob;
         })
     );
   }

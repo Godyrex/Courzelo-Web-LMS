@@ -1,16 +1,27 @@
 <div class="">
-    <div class="breadcrumb">
-        <h1>Users List</h1>
+    <div class="breadcrumb-container d-flex justify-content-between align-items-center">
+        <h1 class="page-title">Users List</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="#">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Users List</li>
+            </ol>
+        </nav>
     </div>
-
-    <div class="separator-breadcrumb border-top"></div>
+    <div class="separator-breadcrumb border-top mb-3"></div>
 
     <div class="row">
-        <div class="col-md-4">
-            <div class="form-group">
+        <div class="col-md-6 col-lg-4">
+            <div class="input-group mb-3">
                 <input id="keyword" placeholder="Search Users" [formControl]="searchControl" class="form-control form-control-rounded" type="text">
+                <div class="input-group-append">
+                    <span class="input-group-text"><i class="i-Magnifi-Glass1"></i></span>
+                </div>
             </div>
         </div>
+    </div>
+
+    <div class="row">
         <div class="col-md-12">
             <div class="card o-hidden">
                 <div *ngIf="loading" class="d-flex justify-content-center align-items-center" style="height: 50vh;">
@@ -40,7 +51,7 @@
                         </ng-template>
                         <ng-template ngx-datatable-cell-template let-row="row">
                             <div class="role-tags">
-                                 <span *ngFor="let role of row.roles" class="role-tag">
+                                 <span *ngFor="let role of row.roles" class="role-tag bg-primary">
                                      {{ role }}
                                  </span>
                             </div>
@@ -131,7 +142,10 @@
                     </ngx-datatable-column>
                 </ngx-datatable>
                 </div>
-                <pagination-controls (pageChange)="currentPage = $event"></pagination-controls>
+                <div class="pagination-container d-flex justify-content-center mt-4">
+                    <pagination-controls (pageChange)="currentPage = $event"></pagination-controls>
+                </div>
+
             </div>
         </div>
     </div>

@@ -20,10 +20,7 @@ import org.example.courzelo.repositories.CourseRepository;
 import org.example.courzelo.repositories.GroupRepository;
 import org.example.courzelo.repositories.InstitutionRepository;
 import org.example.courzelo.repositories.UserRepository;
-import org.example.courzelo.services.ICodeVerificationService;
-import org.example.courzelo.services.IGroupService;
-import org.example.courzelo.services.IInstitutionService;
-import org.example.courzelo.services.IMailService;
+import org.example.courzelo.services.*;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -56,6 +53,8 @@ public class InstitutionServiceImpl implements IInstitutionService {
     private final IGroupService groupService;
     private final GroupRepository groupRepository;
     private final CourseRepository courseRepository;
+    private final IGroupService iGroupService;
+    private final ICourseService iCourseService;
     @Override
     public ResponseEntity<PaginatedInstitutionsResponse> getInstitutions(int page, int sizePerPage, String keyword) {
         log.info("Fetching institutions for page: {}, sizePerPage: {}", page, sizePerPage);
@@ -225,6 +224,7 @@ public class InstitutionServiceImpl implements IInstitutionService {
         }
         log.info("User found");
         if(isUserInInstitution(user, institution)){
+            iGroupService.removeStudentFromAllGroups(user.getId());
             log.info("User in institution");
             if(institution.getAdmins().contains(user.getEmail())){
                 user.getRoles().remove(Role.ADMIN);
@@ -234,6 +234,7 @@ public class InstitutionServiceImpl implements IInstitutionService {
             if (institution.getTeachers().contains(user.getEmail())){
                 institution.getTeachers().remove(user.getEmail());
                 user.getRoles().remove(Role.TEACHER);
+                iCourseService.removeTeacherFromCourses(user.getEmail());
                 log.info("User removed from teachers");
             }
             if (institution.getStudents().contains(user.getEmail())){

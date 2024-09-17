@@ -27,7 +27,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.security.Principal;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Stream;
@@ -199,6 +198,18 @@ public class CourseServiceImpl implements ICourseService {
         course.getPosts().removeIf(coursePost -> coursePost.getId().equals(postID));
         courseRepository.save(course);
         return ResponseEntity.ok(HttpStatus.OK);
+    }
+
+    @Override
+    public void removeTeacherFromCourses(String teacherEmail) {
+        List<Course> courses = courseRepository.findAllByTeacher(teacherEmail).orElseThrow(() -> new NoSuchElementException("Courses not found"));
+        User teacher = userRepository.findByEmail(teacherEmail).orElseThrow(() -> new NoSuchElementException("Teacher not found"));
+        courses.forEach(course -> {
+            course.setTeacher(null);
+            teacher.getEducation().getCoursesID().remove(course.getId());
+            userRepository.save(teacher);
+            courseRepository.save(course);
+        });
     }
 
     @Override

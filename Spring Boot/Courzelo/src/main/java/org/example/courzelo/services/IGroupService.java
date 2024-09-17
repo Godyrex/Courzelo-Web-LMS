@@ -16,4 +16,5 @@ public interface IGroupService {
     ResponseEntity<HttpStatus> removeStudentFromGroup(String groupID, String studentID);
 
     void deleteGroupsByInstitution(String institutionID);
+    void removeStudentFromAllGroups(String studentID);
 }

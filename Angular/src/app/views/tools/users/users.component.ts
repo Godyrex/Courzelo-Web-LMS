@@ -16,7 +16,7 @@ export class Users implements OnInit {
   _currentPage = 1;
   totalPages = 0;
   totalItems = 0;
-  itemsPerPage = 5;
+  itemsPerPage = 10;
   loading = false;
   selectedRole = '';
   availableRoles: string[] = ['SUPERADMIN', 'ADMIN', 'STUDENT', 'TEACHER'];

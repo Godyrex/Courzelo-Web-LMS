@@ -33,11 +33,10 @@
                         [columns]="[{ name: 'Email' }, { name: 'Name' }, { name: 'Lastname' }, { name: 'Roles', cellTemplate:roles , width: 200 }, { name: 'Country' }, { name: 'Gender' },
                                     { name: 'Actions', prop: 'id', cellTemplate: deleteBtnTemplate, width: 250 },{ name: 'Edit', prop: 'id', cellTemplate: editBtnTemplate, width: 250 }]"
                         [headerHeight]="50"
-                        [footerHeight]="50"
+                        [footerHeight]="0"
                         [rowHeight]="200"
                         [scrollbarV]="true"
                         [scrollbarH]="true"
-                        [externalPaging]="true"
                         [count]="totalItemsUsers"
                         [offset]="(currentPageUsers - 1) * itemsPerPageUsers"
                         [limit]="itemsPerPageUsers"
