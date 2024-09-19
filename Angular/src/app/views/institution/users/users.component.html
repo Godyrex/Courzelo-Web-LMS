@@ -34,7 +34,7 @@
                                     { name: 'Actions', prop: 'id', cellTemplate: deleteBtnTemplate, width: 250 },{ name: 'Edit', prop: 'id', cellTemplate: editBtnTemplate, width: 250 }]"
                         [headerHeight]="50"
                         [footerHeight]="0"
-                        [rowHeight]="200"
+                        [rowHeight]="80"
                         [scrollbarV]="true"
                         [scrollbarH]="true"
                         [count]="totalItemsUsers"
@@ -94,14 +94,20 @@
             <form [formGroup]="addUserForm" (ngSubmit)="inviteUser()">
                 <div class="row">
                     <div class="col-md-6 form-group mb-3">
-                        <label for="email">Email</label>
-                        <input type="text" formControlName="email" class="form-control" id="email" placeholder="Enter user's email">
-                        <div *ngIf="shouldShowError('email', 'required')" class="text-danger">
-                            Email is required.
-                        </div>
-                        <div *ngIf="shouldShowError('name', 'email')" class="text-danger">
-                            Email must be a valid email address.
-                        </div>
+                        <label for="studentsEmails" class="form-label">Students Emails</label>
+                        <tag-input id="studentsEmails"
+                                   formControlName="studentsEmails"
+                                   (onSelect)="onSelect($event)"
+                                   [modelAsStrings]="true"
+                                   secondaryPlaceholder="Enter students emails"
+                                   placeholder="Add student email"
+                                   [separatorKeyCodes]="[32, 188]"
+                                   [addOnPaste]="true"
+                                   [pasteSplitPattern]="pasteSplitPattern"
+                                   [validators]="[emailValidator]"
+                                   [onlyFromAutocomplete]="false">
+                        </tag-input>
+                        <div class="invalid-feedback" *ngIf="shouldShowError('studentsEmails', 'required')">Students Emails are required</div>
                     </div>
 
                     <div class="col-md-6 form-group mb-3">

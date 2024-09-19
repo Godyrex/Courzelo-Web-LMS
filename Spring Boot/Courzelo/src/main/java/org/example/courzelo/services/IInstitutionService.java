@@ -3,6 +3,7 @@ package org.example.courzelo.services;
 import org.example.courzelo.dto.requests.CalendarEventRequest;
 import org.example.courzelo.dto.requests.InstitutionMapRequest;
 import org.example.courzelo.dto.requests.InstitutionRequest;
+import org.example.courzelo.dto.requests.UserEmailsRequest;
 import org.example.courzelo.dto.responses.GroupResponse;
 import org.example.courzelo.dto.responses.PaginatedGroupsResponse;
 import org.example.courzelo.dto.responses.StatusMessageResponse;
@@ -40,7 +41,7 @@ public interface IInstitutionService {
 
     ResponseEntity<byte[]> getInstitutionImage(String institutionID, Principal principal);
 
-    ResponseEntity<HttpStatus> inviteUser(String institutionID, String email, String role, Principal principal);
+    ResponseEntity<UserEmailsRequest> inviteUsers(String institutionID, UserEmailsRequest emailsRequest, String role, Principal principal);
 
     ResponseEntity<HttpStatus> acceptInvite(String code,Principal principal);
 

@@ -115,6 +115,8 @@ export class NavigationService {
                         type: 'link', mustBeInInstitutions: true },
                     { icon: 'i-Find-User', name: 'Users', state: 'institution/' + this.user?.education?.institutionID + '/users',
                         type: 'link', roles: ['ADMIN'], mustBeInInstitutions: true },
+                    { icon: 'i-Mail-Send', name: 'Invitations', state: 'institution/' + this.user?.education?.institutionID + '/invitations',
+                        type: 'link', roles: ['ADMIN'], mustBeInInstitutions: true },
                     { icon: 'i-Student-Hat-2', name: 'Classes', state: 'institution/' + this.user?.education?.institutionID + '/classes',
                         type: 'link', roles: ['ADMIN'], mustBeInInstitutions: true },
                     { icon: 'i-Pen-2', name: 'Edit', state: 'institution/' + this.user?.education?.institutionID + '/edit',

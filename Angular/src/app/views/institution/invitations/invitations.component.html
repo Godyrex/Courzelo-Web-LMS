@@ -1,0 +1,102 @@
+<div *ngIf="!currentInstitution" class="loadscreen">
+    <img src="assets/images/logo.png" class="logo mb-3" style="display: none" alt="">
+    <div class="loader-bubble loader-bubble-primary d-block"></div>
+</div>
+<div *ngIf="currentInstitution" class="">
+    <div  class="breadcrumb ">
+        <h1 >{{currentInstitution.name}}'s invitations</h1>
+    </div>
+
+    <div class="separator-breadcrumb border-top"></div>
+    <div class="row">
+        <div class="col-md-8 ">
+            <div class="form-group">
+                <input id="keyword-users" placeholder="Search Invitations" [formControl]="searchControl" class="form-control form-control-rounded" type="text">
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="card o-hidden">
+
+                <div *ngIf="loadingInvitations" class="d-flex justify-content-center align-items-center" style="height: 50vh;">
+                    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="spinner-glow spinner-glow-primary mr-5" style="font-size: 3rem;"></span>
+                    </div>
+                </div>
+                <div *ngIf="!loadingInvitations">
+                    <ngx-datatable
+                            style="height: calc(100vh - 270px); box-shadow: none"
+                            class="material fullscreen"
+                            [columnMode]="'force'"
+                            [columns]="[
+        { name: 'Email' },
+        { name: 'Role' },
+        { name: 'Status', cellTemplate: statusTemplate },
+        { name: 'Invitation code', cellTemplate: codeTemplate },
+        { name: 'Expiry Date', cellTemplate: datesTemplate, width: 200 },
+        { name: 'Actions', prop: 'id', cellTemplate: deleteBtnTemplate, width: 250 }
+    ]"
+                            [headerHeight]="50"
+                            [footerHeight]="0"
+                            [rowHeight]="80"
+                            [scrollbarV]="true"
+                            [scrollbarH]="true"
+                            [count]="totalItems"
+                            [offset]="(currentPage - 1) * itemsPerPage"
+                            [limit]="itemsPerPage"
+                            [rows]="paginatedInvitations.invitations | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }">
+                    </ngx-datatable>
+
+                    <ng-template #statusTemplate let-row="row" let-value="value">
+                        <div class="role-tags">
+                            <p [ngClass]="{
+            'status-expired': row.status === 'EXPIRED',
+            'status-accepted': row.status === 'ACCEPTED',
+            'status-pending': row.status === 'PENDING'
+        }">{{ row.status }}</p>
+                        </div>
+                    </ng-template>
+
+                    <ng-template #datesTemplate let-row="row" let-value="value">
+                        <div class="role-tags">
+                            <p>{{ row.expiryDate ? (row.expiryDate | date: 'dd/MM/yyyy HH:mm') : 'No Expiry Date' }}</p>
+                        </div>
+                    </ng-template>
+
+                    <ng-template #codeTemplate let-row="row" let-value="value">
+                        <div class="role-tags">
+                            <p>{{ row.code ? row.code : 'No Code' }}</p>
+                        </div>
+                    </ng-template>
+
+                    <ng-template #deleteBtnTemplate let-row="row" let-value="value">
+                        <button class="btn btn-danger btn-rounded m-1 mr-2" (click)="modalConfirmFunction(modalConfirmInvitation, row)">
+                            <i class="i-Mail-Remove-x"></i> Remove
+                        </button>
+                        <button *ngIf="row.status == 'EXPIRED'" class="btn btn-warning btn-rounded m-1" (click)="resendInvitation(row.id)">
+                            <i class="i-Mail-Send"></i> Resend
+                        </button>
+                    </ng-template>
+                </div>
+                <pagination-controls (pageChange)="currentPage = $event"></pagination-controls>
+            </div>
+        </div>
+    </div>
+    <ng-template #modalConfirmInvitation let-modal>
+        <div class="modal-header">
+            <h4 class="modal-title" id="modal-title-invitation">Invitation removal</h4>
+            <button type="button" class="close" aria-label="Close button" aria-describedby="modal-title" (click)="modal.dismiss('Cross click')">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p><strong>Are you sure you want to remove the invitation for <span class="text-primary">{{ currentInvitation.email }}</span> from {{currentInstitution.name}}?</strong></p>
+            <p>All information associated with this invitation will be permanently deleted from the institution.
+                <span class="text-danger">This operation cannot be undone.</span>
+            </p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary btn-rounded" (click)="modal.dismiss('cancel')">Cancel</button>
+            <button type="button" ngbAutofocus class="btn btn-danger btn-rounded" (click)="modal.close('Ok')">Ok</button>
+        </div>
+    </ng-template>
+</div>

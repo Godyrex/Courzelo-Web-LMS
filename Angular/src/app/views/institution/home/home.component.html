@@ -20,27 +20,22 @@
             <ngb-tab title="About">
                 <ng-template ngbTabContent>
                     <h4>Information</h4>
-                    <p>{{currentInstitution?.description||""}}</p>
+                    <p>{{ currentInstitution?.description || "No description available" }}</p>
                     <hr>
                     <div class="row">
-                        <div class="col-md-4 col-6">
-                            <div *ngIf="currentInstitution?.country" class="mb-4">
-                                <p class="text-primary mb-1"><i class="i-Globe text-16 mr-1"></i>Country</p>
-                                <span>{{ currentInstitution?.country }}</span>
-                            </div>
+                        <div class="col-md-4 col-6" *ngIf="currentInstitution?.country">
+                            <p class="text-primary mb-1"><i class="i-Globe text-16 mr-1"></i> Country</p>
+                            <span>{{ currentInstitution?.country }}</span>
                         </div>
-                        <div class="col-md-4 col-6">
-                            <div *ngIf="currentInstitution?.address" class="mb-4">
-                                <p class="text-primary mb-1"><i class="i-University1 text-16 mr-1"></i> Address</p>
-                                <span>{{currentInstitution?.address}}</span>
-                            </div>
-                            <div *ngIf="currentInstitution?.website" class="mb-4">
-                                <p class="text-primary mb-1"><i class="i-Cloud-Weather text-16 mr-1"></i> Website</p>
-                                <span>{{currentInstitution?.website}}</span>
-                            </div>
+                        <div class="col-md-4 col-6" *ngIf="currentInstitution?.address">
+                            <p class="text-primary mb-1"><i class="i-University1 text-16 mr-1"></i> Address</p>
+                            <span>{{ currentInstitution?.address }}</span>
+                        </div>
+                        <div class="col-md-4 col-6" *ngIf="currentInstitution?.website">
+                            <p class="text-primary mb-1"><i class="i-Cloud-Weather text-16 mr-1"></i> Website</p>
+                            <a href="{{currentInstitution?.website}}" target="_blank">{{currentInstitution?.website}}</a>
                         </div>
                     </div>
-                    <hr>
                 </ng-template>
             </ngb-tab>
             <ngb-tab title="Map" id="mapTab">
@@ -58,8 +53,10 @@
             </ngb-tab>
             <ngb-tab *ngIf="currentInstitution.hasCalendar" title="Calendar" >
                 <ng-template ngbTabContent>
-                    <div *ngIf="currentInstitution.hasCalendar" class="d-flex justify-content-center">
-                        <button type="button" (click)="downloadExcel()" class="btn btn-info btn-rounded"><i class="i-Download"></i> Download Calendar</button>
+                    <div class="d-flex justify-content-center mt-4">
+                        <button type="button" (click)="downloadExcel()" class="btn btn-info btn-lg">
+                            <i class="i-Download mr-2"></i> Download Calendar
+                        </button>
                     </div>
                 </ng-template>
             </ngb-tab>

@@ -13,7 +13,7 @@
     <div class="user-info text-center">
         <img class="profile-picture rounded-circle avatar-lg mb-2" [src]="imageSrc || 'assets/default-image.jpg'" alt="{{ user?.profile.name || 'User' }}'s profile picture">
         <p class="m-0 text-24 font-weight-bold">{{ (user?.profile.name && user?.profile.lastname) ? (user?.profile.name + ' ' + user?.profile.lastname) : user?.email }}</p>
-        <p class="text-muted m-0">{{ user?.profile.title || 'N/A' }}</p>
+        <p class="text-muted m-0">{{ user?.profile.title || 'No title provided.' }}</p>
     </div>
 <div class="card-body">
     <ngb-tabset class="nav-center responsive-tabs">

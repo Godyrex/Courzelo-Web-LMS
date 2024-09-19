@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {InstitutionUserResponse} from '../../../shared/models/institution/InstitutionUserResponse';
-import {FormBuilder, FormControl, Validators} from '@angular/forms';
+import {AbstractControl, FormBuilder, FormControl, ValidatorFn, Validators} from '@angular/forms';
 import {debounceTime} from 'rxjs/operators';
 import {InstitutionResponse} from '../../../shared/models/institution/InstitutionResponse';
 import {UserResponse} from '../../../shared/models/user/UserResponse';
@@ -9,6 +9,7 @@ import {ResponseHandlerService} from '../../../shared/services/user/response-han
 import {ToastrService} from 'ngx-toastr';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {ActivatedRoute} from '@angular/router';
+import {UserEmailsRequest} from '../../../shared/models/institution/UserEmailsRequest';
 
 @Component({
   selector: 'app-users',
@@ -40,6 +41,7 @@ export class UsersComponent implements OnInit {
     currentInstitution: InstitutionResponse;
   searchControlUsers: FormControl = new FormControl();
   users: InstitutionUserResponse[] = [];
+  emailRequest: UserEmailsRequest;
   _currentPageUsers = 1;
   totalPagesUsers = 0;
   totalItemsUsers = 0;
@@ -47,12 +49,13 @@ export class UsersComponent implements OnInit {
   loadingUsers = false;
   roles = ['Admin', 'Teacher', 'Student'];
   addUserForm = this.formBuilder.group({
-        email: ['', [Validators.required, Validators.email]],
+        studentsEmails: [[], Validators.required],
         role: ['', [Validators.required]],
       }
   );
   selectedRole = '';
   availableRoles: string[] = ['ADMIN', 'STUDENT', 'TEACHER'];
+     pasteSplitPattern = /[\s,;]+/;
   ngOnInit() {
     this.institutionID = this.route.snapshot.paramMap.get('institutionID');
     this.institutionService.getInstitutionByID(this.institutionID).subscribe(
@@ -67,6 +70,15 @@ export class UsersComponent implements OnInit {
           this.getInstitutionUsers(1, this.itemsPerPageUsers, value, null);
         });
   }
+    public onSelect(item) {
+        console.log('tag selected: value is ' + item);
+        console.log('students emails: ' + this.addUserForm.get('studentsEmails').value);
+    }
+    emailValidator: ValidatorFn = (control: AbstractControl) => {
+        const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        const isValid = emailPattern.test(control.value);
+        return isValid ? null : { 'invalidEmail': true };
+    }
   shouldShowError(controlName: string, errorName: string): boolean {
     const control = this.addUserForm.get(controlName);
     return control && control.errors && control.errors[errorName] && (control.dirty || control.touched);
@@ -74,17 +86,29 @@ export class UsersComponent implements OnInit {
   inviteUser() {
     this.loadingUsers = true;
     if (this.addUserForm.valid) {
-      this.institutionService.inviteUser(this.institutionID,
-          this.addUserForm.controls.email.value,
+        this.emailRequest = {
+            emails: this.addUserForm.controls.studentsEmails.value
+        };
+        console.log(this.emailRequest);
+      this.institutionService.inviteUsers(this.institutionID,
+          this.emailRequest,
           this.addUserForm.controls.role.value.toUpperCase()).subscribe(
           response => {
-            this.toastr.success('User invited successfully');
+            this.toastr.success('Users invited successfully');
+            if (response.emails.length > 0) {
+                this.toastr.error('Some emails failed to be invited: ' + response.emails.join(', '));
+            }
             this.addUserForm.reset();
             this.getInstitutionUsers(this.currentPageUsers, this.itemsPerPageUsers, null, null);
             this.loadingUsers = false;
           }, error => {
-            this.handleResponse.handleError(error);
-            this.loadingUsers = false;
+              if (error.status === 409) {
+                this.toastr.error('User already accepted an invitation');
+                this.loadingUsers = false;
+              } else {
+                  this.handleResponse.handleError(error);
+                  this.loadingUsers = false;
+              }
           }
       );
     } else {

@@ -227,15 +227,13 @@ public class GroupServiceImpl implements IGroupService {
     }
 
     @Override
-    public void removeStudentFromAllGroups(String studentID) {
-        userRepository.findByEmail(studentID).ifPresent(user -> {
-            if(user.getEducation().getGroupID() != null) {
-                Group group = groupRepository.findById(user.getEducation().getGroupID()).orElseThrow(() -> new NoSuchElementException("Group not found"));
-                group.getStudents().remove(user.getEmail());
-                user.getEducation().setGroupID(null);
-                userRepository.save(user);
-                groupRepository.save(group);
-            }
-        });
+    public void removeStudentFromAllGroups(User user) {
+        if (user.getEducation() != null && user.getEducation().getGroupID() != null) {
+            Group group = groupRepository.findById(user.getEducation().getGroupID()).orElseThrow(() -> new NoSuchElementException("Group not found"));
+            group.getStudents().remove(user.getEmail());
+            user.getEducation().setGroupID(null);
+            userRepository.save(user);
+            groupRepository.save(group);
+        }
     }
 }

@@ -7,19 +7,12 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.example.courzelo.dto.requests.CalendarEventRequest;
 import org.example.courzelo.dto.requests.InstitutionMapRequest;
 import org.example.courzelo.dto.requests.InstitutionRequest;
+import org.example.courzelo.dto.requests.UserEmailsRequest;
 import org.example.courzelo.dto.responses.*;
 import org.example.courzelo.dto.responses.institution.*;
-import org.example.courzelo.models.CodeType;
-import org.example.courzelo.models.CodeVerification;
-import org.example.courzelo.models.institution.Course;
-import org.example.courzelo.models.institution.Group;
-import org.example.courzelo.models.institution.Institution;
-import org.example.courzelo.models.Role;
-import org.example.courzelo.models.User;
-import org.example.courzelo.repositories.CourseRepository;
-import org.example.courzelo.repositories.GroupRepository;
-import org.example.courzelo.repositories.InstitutionRepository;
-import org.example.courzelo.repositories.UserRepository;
+import org.example.courzelo.models.*;
+import org.example.courzelo.models.institution.*;
+import org.example.courzelo.repositories.*;
 import org.example.courzelo.services.*;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -37,6 +30,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.security.Principal;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -55,6 +50,10 @@ public class InstitutionServiceImpl implements IInstitutionService {
     private final CourseRepository courseRepository;
     private final IGroupService iGroupService;
     private final ICourseService iCourseService;
+    private final IInvitationService iInvitationService;
+    private final InvitationRepository invitationRepository;
+    private final CodeVerificationRepository codeVerificationRepository;
+
     @Override
     public ResponseEntity<PaginatedInstitutionsResponse> getInstitutions(int page, int sizePerPage, String keyword) {
         log.info("Fetching institutions for page: {}, sizePerPage: {}", page, sizePerPage);
@@ -224,7 +223,7 @@ public class InstitutionServiceImpl implements IInstitutionService {
         }
         log.info("User found");
         if(isUserInInstitution(user, institution)){
-            iGroupService.removeStudentFromAllGroups(user.getId());
+            iGroupService.removeStudentFromAllGroups(user);
             log.info("User in institution");
             if(institution.getAdmins().contains(user.getEmail())){
                 user.getRoles().remove(Role.ADMIN);
@@ -425,27 +424,48 @@ public class InstitutionServiceImpl implements IInstitutionService {
         }
     }
 
-    @Override
-    public ResponseEntity<HttpStatus> inviteUser(String institutionID, String email, String role, Principal principal) {
-        log.info("Inviting user to institution {} with email: {} and role : {} ", institutionID, email , role);
+    public ResponseEntity<UserEmailsRequest> inviteUsers(String institutionID, UserEmailsRequest emails, String role, Principal principal) {
+        log.info("Inviting user to institution {} with emails: {} and role : {} ", institutionID, emails , role);
         Institution institution = institutionRepository.findById(institutionID).orElseThrow(()-> new NoSuchElementException("Institution not found"));
-        User user = userRepository.findUserByEmail(email);
-
-        CodeVerification codeVerification = codeVerificationService.saveCode(
-                CodeType.INSTITUTION_INVITATION,
-                codeVerificationService.generateCode(),
-                email,
-                Role.valueOf(role),
-                institutionID,
-                Instant.now().plusSeconds(3600)
+        List<String> failedEmails = new ArrayList<>();
+        emails.getEmails().forEach(
+                email -> {
+                   String result = inviteUser(institutionID, email, role, institution);
+                   if(result != null){
+                       failedEmails.add(result);
+                   }
+                }
         );
-        if(user == null){
-            log.info("User not found");
-            mailService.sendInstituionInvitationEmail(email, institution,codeVerification);
-        }else {
-            mailService.sendInstituionInvitationEmail(user, institution, codeVerification);
+        log.info("Failed emails: {}", failedEmails);
+        return ResponseEntity.ok(UserEmailsRequest
+                .builder()
+                        .emails(failedEmails)
+                .build()
+        );
+    }
+
+    private String inviteUser(String institutionID, String email, String role, Institution institution) {
+        User user = userRepository.findUserByEmail(email);
+        Invitation invitation = invitationRepository.findByEmailAndInstitutionID(email, institutionID).orElse(null);
+        if (invitation == null ||  !invitation.getStatus().equals(InvitationStatus.ACCEPTED)) {
+            CodeVerification codeVerification = codeVerificationRepository.findByEmailAndInstitutionID(email, institutionID).orElse(null);
+            if(codeVerification == null)
+            {
+                codeVerification = new CodeVerification(CodeType.INSTITUTION_INVITATION, UUID.randomUUID().toString(), email, Role.valueOf(role), institutionID, Instant.now().plusSeconds(60 * 60 * 24));
+                codeVerificationRepository.save(codeVerification);
+            }
+            iInvitationService.createInvitation(institutionID, email, Role.valueOf(role), codeVerification.getId(), LocalDateTime.ofInstant(codeVerification.getExpiryDate(), ZoneId.systemDefault() )
+                    );
+            if(user == null){
+                log.info("User not found");
+                mailService.sendInstituionInvitationEmail(email, institution,codeVerification);
+            }else {
+                mailService.sendInstituionInvitationEmail(user, institution, codeVerification);
+            }
+            return null;
+        }else{
+            return email;
         }
-        return ResponseEntity.ok().build();
     }
 
     @Override
@@ -466,6 +486,7 @@ public class InstitutionServiceImpl implements IInstitutionService {
         }
         addInstitutionToUser(user, institution, codeVerification.getRole());
         addUserToInstitution(user, institution, codeVerification.getRole());
+        iInvitationService.updateInvitationStatus(codeVerification.getEmail(),institution.getId(), InvitationStatus.ACCEPTED);
         log.info("Deleting code");
         codeVerificationService.deleteCode(codeVerification.getEmail(), CodeType.INSTITUTION_INVITATION);
         return ResponseEntity.ok().build();
@@ -530,20 +551,26 @@ public class InstitutionServiceImpl implements IInstitutionService {
     }
     public void addInstitutionToUser(User user, Institution institution, Role role){
             log.info("Setting user institution");
+            if(user.getEducation() == null){
+                user.setEducation(new UserEducation());
+            }
             user.getEducation().setInstitutionID(institution.getId());
 
             if (!user.getRoles().contains(role)) {
                 user.getRoles().add(role);
             }
             userRepository.save(user);
+            log.info("User institution set");
     }
     public void addUserToInstitution(User user, Institution institution, Role role){
+        log.info("Adding user to institution");
         switch (role) {
             case ADMIN -> institution.getAdmins().add(user.getEmail());
             case TEACHER -> institution.getTeachers().add(user.getEmail());
             case STUDENT -> institution.getStudents().add(user.getEmail());
         }
         institutionRepository.save(institution);
+        log.info("User added to institution");
     }
 
     public boolean isUserInInstitution(User user, Institution institution){

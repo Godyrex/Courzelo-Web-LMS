@@ -151,7 +151,7 @@
     </ng-template>
     <ng-template #addUser let-modal>
         <div class="modal-header">
-            <h4 class="modal-title" id="modal-basic-title-user-add">Invite user</h4>
+            <h4 class="modal-title" id="modal-basic-title-user">Invite user</h4>
             <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
                 <span aria-hidden="true">&times;</span>
             </button>
@@ -160,14 +160,20 @@
             <form [formGroup]="addUserForm" (ngSubmit)="inviteUser()">
                 <div class="row">
                     <div class="col-md-6 form-group mb-3">
-                        <label for="email">Email</label>
-                        <input type="text" formControlName="email" class="form-control" id="email" placeholder="Enter user's email">
-                        <div *ngIf="shouldShowError('email', 'required')" class="text-danger">
-                            Email is required.
-                        </div>
-                        <div *ngIf="shouldShowError('name', 'email')" class="text-danger">
-                            Email must be a valid email address.
-                        </div>
+                        <label for="studentsEmails" class="form-label">Students Emails</label>
+                        <tag-input id="studentsEmails"
+                                   formControlName="studentsEmails"
+                                   (onSelect)="onSelect($event)"
+                                   [modelAsStrings]="true"
+                                   secondaryPlaceholder="Enter students emails"
+                                   placeholder="Add student email"
+                                   [separatorKeyCodes]="[32, 188]"
+                                   [addOnPaste]="true"
+                                   [pasteSplitPattern]="pasteSplitPattern"
+                                   [validators]="[emailValidator]"
+                                   [onlyFromAutocomplete]="false">
+                        </tag-input>
+                        <div class="invalid-feedback" *ngIf="shouldShowError('studentsEmails', 'required')">Students Emails are required</div>
                     </div>
 
                     <div class="col-md-6 form-group mb-3">
@@ -180,7 +186,7 @@
                         </div>
                     </div>
                     <div class="col-md-12">
-                        <btn-loading btnClass="btn-primary btn-rounded" [loading]="loading">Invite</btn-loading>
+                        <btn-loading btnClass="btn-primary btn-rounded" [loading]="loadingUsers">Invite</btn-loading>
                     </div>
                 </div>
             </form>

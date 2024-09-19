@@ -6,6 +6,7 @@ import {HomeComponent} from './home/home.component';
 import {AuthGuard} from '../../shared/services/auth-guard.service';
 import {CourseComponent} from './course/course.component';
 import {ClassComponent} from './class/class.component';
+import {InvitationsComponent} from './invitations/invitations.component';
 
 const routes: Routes = [
   {
@@ -14,6 +15,14 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     data: {
         roles: ['ADMIN']
+    }
+  },
+  {
+    path: ':institutionID/invitations',
+    component: InvitationsComponent,
+    canActivate: [AuthGuard],
+    data: {
+      roles: ['ADMIN']
     }
   },
   {

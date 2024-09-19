@@ -12,6 +12,8 @@ import {SharedComponentsModule} from '../../shared/components/shared-components.
 import {NgbDatepickerModule, NgbTabsetModule} from '@ng-bootstrap/ng-bootstrap';
 import {CourseComponent, TimeRemainingPipe} from './course/course.component';
 import { ClassComponent } from './class/class.component';
+import { InvitationsComponent } from './invitations/invitations.component';
+import {TagInputModule} from "ngx-chips";
 
 
 @NgModule({
@@ -20,7 +22,8 @@ import { ClassComponent } from './class/class.component';
     EditComponent,
     HomeComponent,
     CourseComponent,
-    ClassComponent
+    ClassComponent,
+    InvitationsComponent
   ],
     imports: [
         CommonModule,
@@ -32,7 +35,8 @@ import { ClassComponent } from './class/class.component';
         SharedComponentsModule,
         NgbTabsetModule,
         NgbDatepickerModule,
-        TimeRemainingPipe
+        TimeRemainingPipe,
+        TagInputModule
     ]
 })
 export class InstitutionModule { }

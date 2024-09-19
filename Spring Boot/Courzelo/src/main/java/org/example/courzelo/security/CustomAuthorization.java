@@ -6,6 +6,7 @@ import org.example.courzelo.models.*;
 import org.example.courzelo.models.institution.Course;
 import org.example.courzelo.models.institution.Group;
 import org.example.courzelo.models.institution.Institution;
+import org.example.courzelo.models.institution.Invitation;
 import org.example.courzelo.repositories.*;
 import org.example.courzelo.serviceImpls.CodeVerificationService;
 import org.springframework.security.core.Authentication;
@@ -24,12 +25,23 @@ public class CustomAuthorization {
     private final CourseRepository courseRepository;
     private final GroupRepository groupRepository;
     private final QuizRepository quizRepository;
+    private final InvitationRepository invitationRepository;
     public boolean canAccessGroup(String groupID) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
         User user = userRepository.findUserByEmail(userEmail);
         Group group = groupRepository.findById(groupID).orElseThrow(() -> new NoSuchElementException("Group not found"));
         return user.getEducation().getInstitutionID().equals(group.getInstitutionID());
+    }
+    public boolean canAccessInvitation(String invitationID) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+        User user = userRepository.findUserByEmail(userEmail);
+        if(user == null || user.getEducation() == null || user.getEducation().getInstitutionID() == null){
+            return false;
+        }
+        Invitation invitation = invitationRepository.findById(invitationID).orElseThrow(()->new NoSuchElementException("Invitation not found"));
+        return invitation.getInstitutionID().equals(user.getEducation().getInstitutionID());
     }
     public boolean canAccessInstitution(String institutionId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
