@@ -79,6 +79,11 @@ export class InvitationsComponent implements OnInit {
           response => {
               console.log(response);
               response.invitations.forEach(
+                  invitation => {
+                      invitation.role = invitation.role.toLowerCase();
+                  }
+              );
+              response.invitations.forEach(
                     invitation => {
                         if (Array.isArray(invitation.expiryDate)) {
                             const [year, month, day, hour, minute, second, nanosecond] = invitation.expiryDate;

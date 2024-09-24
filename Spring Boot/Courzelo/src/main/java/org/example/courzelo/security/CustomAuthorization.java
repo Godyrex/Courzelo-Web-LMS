@@ -50,7 +50,9 @@ public class CustomAuthorization {
         if (user == null || !user.getRoles().contains(Role.ADMIN)) {
             return false;
         }
-
+        if(user.getRoles().contains(Role.SUPERADMIN)){
+            return true;
+        }
         Institution institution = institutionRepository.findById(institutionId).orElse(null);
         if (institution == null) {
             return false;

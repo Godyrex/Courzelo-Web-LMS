@@ -257,7 +257,9 @@ export class InstitutionsComponent implements OnInit {
         this.loadingUsers = true;
         this.institutionService.getInstitutionUsers(this.currentInstitution.id, keyword, role, page - 1, size).subscribe(
             response => {
-                console.log(response);
+                response.users.forEach(user => {
+                    user.roles = user.roles.map(role1 => role1.toLowerCase());
+                });
                 this.users = response.users;
                 this._currentPageUsers = response.currentPage + 1;
                 this.totalPagesUsers = response.totalPages;
@@ -326,6 +328,21 @@ export class InstitutionsComponent implements OnInit {
                 this.handleResponse.handleError(error);
                 this.loadingUsers = false;
             });
+        }
+    }
+
+    getRoleIconClass(role: string): string {
+        switch (role) {
+            case 'student':
+                return 'fas fa-user-graduate';
+            case 'admin':
+                return 'fas fa-user-shield';
+            case 'superadmin':
+                return 'fas fa-user-tie'; // Changed icon
+            case 'teacher':
+                return 'fas fa-chalkboard-teacher';
+            default:
+                return 'fas fa-user';
         }
     }
 }

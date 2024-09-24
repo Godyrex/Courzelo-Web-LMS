@@ -54,7 +54,7 @@ export class UsersComponent implements OnInit {
       }
   );
   selectedRole = '';
-  availableRoles: string[] = ['ADMIN', 'STUDENT', 'TEACHER'];
+  availableRoles: string[] = ['admin', 'student', 'teacher'];
      pasteSplitPattern = /[\s,;]+/;
   ngOnInit() {
     this.institutionID = this.route.snapshot.paramMap.get('institutionID');
@@ -129,6 +129,9 @@ export class UsersComponent implements OnInit {
     this.institutionService.getInstitutionUsers(this.institutionID, keyword, role, page - 1, size).subscribe(
         response => {
           console.log(response);
+          response.users.forEach(user => {
+            user.roles = user.roles.map(role1 => role1.toLowerCase());
+          });
           this.users = response.users;
           this._currentPageUsers = response.currentPage + 1;
           this.totalPagesUsers = response.totalPages;
@@ -168,7 +171,7 @@ export class UsersComponent implements OnInit {
   changeUserRole(user: UserResponse) {
     this.loadingUsers = true;
     if (this.selectedRole && !user.roles.includes(this.selectedRole)) {
-      this.institutionService.addInstitutionUserRole(this.institutionID, user.email, this.selectedRole).subscribe(res => {
+      this.institutionService.addInstitutionUserRole(this.institutionID, user.email, this.selectedRole.toUpperCase()).subscribe(res => {
         this.toastr.success('User role updated successfully');
         user.roles.push(this.selectedRole);
         this.loadingUsers = false;
@@ -177,7 +180,7 @@ export class UsersComponent implements OnInit {
         this.loadingUsers = false;
       });
     } else if (this.selectedRole && user.roles.includes(this.selectedRole)) {
-      this.institutionService.removeInstitutionUserRole(this.institutionID, user.email, this.selectedRole).subscribe(res => {
+      this.institutionService.removeInstitutionUserRole(this.institutionID, user.email, this.selectedRole.toUpperCase()).subscribe(res => {
         this.toastr.success('User role updated successfully');
         user.roles = user.roles.filter(role => role !== this.selectedRole);
         this.loadingUsers = false;

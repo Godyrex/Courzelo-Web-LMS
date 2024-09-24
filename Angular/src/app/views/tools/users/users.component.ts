@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, HostListener, OnInit} from '@angular/core';
 import {SuperAdminService} from '../../../shared/services/user/super-admin.service';
 import {PaginatedUsersResponse} from '../../../shared/models/user/PaginatedUsersResponse';
 import {UserResponse} from '../../../shared/models/user/UserResponse';
@@ -19,7 +19,7 @@ export class Users implements OnInit {
   itemsPerPage = 10;
   loading = false;
   selectedRole = '';
-  availableRoles: string[] = ['SUPERADMIN', 'ADMIN', 'STUDENT', 'TEACHER'];
+  availableRoles: string[] = ['superadmin', 'admin', 'student', 'teacher'];
   searchControl: FormControl = new FormControl();
 
   get currentPage(): number {
@@ -52,6 +52,10 @@ export class Users implements OnInit {
     this.loading = true;
     this.superAdminService.getUsers(page - 1, size, keyword).subscribe((response: PaginatedUsersResponse) => {
       console.log(response);
+      // role to lowercase
+        response.users.forEach(user => {
+            user.roles = user.roles.map(role => role.toLowerCase());
+        });
       this.users = response.users;
       this._currentPage = response.currentPage + 1;
       this.totalPages = response.totalPages;
@@ -67,8 +71,10 @@ export class Users implements OnInit {
   toggleBan(user: UserResponse) {
     this.superAdminService.toggleBan(user.email).subscribe(res => {
       user.security.ban = !user.security.ban;
+      console.log(user);
       this.handleResponse.handleSuccess(res.message);
-    }, error => {
+          this.loadUsers(this.currentPage, this.itemsPerPage, this.searchControl.value || '');
+        }, error => {
       this.handleResponse.handleError(error);
     }
     );
@@ -76,8 +82,11 @@ export class Users implements OnInit {
   toggleEnabled(user: UserResponse) {
     this.superAdminService.toggleEnable(user.email).subscribe(res => {
       user.security.enabled = !user.security.enabled;
-      this.handleResponse.handleSuccess(res.message);
-    }, error => {
+          console.log(user);
+          this.handleResponse.handleSuccess(res.message);
+          this.loadUsers(this.currentPage, this.itemsPerPage, this.searchControl.value || '');
+
+        }, error => {
       this.handleResponse.handleError(error);
     }
     );
@@ -85,16 +94,16 @@ export class Users implements OnInit {
 
   changeUserRole(user: UserResponse) {
     if (this.selectedRole && !user.roles.includes(this.selectedRole)) {
-      this.superAdminService.addRole(user.email, this.selectedRole).subscribe(res => {
+      this.superAdminService.addRole(user.email, this.selectedRole.toUpperCase()).subscribe(res => {
         this.handleResponse.handleSuccess(res.message);
-        user.roles.push(this.selectedRole);
+        user.roles.push(this.selectedRole.toLowerCase());
       }, error => {
         this.handleResponse.handleError(error);
       });
     } else if (this.selectedRole && user.roles.includes(this.selectedRole)) {
-      this.superAdminService.removeRole(user.email, this.selectedRole).subscribe(res => {
+      this.superAdminService.removeRole(user.email, this.selectedRole.toUpperCase()).subscribe(res => {
         this.handleResponse.handleSuccess(res.message);
-        user.roles = user.roles.filter(role => role !== this.selectedRole);
+        user.roles = user.roles.filter(role => role !== this.selectedRole.toLowerCase());
       }, error => {
         this.handleResponse.handleError(error);
       });

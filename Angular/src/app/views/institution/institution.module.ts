@@ -14,6 +14,7 @@ import {CourseComponent, TimeRemainingPipe} from './course/course.component';
 import { ClassComponent } from './class/class.component';
 import { InvitationsComponent } from './invitations/invitations.component';
 import {TagInputModule} from "ngx-chips";
+import {ToolsModule} from "../tools/tools.module";
 
 
 @NgModule({
@@ -36,7 +37,8 @@ import {TagInputModule} from "ngx-chips";
         NgbTabsetModule,
         NgbDatepickerModule,
         TimeRemainingPipe,
-        TagInputModule
+        TagInputModule,
+        ToolsModule
     ]
 })
 export class InstitutionModule { }

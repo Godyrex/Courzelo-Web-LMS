@@ -1,13 +1,15 @@
-.role-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
+.icon-enabled {
+  transition: color 0.3s ease;
 }
 
-.role-tag {
-  padding: 5px 10px;
-  background-color: #512678;
-  color: white;
-  border-radius: 15px;
-  font-size: 14px;
+.icon-disabled {
+  transition: color 0.3s ease;
+}
+
+.icon-enabled:hover, .icon-disabled:hover {
+  color: #218838; /* Darker green for enabled */
+}
+
+.icon-banned:hover {
+  color: #c82333; /* Darker red for banned */
 }
