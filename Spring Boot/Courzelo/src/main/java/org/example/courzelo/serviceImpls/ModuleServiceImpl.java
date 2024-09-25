@@ -1,6 +1,7 @@
 package org.example.courzelo.serviceImpls;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.courzelo.dto.requests.module.ModuleRequest;
 import org.example.courzelo.dto.responses.module.ModuleResponse;
 import org.example.courzelo.dto.responses.module.PaginatedModulesResponse;
@@ -20,6 +21,7 @@ import java.util.ArrayList;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class ModuleServiceImpl implements IModuleService {
     private final ModuleRepository moduleRepository;
     private final ProgramRepository programRepository;
@@ -72,6 +74,8 @@ public class ModuleServiceImpl implements IModuleService {
 
     @Override
     public ResponseEntity<PaginatedModulesResponse> getModulesByProgram(int page, int size, String programID, String keyword) {
+        log.info("Getting modules by program");
+        log.info("Page: " + page + " Size: " + size + " ProgramID: " + programID + " Keyword: " + keyword);
         Pageable pageable = PageRequest.of(page, size);
         Page<Module> modulePage;
         if(keyword == null) {
@@ -79,6 +83,7 @@ public class ModuleServiceImpl implements IModuleService {
         } else {
             modulePage = moduleRepository.findAllByProgramAndNameContainingIgnoreCase(programID, keyword, pageable);
         }
+        log.info("Returning modules by program");
         return new ResponseEntity<>(PaginatedModulesResponse.builder()
                 .modules(modulePage.getContent().stream().map(
                         module -> ModuleResponse.builder()

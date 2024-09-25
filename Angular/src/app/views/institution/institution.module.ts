@@ -18,6 +18,9 @@ import {ToolsModule} from "../tools/tools.module";
 import { ProgramsComponent } from './programs/programs.component';
 import { AddProgramComponent } from './programs/add-program/add-program.component';
 import { EditProgramComponent } from './programs/edit-program/edit-program.component';
+import { ModulesComponent } from './modules/modules.component';
+import { AddModuleComponent } from './modules/add-module/add-module.component';
+import { EditModuleComponent } from './modules/edit-module/edit-module.component';
 
 
 @NgModule({
@@ -30,7 +33,10 @@ import { EditProgramComponent } from './programs/edit-program/edit-program.compo
     InvitationsComponent,
     ProgramsComponent,
     AddProgramComponent,
-    EditProgramComponent
+    EditProgramComponent,
+    ModulesComponent,
+    AddModuleComponent,
+    EditModuleComponent
   ],
     imports: [
         CommonModule,

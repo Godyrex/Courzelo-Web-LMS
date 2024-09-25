@@ -4,7 +4,7 @@ import {InstitutionResponse} from '../../../shared/models/institution/Institutio
 import {InstitutionService} from '../../../shared/services/institution/institution.service';
 import {ResponseHandlerService} from '../../../shared/services/user/response-handler.service';
 import {ToastrService} from 'ngx-toastr';
-import {ActivatedRoute} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {ProgramResponse} from '../../../shared/models/institution/ProgramResponse';
 import {PaginatedProgramsResponse} from '../../../shared/models/institution/PaginatedProgramsResponse';
@@ -35,7 +35,8 @@ export class ProgramsComponent implements OnInit {
       private handleResponse: ResponseHandlerService,
       private toastr: ToastrService,
       private route: ActivatedRoute,
-      private modalService: NgbModal
+      private modalService: NgbModal,
+      private router: Router
   ) { }
 
   ngOnInit(): void {
@@ -126,6 +127,11 @@ export class ProgramsComponent implements OnInit {
       }
     }, (reason) => {
       console.log('Err!', reason);
+    });
+  }
+  viewModules(program: ProgramResponse): void {
+    this.router.navigate(['/institution', this.currentInstitution.id, 'programs', program.id, 'modules'], {
+      state: { program }
     });
   }
 }
