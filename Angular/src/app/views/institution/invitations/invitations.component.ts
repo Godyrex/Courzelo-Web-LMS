@@ -31,7 +31,6 @@ export class InvitationsComponent implements OnInit {
       private institutionService: InstitutionService,
       private invitationService: InvitationService,
       private handleResponse: ResponseHandlerService,
-      private formBuilder: FormBuilder,
       private toastr: ToastrService,
       private route: ActivatedRoute,
       private modalService: NgbModal

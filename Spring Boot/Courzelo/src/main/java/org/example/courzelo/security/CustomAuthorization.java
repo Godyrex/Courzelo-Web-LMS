@@ -3,10 +3,8 @@ package org.example.courzelo.security;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.courzelo.models.*;
-import org.example.courzelo.models.institution.Course;
-import org.example.courzelo.models.institution.Group;
-import org.example.courzelo.models.institution.Institution;
-import org.example.courzelo.models.institution.Invitation;
+import org.example.courzelo.models.institution.*;
+import org.example.courzelo.models.institution.Module;
 import org.example.courzelo.repositories.*;
 import org.example.courzelo.serviceImpls.CodeVerificationService;
 import org.springframework.security.core.Authentication;
@@ -26,6 +24,52 @@ public class CustomAuthorization {
     private final GroupRepository groupRepository;
     private final QuizRepository quizRepository;
     private final InvitationRepository invitationRepository;
+    private final ProgramRepository programRepository;
+    private final ModuleRepository moduleRepository;
+    public boolean isAdminInInstitution(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+        User user = userRepository.findUserByEmail(userEmail);
+        if(user != null && user.getEducation() != null && user.getEducation().getInstitutionID() != null){
+            Institution institution = institutionRepository.findById(user.getEducation().getInstitutionID()).orElse(null);
+            if(institution != null){
+                return institution.getAdmins().contains(userEmail);
+            }
+            return false;
+        }
+        return false;
+    }
+    public boolean canAccessProgram(String programID) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+        User user = userRepository.findUserByEmail(userEmail);
+        if(user == null){
+            return false;
+        }
+        if(user.getRoles().contains(Role.SUPERADMIN)){
+            return true;
+        }
+        Program program = programRepository.findById(programID).
+                orElseThrow(() -> new NoSuchElementException("Program not found"));
+        if(user.getEducation()!= null)
+        {
+            return user.getEducation().getInstitutionID().equals(program.getInstitutionID());
+        }
+        return false;
+    }
+    public boolean canAccessModule(String moduleID) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+        User user = userRepository.findUserByEmail(userEmail);
+        if(user == null){
+            return false;
+        }
+        if(user.getRoles().contains(Role.SUPERADMIN)){
+            return true;
+        }
+        Module module = moduleRepository.findById(moduleID).orElseThrow(() -> new NoSuchElementException("Module not found"));
+        return user.getEducation().getInstitutionID().equals(module.getInstitutionID());
+    }
     public boolean canAccessGroup(String groupID) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();

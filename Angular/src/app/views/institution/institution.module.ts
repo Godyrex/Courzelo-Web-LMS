@@ -15,6 +15,9 @@ import { ClassComponent } from './class/class.component';
 import { InvitationsComponent } from './invitations/invitations.component';
 import {TagInputModule} from "ngx-chips";
 import {ToolsModule} from "../tools/tools.module";
+import { ProgramsComponent } from './programs/programs.component';
+import { AddProgramComponent } from './programs/add-program/add-program.component';
+import { EditProgramComponent } from './programs/edit-program/edit-program.component';
 
 
 @NgModule({
@@ -24,7 +27,10 @@ import {ToolsModule} from "../tools/tools.module";
     HomeComponent,
     CourseComponent,
     ClassComponent,
-    InvitationsComponent
+    InvitationsComponent,
+    ProgramsComponent,
+    AddProgramComponent,
+    EditProgramComponent
   ],
     imports: [
         CommonModule,

@@ -7,6 +7,7 @@ import {AuthGuard} from '../../shared/services/auth-guard.service';
 import {CourseComponent} from './course/course.component';
 import {ClassComponent} from './class/class.component';
 import {InvitationsComponent} from './invitations/invitations.component';
+import {ProgramsComponent} from "./programs/programs.component";
 
 const routes: Routes = [
   {
@@ -20,6 +21,14 @@ const routes: Routes = [
   {
     path: ':institutionID/invitations',
     component: InvitationsComponent,
+    canActivate: [AuthGuard],
+    data: {
+      roles: ['ADMIN']
+    }
+  },
+  {
+    path: ':institutionID/programs',
+    component: ProgramsComponent,
     canActivate: [AuthGuard],
     data: {
       roles: ['ADMIN']

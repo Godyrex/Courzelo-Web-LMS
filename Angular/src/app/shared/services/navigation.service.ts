@@ -115,7 +115,9 @@ export class NavigationService {
                         type: 'link', mustBeInInstitutions: true },
                     { icon: 'i-Find-User', name: 'Users', state: 'institution/' + this.user?.education?.institutionID + '/users',
                         type: 'link', roles: ['ADMIN'], mustBeInInstitutions: true },
-                    { icon: 'i-Mail-Send', name: 'Invitations', state: 'institution/' + this.user?.education?.institutionID + '/invitations',
+                    { icon: 'i-Mail-Send', name: 'Invitations', state: 'institution/' + this.user?.education?.institutionID +
+                            '/invitations', type: 'link', roles: ['ADMIN'], mustBeInInstitutions: true },
+                    { icon: 'fa fa-book', name: 'Programs', state: 'institution/' + this.user?.education?.institutionID + '/programs',
                         type: 'link', roles: ['ADMIN'], mustBeInInstitutions: true },
                     { icon: 'i-Student-Hat-2', name: 'Classes', state: 'institution/' + this.user?.education?.institutionID + '/classes',
                         type: 'link', roles: ['ADMIN'], mustBeInInstitutions: true },
@@ -186,11 +188,11 @@ export class NavigationService {
                 type: 'dropDown',
                 icon: 'i-File-Horizontal-Text',
                 sub: [
-                    { icon: 'i-Hand', name: 'Forums', state: '/forum/list', type: 'link', roles: ['TEACHER','STUDENT',"ADMIN"] },
-                    { icon: 'i-Hand', name: 'Groups Chat', state: '/chatgroups/chat', type: 'link', roles: ['TEACHER','STUDENT'] },
+                    { icon: 'i-Hand', name: 'Forums', state: '/forum/list', type: 'link', roles: ['TEACHER', 'STUDENT', 'ADMIN'] },
+                    { icon: 'i-Hand', name: 'Groups Chat', state: '/chatgroups/chat', type: 'link', roles: ['TEACHER', 'STUDENT'] },
                 ]
             },
-            
+
         ];
     }
     filterMenuItemsByUser(menuItems: IMenuItem[], user: UserResponse): IMenuItem[] {

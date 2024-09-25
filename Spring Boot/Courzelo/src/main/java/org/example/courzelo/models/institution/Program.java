@@ -9,13 +9,12 @@ import java.util.List;
 
 @Data
 @Builder
-@Document(collection = "groups")
-public class Group {
+@Document(collection = "programs")
+public class Program {
     @Id
     private String id;
     private String name;
+    private String description;
     private String institutionID;
-    private String program;
-    private List<String> students;
-    private List<String> courses;
+    private List<String> modules;
 }

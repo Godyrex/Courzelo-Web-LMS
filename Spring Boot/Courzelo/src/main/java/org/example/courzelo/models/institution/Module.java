@@ -5,17 +5,16 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.List;
-
 @Data
 @Builder
-@Document(collection = "groups")
-public class Group {
+@Document(collection = "modules")
+public class Module {
     @Id
     private String id;
     private String name;
+    private String description;
+    private int credit;
     private String institutionID;
     private String program;
-    private List<String> students;
-    private List<String> courses;
 }
+

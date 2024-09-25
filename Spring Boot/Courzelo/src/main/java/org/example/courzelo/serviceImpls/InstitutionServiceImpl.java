@@ -53,6 +53,7 @@ public class InstitutionServiceImpl implements IInstitutionService {
     private final IInvitationService iInvitationService;
     private final InvitationRepository invitationRepository;
     private final CodeVerificationRepository codeVerificationRepository;
+    private final IProgramService iProgramService;
 
     @Override
     public ResponseEntity<PaginatedInstitutionsResponse> getInstitutions(int page, int sizePerPage, String keyword) {
@@ -107,6 +108,7 @@ public class InstitutionServiceImpl implements IInstitutionService {
 
     @Override
     public ResponseEntity<StatusMessageResponse> deleteInstitution(String institutionID) {
+        iProgramService.deleteAllInstitutionPrograms(institutionID);
         removeAllInstitutionUsers(institutionRepository.findById(institutionID).orElseThrow(()-> new NoSuchElementException("Institution not found")));
         groupService.deleteGroupsByInstitution(institutionID);
         institutionRepository.deleteById(institutionID);
