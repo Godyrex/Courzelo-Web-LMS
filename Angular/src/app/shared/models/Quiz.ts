@@ -9,15 +9,25 @@ export class Quiz {
     title: string;
     description: string;
     questions: Question[] = [];
-    isSelected: boolean;
-    score: number;
-    status: status;
     duration: number;
-    maxAttempts: number;
-    category: string;
     course: string;
+    studentSubmissions?: StudentSubmission[];
     showSummary ? = false;
+    showSimplifiedSummary ? = false;
     finalScore ? = 0;
+    maxScore ? = 0;
+    quizStarted?: boolean;
+    quizEnded?: boolean ;
+    timeRemaining?: number;
+    createdAt?: Date;
+}
+export class StudentSubmission {
+     studentId?: string;
+     score?: number;
+     completed?: boolean;
+}
+export class StudentQuizAnswers {
+    questions?: Question[];
 }
 export class QuizSubmission {
     quizID: string;

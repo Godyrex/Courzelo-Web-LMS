@@ -46,4 +46,10 @@ public class GroupService {
 
         // If the group is not found, return an empty list or throw an exception
         return Collections.emptyList(); // or throw new GroupNotFoundException("Group not found");
-    }}
+    }
+
+    public List<Group> getGroupsByMemberEmail(String email) {
+        return groupRepository.findByMembersEmail(email);
+    }
+
+}

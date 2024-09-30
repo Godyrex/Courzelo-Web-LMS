@@ -160,6 +160,10 @@ if (this.pageTemplate)  {
 
         return null;
     }
+    deleteEvent(index: number) {
+        this.generationEventList.splice(index, 1);
+        this.toastr.success('Event deleted successfully.');
+    }
     addEvent() {
         if (this.generateForm.valid) {
             const newEvent = this.returnEvent(this.generateForm);

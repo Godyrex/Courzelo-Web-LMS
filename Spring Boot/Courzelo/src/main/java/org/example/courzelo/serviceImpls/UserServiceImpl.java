@@ -165,7 +165,7 @@ public class UserServiceImpl implements UserDetailsService, IUserService {
             // Get the user
             User user = userRepository.findUserByEmail(email);
             if(user.getProfile().getProfileImage() == null){
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
             }
             String filePath = user.getProfile().getProfileImage();
             // Read the file

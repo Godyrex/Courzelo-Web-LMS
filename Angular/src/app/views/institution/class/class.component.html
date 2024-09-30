@@ -1,14 +1,31 @@
-<div class="">
-
-<div *ngIf="currentInstitution" class="breadcrumb ">
+<div *ngIf="!currentInstitution" class="loadscreen">
+    <img src="assets/images/logo.png" class="logo mb-3" style="display: none" alt="">
+    <div class="loader-bubble loader-bubble-primary d-block"></div>
+</div>
+<div *ngIf="currentInstitution"  class="">
+    <div class="breadcrumb-container d-flex justify-content-between align-items-center">
         <h1 >{{currentInstitution.name || "institution name"}}'s classes</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a>{{currentInstitution.name}}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Classes</li>
+            </ol>
+        </nav>
     </div>
 
-    <div class="separator-breadcrumb border-top"></div>
-    <div class="row">
-        <div class="col-md-2 btn-group-sm " >
-            <button (click)="createClassModel(createClass)" class="btn btn-success btn-sm m-1 " >Create class</button>
+    <div class="separator-breadcrumb border-top mb-3"></div>
+    <div class="row justify-content-between">
+        <div class="col-md-6 col-lg-4">
+            <div class="input-group mb-3 ">
+                <input id="keyword-users" placeholder="Search Classes" [formControl]="searchControl" class="form-control form-control-rounded pr-5" type="text">
+                <span class="input-group-text position-absolute search-icon"><i class="i-Magnifi-Glass1"></i></span>
+            </div>
         </div>
+        <div class="col-md-2 mb-4  " style="height: 4vh;">
+            <button (click)="openAddClassModal()" class="btn btn-primary btn-rounded m-1 " ><i class="fa fa-add"></i> Create class</button>
+        </div>
+    </div>
+    <div class="row">
         <div class="col-md-12">
             <div class="card o-hidden">
 
@@ -24,9 +41,10 @@
                             [columnMode]="'force'"
                             [columns]="[
         { name: 'Name' },
+        { name: 'Program', cellTemplate: program, width: 200 },
         { name: 'Students', cellTemplate: students, width: 200 },
         { name: 'Courses', cellTemplate: courses, width: 200 },
-        { name: 'Actions', prop: 'id', cellTemplate: deleteBtnTemplate, width: 250 }
+        { name: 'Actions', prop: 'id', cellTemplate: deleteBtnTemplate, width: 290 }
     ]"
                             [headerHeight]="50"
                             [footerHeight]="50"
@@ -38,41 +56,30 @@
                             [offset]="(currentPageClasses - 1) * itemsPerPageClasses"
                             [limit]="itemsPerPageClasses"
                             [rows]="classes | paginate: { itemsPerPage: itemsPerPageClasses, currentPage: currentPageClasses, totalItems: totalItemsClasses }">
-
+                        <ng-template #program let-row="row" let-value="value">
+                            <span>{{ row.simplifiedProgram?.name || " " }}</span>
+                        </ng-template>
                         <ng-template #students let-row="row" let-value="value">
-                            <button class="btn btn-link" (click)="openModal('students', row.students)">
-                                Show Students
+                            <button class="btn btn-link" (click)="openViewStudentsModal(row)">
+                                <i class="fa fa-eye"></i> Show Students
                             </button>
                         </ng-template>
 
                         <ng-template #courses let-row="row" let-value="value">
-                            <button class="btn btn-link" (click)="openModal('courses', row.courses)">
-                                Show Courses
+                            <button class="btn btn-link" (click)="openViewCoursesModal(row)">
+                                <i class="fa fa-eye"></i> Show Courses
                             </button>
                         </ng-template>
 
                         <!-- Modal Template -->
-                        <ng-template #listModal let-modal>
-                            <div class="modal-header">
-                                <h4 class="modal-title">{{ modalTitle }}</h4>
-                                <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body">
-                                <ul>
-                                    <li *ngFor="let item of modalList">{{ item }}</li>
-                                </ul>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" (click)="modal.dismiss('Close click')">Close</button>
-                            </div>
-                        </ng-template>
 
                         <ng-template #deleteBtnTemplate let-row="row" let-value="value">
-                            <button class="btn btn-danger m-1" (click)="modalConfirmClassFunction(modalConfirmClass, row)">Remove</button>
-                            <button class="btn btn-primary m-1" (click)="openUserModal(addUserToClass, row)">Add</button>
-                            <button class="btn btn-primary m-1" (click)="openUserModal(removeUserFromClass, row)">remove</button>
+                                <button class="btn btn-warning btn-rounded  mr-2" (click)="openEditClassModal(row)">
+                                    <i class="fa fa-edit"></i> Edit
+                                </button>
+                                <button class="btn btn-danger btn-rounded  mr-2" (click)="modalConfirmClassFunction(modalConfirmClass, row)">
+                                    <i class="fa fa-trash-can"></i> Delete
+                                </button>
                         </ng-template>
 
                     </ngx-datatable>
@@ -99,90 +106,31 @@
         <button type="button" ngbAutofocus class="btn btn-danger btn-rounded" (click)="modal.close('Ok')">Ok</button>
     </div>
 </ng-template>
-<ng-template #createClass let-modal>
-    <div class="modal-header">
-        <h4 class="modal-title" id="modal-basic-title-class">Create Class</h4>
-        <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-    <div class="modal-body">
-        <form [formGroup]="createClassForm" (ngSubmit)="addClass()">
-            <div class="row">
-                <div class="col-md-6 form-group mb-3">
-                    <label for="name">Class Name</label>
-                    <input type="text" formControlName="name" class="form-control" id="name" placeholder="Enter class name">
-                    <div *ngIf="shouldShowError('name', 'required')" class="text-danger">
-                        Class name is required.
-                    </div>
-                </div>
-                <div class="col-md-6 form-group mb-3">
-                    <label for="students">Students</label>
-                    <select formControlName="students" class="form-control" id="students" multiple data-live-search="true">
-                        <option *ngFor="let student of students" [value]="student">{{ student }}</option>
-                    </select>
-                    <div *ngIf="shouldShowError('students', 'required')" class="text-danger">
-                        At least one student is required.
-                    </div>
-                </div>
-                <div class="col-md-12">
-                    <btn-loading btnClass="btn-primary btn-rounded" [loading]="loading">Create</btn-loading>
-                </div>
-            </div>
-        </form>
-    </div>
-</ng-template>
-    <!-- Modal for Adding User to Class -->
-    <ng-template #addUserToClass let-modal>
+    <ng-template #listModal let-modal>
         <div class="modal-header">
-            <h4 class="modal-title" id="modal-basic-title-add-user">Add User to Class</h4>
+            <h4 class="modal-title">{{ modalTitle }}</h4>
             <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
         <div class="modal-body">
-            <form [formGroup]="addUserForm" (ngSubmit)="addUser()">
-                <div class="form-group mb-3">
-                    <label for="userEmailadd">User Email</label>
-                    <input type="email" formControlName="userEmail" class="form-control" id="userEmailadd" placeholder="Enter user email">
-                    <div *ngIf="shouldShowError('userEmail', 'required')" class="text-danger">
-                        User email is required.
-                    </div>
-                    <div *ngIf="shouldShowError('userEmail', 'email')" class="text-danger">
-                        Invalid email format.
-                    </div>
-                </div>
-                <div class="form-group">
-                    <btn-loading btnClass="btn-primary btn-rounded" [loading]="loading">Add</btn-loading>
-                </div>
-            </form>
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Email</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr *ngFor="let item of modalList; let i = index">
+                    <td>{{ i + 1 }}</td>
+                    <td>{{ item }}</td>
+                </tr>
+                </tbody>
+            </table>
         </div>
-    </ng-template>
-
-    <!-- Modal for Removing User from Class -->
-    <ng-template #removeUserFromClass let-modal>
-        <div class="modal-header">
-            <h4 class="modal-title" id="modal-basic-title-remove-user">Remove User from Class</h4>
-            <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-        <div class="modal-body">
-            <form [formGroup]="removeUserForm" (ngSubmit)="removeUser()">
-                <div class="form-group mb-3">
-                    <label for="userEmailremover">User Email</label>
-                    <input type="email" formControlName="userEmail" class="form-control" id="userEmailremover" placeholder="Enter user email">
-                    <div *ngIf="shouldShowError('userEmail', 'required')" class="text-danger">
-                        User email is required.
-                    </div>
-                    <div *ngIf="shouldShowError('userEmail', 'email')" class="text-danger">
-                        Invalid email format.
-                    </div>
-                </div>
-                <div class="form-group">
-                    <btn-loading btnClass="btn-primary btn-rounded" [loading]="loading">Remove</btn-loading>
-                </div>
-            </form>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="modal.dismiss('Close click')">Close</button>
         </div>
     </ng-template>
 </div>

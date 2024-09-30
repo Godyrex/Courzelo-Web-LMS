@@ -1,4 +1,5 @@
 import {SimplifiedCourseResponse} from './SimplifiedCourseResponse';
+import {SimplifiedProgramResponse} from './SimplifiedProgramResponse';
 
 export interface GroupResponse {
     id?: string;
@@ -6,4 +7,6 @@ export interface GroupResponse {
     institutionID?: string;
     students?: string[];
     courses?: SimplifiedCourseResponse[];
+    program?: string;
+    simplifiedProgram?: SimplifiedProgramResponse;
 }

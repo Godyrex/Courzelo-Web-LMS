@@ -139,3 +139,31 @@ blockquote {
         }
     }
 }
+.datatable-row-detail { width: 100vw; }
+.datatable-header {
+  min-width: 100%;
+}
+
+.datatable-body {
+  min-width: 100%;
+}
+.input-group .search-icon {
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  z-index: 10;
+}
+.role-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.role-tag {
+  padding: 5px;
+  font-size: 20px;
+  position: relative;
+  color: var(--primary-color); /* Primary color before hover */
+}

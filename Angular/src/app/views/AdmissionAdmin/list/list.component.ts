@@ -48,26 +48,52 @@ distribution: { teacher: string, students: string[] }[] = [];
     }
   }
 
-  distributeStudentsToTeachers() {
+  distributeStudentsToTeachers(): void {
     const numberOfTeachers = this.Teachers.length;
     const numberOfStudents = this.students.length;
-    const studentsPerTeacher = Math.floor(numberOfStudents / numberOfTeachers);
-    let remainingStudents = numberOfStudents % numberOfTeachers;
-
-    let studentIndex = 0;
-    console.log("Teachers", this.Teachers);
-
-    this.Teachers.forEach((teacher, index) => {
-      const numberOfStudentsForThisTeacher = studentsPerTeacher + (remainingStudents > 0 ? 1 : 0);
-      this.distribution.push({
-        teacher: teacher,
-        students: this.students.slice(studentIndex, studentIndex + numberOfStudentsForThisTeacher)
-      });
-      studentIndex += numberOfStudentsForThisTeacher;
-      remainingStudents--;
+  
+    // If there are no teachers or students, handle it early
+    if (numberOfTeachers === 0 || numberOfStudents === 0) {
+      Swal.fire('Error!', 'No teachers or students available for distribution.', 'error');
+      return;
+    }
+  
+    Swal.fire({
+      title: 'Are you sure?',
+      text: `You are about to distribute ${numberOfStudents} students among ${numberOfTeachers} teachers.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, distribute!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const studentsPerTeacher = Math.floor(numberOfStudents / numberOfTeachers);
+        let remainingStudents = numberOfStudents % numberOfTeachers;
+  
+        let studentIndex = 0;
+        console.log("Teachers:", this.Teachers);
+  
+        // Clear the previous distribution if necessary
+        this.distribution = [];
+  
+        this.Teachers.forEach((teacher, index) => {
+          const numberOfStudentsForThisTeacher = studentsPerTeacher + (remainingStudents > 0 ? 1 : 0);
+          this.distribution.push({
+            teacher: teacher,
+            students: this.students.slice(studentIndex, studentIndex + numberOfStudentsForThisTeacher)
+          });
+          studentIndex += numberOfStudentsForThisTeacher;
+          remainingStudents--;
+        });
+  
+        console.log("Distribution:", this.distribution);
+  
+        Swal.fire('Success!', 'Students have been successfully distributed.', 'success');
+      } else {
+        Swal.fire('Cancelled', 'The student distribution was cancelled.', 'info');
+      }
     });
-
-    console.log("Distribution:", this.distribution);
   }
 
   isNoted(){

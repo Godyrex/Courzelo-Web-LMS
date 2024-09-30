@@ -14,6 +14,7 @@ public class GroupResponse {
     private String name;
     private String institutionID;
     private List<String> students;
+    private String program;
     private List<SimplifiedCourseResponse> courses;
     private List<Semester>semesters;
 }

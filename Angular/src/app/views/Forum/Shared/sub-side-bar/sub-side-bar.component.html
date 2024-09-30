@@ -1,8 +1,8 @@
 <div class="sidebar-view-subreddit">
-    <div style="color: black; font-weight: bold">Browse Subreddits</div>
+    <div style="color: black; font-weight: bold">Browse Forums</div>
     <hr />
     <span *ngFor="let subs of subforums">
-        <span class="subreddit-text"><a href="/view-subreddit/{{subs.id}}">{{subs.name}}</a></span>
+        <span class="subreddit-text"><a href="/view-sub/{{subs.id}}">{{subs.name}}</a></span>
         <hr />
     </span>
     <div style="text-align: center" *ngIf="displayViewAll">

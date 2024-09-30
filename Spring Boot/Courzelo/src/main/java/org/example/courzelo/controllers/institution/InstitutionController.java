@@ -7,15 +7,14 @@ import lombok.AllArgsConstructor;
 import org.example.courzelo.dto.requests.CalendarEventRequest;
 import org.example.courzelo.dto.requests.InstitutionMapRequest;
 import org.example.courzelo.dto.requests.InstitutionRequest;
+import org.example.courzelo.dto.requests.UserEmailsRequest;
 import org.example.courzelo.dto.responses.GroupResponse;
-import org.example.courzelo.dto.responses.PaginatedGroupsResponse;
 import org.example.courzelo.dto.responses.StatusMessageResponse;
 import org.example.courzelo.dto.responses.institution.InstitutionResponse;
+import org.example.courzelo.dto.responses.institution.InvitationsResultResponse;
 import org.example.courzelo.dto.responses.institution.PaginatedInstitutionUsersResponse;
 import org.example.courzelo.dto.responses.institution.PaginatedInstitutionsResponse;
-import org.example.courzelo.security.CustomAuthorization;
 import org.example.courzelo.services.IInstitutionService;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,7 +31,6 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600, allowedHeaders = "*", allowCredentials = "true")
 public class InstitutionController {
     private final IInstitutionService iInstitutionService;
-    private final CustomAuthorization customAuthorization;
     @GetMapping("/all")
     public ResponseEntity<PaginatedInstitutionsResponse> getInstitutions(@RequestParam(defaultValue = "0") int page,
                                                                          @RequestParam(defaultValue = "10") int sizePerPage,
@@ -84,13 +82,13 @@ public class InstitutionController {
                                                                                  @RequestParam(defaultValue = "10") int sizePerPage) {
         return iInstitutionService.getInstitutionUsers(institutionID,keyword, role, page, sizePerPage);
     }
-    @PutMapping("/{institutionID}/invite_user")
+    @PutMapping("/{institutionID}/invite_users")
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')&&@customAuthorization.canAccessInstitution(#institutionID)")
-    public ResponseEntity<HttpStatus> inviteUser(@PathVariable @NotNull String institutionID,
-                                                         @RequestParam @Email String email,
-                                                         @RequestParam @NotNull String role,
-                                                         Principal principal) {
-        return iInstitutionService.inviteUser(institutionID, email, role, principal);
+    public ResponseEntity<InvitationsResultResponse> inviteUsers(@PathVariable @NotNull String institutionID,
+                                                                 @RequestBody UserEmailsRequest emails,
+                                                                 @RequestParam @NotNull String role,
+                                                                 Principal principal) {
+        return iInstitutionService.inviteUsers(institutionID, emails, role, principal);
     }
     @PutMapping("/accept_invite/{code}")
     @PreAuthorize("isAuthenticated()&&@customAuthorization.canAcceptInstitutionInvite(#code)")

@@ -4,7 +4,6 @@ import {ToastrService} from 'ngx-toastr';
 import {UserService} from '../../../shared/services/user/user.service';
 import {SessionStorageService} from '../../../shared/services/user/session-storage.service';
 import {UpdatePasswordRequest} from '../../../shared/models/user/requests/UpdatePasswordRequest';
-import {SignupRequest} from '../../../shared/models/user/requests/SignupRequest';
 import {UserResponse} from '../../../shared/models/user/UserResponse';
 import {ResponseHandlerService} from '../../../shared/services/user/response-handler.service';
 

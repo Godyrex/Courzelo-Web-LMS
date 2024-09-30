@@ -187,9 +187,8 @@ export class NavigationService {
                 type: 'dropDown',
                 icon: 'i-File-Horizontal-Text',
                 sub: [
-                    { icon: 'i-File-Horizontal-Text', name: 'Project Dashboard', state: 'projects', type: 'link' , roles: ['STUDENT','TEACHER'] },
-                    { icon: 'i-Full-View-Window', name: 'Projects', state: '/getallprojects', type: 'link', roles: ['TEACHER','STUDENT'] },
-                   
+                    { icon: 'i-File-Horizontal-Text', name: 'Project Dashboard', state: 'projects', type: 'link' , roles: ['STUDENT', 'TEACHER'] },
+                    { icon: 'i-Full-View-Window', name: 'Projects', state: '/getallprojects', type: 'link', roles: ['TEACHER', 'STUDENT'] },
                 ]
             },
 
@@ -199,37 +198,39 @@ export class NavigationService {
                 type: 'dropDown',
                 icon: 'i-File-Horizontal-Text',
                 sub: [
-                    { icon: 'i-File-Horizontal-Text', name: 'Revision Dashboard ', state: 'revision', type: 'link' , roles: ['STUDENT','TEACHER'] },
+                    { icon: 'i-File-Horizontal-Text', name: 'Revision Dashboard ', state: 'revision', type: 'link' , roles: ['STUDENT', 'TEACHER'] },
                     { icon: 'i-Full-View-Window', name: 'Revision', state: '/clientrevision', type: 'link' },
-                   
                 ]
             },
             {
                 name: 'Tools',
-                description: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit.',
+                description: 'Manage all users and institutions.',
                 type: 'dropDown',
-                icon: 'i-Administrator',
+                icon: 'i-Gear-2',
                 sub: [
-                    { icon: 'i-Administrator', name: 'Super admin tools', state: '/tools/users', type: 'link'},
-                    { icon: 'i-Administrator', name: 'Institutions', state: '/tools/institutions', type: 'link' },
-
+                    { icon: 'i-Find-User', name: 'Users', state: '/tools/users', type: 'link' },
+                    { icon: 'i-University', name: 'Institutions', state: '/tools/institutions', type: 'link' },
                 ],
                 roles: ['SUPERADMIN']
             },
             {
                 name: this.user?.education?.institutionName,
-                description: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit.',
+                description: 'Access your institution\'s dashboard, manage users, classes, and more.',
                 type: 'dropDown',
-                icon: 'i-Administrator',
+                icon: 'i-University',
                 sub: [
-                    { icon: 'i-Administrator', name: 'Home', state: 'institution/' +
-                            this.user?.education?.institutionID, type: 'link', mustBeInInstitutions: true },
-                    { icon: 'i-Administrator', name: 'Users', state: 'institution/' +
-                            this.user?.education?.institutionID + '/users', type: 'link', roles: ['ADMIN'], mustBeInInstitutions: true },
-                    { icon: 'i-Administrator', name: 'Classes', state: 'institution/' +
-                            this.user?.education?.institutionID + '/classes', type: 'link', roles: ['ADMIN'], mustBeInInstitutions: true },
-                    { icon: 'i-Administrator', name: 'Edit', state: 'institution/' +
-                            this.user?.education?.institutionID + '/edit', type: 'link', roles: ['ADMIN'], mustBeInInstitutions: true },
+                    { icon: 'i-Home1', name: 'Home', state: 'institution/' + this.user?.education?.institutionID,
+                        type: 'link', mustBeInInstitutions: true },
+                    { icon: 'i-Find-User', name: 'Users', state: 'institution/' + this.user?.education?.institutionID + '/users',
+                        type: 'link', roles: ['ADMIN'], mustBeInInstitutions: true },
+                    { icon: 'i-Mail-Send', name: 'Invitations', state: 'institution/' + this.user?.education?.institutionID +
+                            '/invitations', type: 'link', roles: ['ADMIN'], mustBeInInstitutions: true },
+                    { icon: 'fa fa-book', name: 'Programs', state: 'institution/' + this.user?.education?.institutionID + '/programs',
+                        type: 'link', roles: ['ADMIN'], mustBeInInstitutions: true },
+                    { icon: 'i-Student-Hat-2', name: 'Classes', state: 'institution/' + this.user?.education?.institutionID + '/classes',
+                        type: 'link', roles: ['ADMIN'], mustBeInInstitutions: true },
+                    { icon: 'i-Pen-2', name: 'Edit', state: 'institution/' + this.user?.education?.institutionID + '/edit',
+                        type: 'link', roles: ['ADMIN'], mustBeInInstitutions: true },
                     ...(this.user?.education?.courses ? this.user.education.courses.map(course => ({
                         icon: 'i-Book',
                         name: course.courseName,
@@ -259,36 +260,11 @@ export class NavigationService {
                 ]
             },
             {
-                name: 'Pages',
-                description: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit.',
-                type: 'dropDown',
-                icon: 'i-Windows-2',
-                sub: [
-                    { icon: 'i-Male', name: 'User Profile', state: '/pages/profile/' + this.user?.email, type: 'link' }
-                ]
-            },
-            {
-                name: 'Icons',
-                description: '600+ premium icons',
+                name: 'Profile',
+                description: 'View your profile page.',
+                state: '/pages/profile/' + this.user?.email,
                 type: 'link',
-                icon: 'i-Cloud-Sun',
-                state: '/icons/iconsmind'
-            },
-            {
-                name: 'Others',
-                description: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit.',
-                type: 'dropDown',
-                icon: 'i-Double-Tap',
-                sub: [
-                    { icon: 'i-Error-404-Window', name: 'Not found', state: '/others/404', type: 'link' }
-                ]
-            },
-            {
-                name: 'Doc',
-                type: 'extLink',
-                tooltip: 'Documentation',
-                icon: 'i-Safe-Box1',
-                state: 'http://demos.ui-lib.com/gull-doc'
+                icon: 'i-Boy'
             },
             {
                 name: 'Support',
@@ -311,9 +287,20 @@ export class NavigationService {
                 sub: [
                     { icon: 'i-Hand', name: 'Create Applications', state: '/admissionadmin', type: 'link', roles: ['ADMIN'] },
                     { icon: 'i-Hand', name: 'Show Applications', state: '/admissionadmin/list', type: 'link', roles: ['ADMIN'] },
-                    { icon: 'i-Hand', name: 'Interviews', state: '/admissionteacher/list', type: 'link', roles: ['TEACHER','STUDENT'] },
+                    { icon: 'i-Hand', name: 'Interviews', state: '/admissionteacher/list', type: 'link', roles: ['TEACHER', 'STUDENT'] },
                 ]
             },
+            {
+                name: 'Social',
+                description: 'Support Menu',
+                type: 'dropDown',
+                icon: 'i-File-Horizontal-Text',
+                sub: [
+                    { icon: 'i-Hand', name: 'Forums', state: '/forum/list', type: 'link', roles: ['TEACHER', 'STUDENT', 'ADMIN'] },
+                    { icon: 'i-Hand', name: 'Groups Chat', state: '/chatgroups/chat', type: 'link', roles: ['TEACHER', 'STUDENT'] },
+                ]
+            },
+
         ];
     }
     filterMenuItemsByUser(menuItems: IMenuItem[], user: UserResponse): IMenuItem[] {

@@ -15,6 +15,9 @@ export class ChatService {
   getGroups(): Observable<any> {
     return this.http.get<ChatGroup[]>(`${this.apiUrl}/groups/all`);
   }
+  getGroupsbyUser(email:any): Observable<any> {
+    return this.http.get<ChatGroup[]>(`${this.apiUrl}/groups/groups/member/${email}`);
+  }
   getMembers(id:any): Observable<any> {
     return this.http.get<String[]>(`${this.apiUrl}/groups/get/${id}`);
   }
@@ -34,12 +37,18 @@ export class ChatService {
     return this.http.post(`${this.apiUrl}/messages/send`,message);
   }
   addgroup(mail: any): Observable<ChatGroup> {
-    return this.http.post<ChatGroup>(`${this.apiUrl}/groups`, mail);
+    return this.http.post<ChatGroup>(`${this.apiUrl}/groups/add`, mail);
+  }
+  addgroup1(group:any,mail: any): Observable<ChatGroup> {
+    return this.http.post<ChatGroup>(`${this.apiUrl}/groups/add/${mail}`, group);
   }
   addmember(mail: any): Observable<any> {
     return this.http.put<ChatGroup>(`${this.apiUrl}/groups/addmember`, mail);
   }
   addmember1(mail: any): Observable<any> {
     return this.http.put<ChatGroup>(`${this.apiUrl}/groups/addmember1`, mail);
+  }
+  removemember(id:any,mail: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/groups/deletemember/${id}/${mail}`, {});
   }
 }

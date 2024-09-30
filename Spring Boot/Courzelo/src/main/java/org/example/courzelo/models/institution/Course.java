@@ -16,6 +16,7 @@ public class Course {
     private String name;
     private String description;
     private int credit;
+    private String module;
     private String teacher;
     private String group;
     private List<CoursePost> posts;

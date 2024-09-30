@@ -17,6 +17,6 @@ public interface ICourseService {
     ResponseEntity<HttpStatus> setTeacher(String courseID, String email);
     ResponseEntity<HttpStatus> addPost(String courseID, CoursePostRequest coursePostRequest, MultipartFile[] files);
     ResponseEntity<HttpStatus> deletePost(String courseID, String postID);
-
+    void removeTeacherFromCourses(String teacherEmail);
     ResponseEntity<byte[]> downloadFile(String courseID, String fileName);
 }

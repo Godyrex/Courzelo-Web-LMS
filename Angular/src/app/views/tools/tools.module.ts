@@ -9,14 +9,19 @@ import {SharedComponentsModule} from '../../shared/components/shared-components.
 import {TagInputModule} from 'ngx-chips';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import { InstitutionsComponent } from './institutions/institutions.component';
-import {NgbDatepickerModule} from "@ng-bootstrap/ng-bootstrap";
-
+import {NgbDatepickerModule, NgbModule, NgbPopoverModule} from '@ng-bootstrap/ng-bootstrap';
+import {MatTooltipModule} from '@angular/material/tooltip';
+import { RoleComponent } from './users/role/role.component';
 
 @NgModule({
-  declarations: [
-    Users,
-    InstitutionsComponent,
-  ],
+    declarations: [
+        Users,
+        InstitutionsComponent,
+        RoleComponent,
+    ],
+    exports: [
+        RoleComponent
+    ],
     imports: [
         CommonModule,
         ToolsRoutingModule,
@@ -26,7 +31,10 @@ import {NgbDatepickerModule} from "@ng-bootstrap/ng-bootstrap";
         TagInputModule,
         FormsModule,
         ReactiveFormsModule,
-        NgbDatepickerModule
+        NgbDatepickerModule,
+        MatTooltipModule,
+        NgbPopoverModule,
+        NgbModule
     ]
 })
 export class ToolsModule { }

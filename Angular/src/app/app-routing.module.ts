@@ -119,25 +119,24 @@ const userRoutes: Routes = [
     { path: 'addforum', component: AddForumComponent},
     { path: 'uploadfile', component: UploadFileComponent},
 
-    { path: 'projects', component: DashboardProjectComponent},//teacher
-    { path: 'addprojects', component: AddProjectComponent},//teacher
-    { path: 'project/:id', component: ViewdetailsComponent},//teacher
+    { path: 'projects', component: DashboardProjectComponent, canActivate: [AuthGuard], data: { roles: ['TEACHER'] }}, // teacher
+    { path: 'addprojects', component: AddProjectComponent, canActivate: [AuthGuard], data: { roles: ['TEACHER'] }}, // teacher
+    { path: 'project/:id', component: ViewdetailsComponent, canActivate: [AuthGuard], data: { roles: ['TEACHER'] }}, // teacher
 
     { path: 'pdf', component: PdfComponent},
-    { path: 'projectcalendar/:id', component: ProjectCalendarComponent },//user
-    { path: 'getallprojects', component: ProjectComponent},//user
-    { path: 'projectdetails/:id', component: ProjectDetailsComponent},//user
-    { path: 'ProgressDashboard/:id', component: ProgressDashboardComponent},//user
-    { path: 'publication/:id', component: PublicationComponent},//user
-    
- ///////////////////////////////////////////////////////
-     { path: 'revision', component:RevisionComponent },//teacher
-     { path: 'consultrevision/:id', component:ConsultRevisionComponent },//teacher
-     { path: 'clientrevision', component:ClientRevisionComponent
-      },//user
-     { path: 'participaterevision/:id', component:ParticipateRevisionComponent },//user
-     { path: 'QandA/:id', component:QuizrevisionComponent },//user
-   
+    { path: 'projectcalendar/:id', component: ProjectCalendarComponent , canActivate: [AuthGuard] }, // user
+    { path: 'getallprojects', component: ProjectComponent, canActivate: [AuthGuard]}, // user
+    { path: 'projectdetails/:id', component: ProjectDetailsComponent, canActivate: [AuthGuard]}, // user
+    { path: 'ProgressDashboard/:id', component: ProgressDashboardComponent, canActivate: [AuthGuard]}, // user
+    { path: 'publication/:id', component: PublicationComponent, canActivate: [AuthGuard]}, // user
+
+     { path: 'revision', component: RevisionComponent, canActivate: [AuthGuard], data: { roles: ['TEACHER'] } }, // teacher
+     { path: 'consultrevision/:id', component: ConsultRevisionComponent, canActivate: [AuthGuard], data: { roles: ['TEACHER'] } }, // teacher
+     { path: 'clientrevision', component: ClientRevisionComponent
+      }, // user
+     { path: 'participaterevision/:id', component: ParticipateRevisionComponent , canActivate: [AuthGuard]}, // user
+     { path: 'QandA/:id', component: QuizrevisionComponent , canActivate: [AuthGuard]}, // user
+
     {
         path: 'settings',
         loadChildren: () => import('./views/settings/settings.module').then(m => m.SettingsModule)

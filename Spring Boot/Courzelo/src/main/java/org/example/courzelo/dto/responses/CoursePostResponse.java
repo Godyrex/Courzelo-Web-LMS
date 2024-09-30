@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -12,6 +13,6 @@ public class CoursePostResponse {
     private String id;
     private String title;
     private String description;
-    private Instant created;
+    private LocalDateTime created;
     private List<String> files;
 }

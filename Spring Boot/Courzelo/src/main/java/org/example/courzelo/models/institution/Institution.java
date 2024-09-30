@@ -29,6 +29,7 @@ public class Institution {
     private double longitude;
     private List<String> groupsID = new ArrayList<>();
     private List<String> coursesID = new ArrayList<>();
+    private List<String> programsID = new ArrayList<>();
 
     public List<String> getUsers() {
         List<String> users = new ArrayList<>();

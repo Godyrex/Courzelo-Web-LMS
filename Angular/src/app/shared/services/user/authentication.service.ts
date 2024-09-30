@@ -38,7 +38,16 @@ export class AuthenticationService {
   logout() {
       this.sessionStorageService.clearUser();
       this.sessionStorageService.setAuthenticated(false);
-      return  this.http.get<StatusMessageResponse>(`${this.baseUrl}/logout`);
+      this.http.get<StatusMessageResponse>(`${this.baseUrl}/logout`).subscribe(
+          res => {
+              this.toastr.success(res.message, 'Success', {progressBar: true} );
+              this.router.navigateByUrl('/sessions/signin');
+          },
+          error => {
+              this.responseHandlerService.handleError(error);
+              this.router.navigateByUrl('/sessions/signin');
+          }
+      );
   }
   logoutImpl() {
       this.sessionStorageService.clearUser();

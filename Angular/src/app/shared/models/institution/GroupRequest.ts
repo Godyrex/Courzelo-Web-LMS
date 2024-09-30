@@ -3,4 +3,5 @@ export interface GroupRequest {
     institutionID?: string;
     students?: string[];
     courses?: string[];
+    program?: string;
 }

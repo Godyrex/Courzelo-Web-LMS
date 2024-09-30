@@ -18,10 +18,13 @@ export class GroupService {
     return this.http.get<GroupResponse>(`${this.baseUrl}/${groupID}`);
   }
 
-  getGroupsByInstitution(institutionID: string, page: number, sizePerPage: number): Observable<PaginatedGroupsResponse> {
-    const params = new HttpParams()
+  getGroupsByInstitution(institutionID: string, page: number, keyword: string, sizePerPage: number): Observable<PaginatedGroupsResponse> {
+    let params = new HttpParams()
         .set('page', page.toString())
         .set('sizePerPage', sizePerPage.toString());
+    if (keyword != null) {
+      params = params.set('keyword', keyword);
+    }
     return this.http.get<PaginatedGroupsResponse>(`${this.baseUrl}/groups/${institutionID}`, { params });
   }
 

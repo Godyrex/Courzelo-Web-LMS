@@ -9,6 +9,7 @@ export interface CourseResponse {
     teacher?: string;
     group?: string;
     institutionID?: string;
+    created?: Date;
     posts?: CoursePostResponse[];
     quizzes?: Quiz[];
 }

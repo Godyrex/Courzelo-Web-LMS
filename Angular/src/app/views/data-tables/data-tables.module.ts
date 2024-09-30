@@ -10,8 +10,6 @@ import { FilterTableComponent } from './filter-table/filter-table.component';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { ListPaginationComponent } from './list-pagination/list-pagination.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { QuizTableComponent } from './Quiz/quiz-table/quiz-table.component';
-import { QuizListComponent } from './Quiz/quiz-list/quiz-list.component';
 import {AppFormsModule} from '../forms/forms.module';
 
 @NgModule({
@@ -26,6 +24,6 @@ import {AppFormsModule} from '../forms/forms.module';
         AppFormsModule,
     ],
 declarations: [FullscreenTableComponent, PagingTableComponent, FilterTableComponent,
-    ListPaginationComponent, QuizTableComponent, QuizListComponent]
+    ListPaginationComponent]
 })
 export class DataTablesModule { }

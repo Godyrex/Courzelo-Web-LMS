@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {FormBuilder, FormControl, Validators} from '@angular/forms';
+import {AbstractControl, FormBuilder, FormControl, ValidatorFn, Validators} from '@angular/forms';
 import {ResponseHandlerService} from '../../../shared/services/user/response-handler.service';
 import {debounceTime} from 'rxjs/operators';
 import {InstitutionResponse} from '../../../shared/models/institution/InstitutionResponse';
@@ -11,9 +11,7 @@ import {UserService} from '../../../shared/services/user/user.service';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {InstitutionUserResponse} from '../../../shared/models/institution/InstitutionUserResponse';
 import {UserResponse} from '../../../shared/models/user/UserResponse';
-import {GroupResponse} from '../../../shared/models/institution/GroupResponse';
-import {GroupService} from '../../../shared/services/institution/group.service';
-import {GroupRequest} from '../../../shared/models/institution/GroupRequest';
+import {UserEmailsRequest} from '../../../shared/models/institution/UserEmailsRequest';
 
 @Component({
   selector: 'app-institutions',
@@ -50,7 +48,6 @@ export class InstitutionsComponent implements OnInit {
       private toastr: ToastrService,
       private userService: UserService,
       private modalService: NgbModal,
-      private groupService: GroupService,
   ) { }
     showInstitutionsTable = true;
   institutions: InstitutionResponse[] = [];
@@ -81,14 +78,17 @@ export class InstitutionsComponent implements OnInit {
         }
     );
     addUserForm = this.formBuilder.group({
-            email: ['', [Validators.required, Validators.email]],
+        studentsEmails: [[], Validators.required],
             role: ['', [Validators.required]],
         }
     );
+    emailRequest: UserEmailsRequest;
+
     institutionRequest: InstitutionRequest = {};
     countries = [];
     selectedRole = '';
     availableRoles: string[] = ['ADMIN', 'STUDENT', 'TEACHER'];
+    pasteSplitPattern = /[\s,;]+/;
   ngOnInit() {
     this.loadInstitutions(this.currentPage, this.itemsPerPage, '');
     this.searchControl.valueChanges
@@ -129,20 +129,55 @@ export class InstitutionsComponent implements OnInit {
 
         }
     }
+    public onSelect(item) {
+        console.log('tag selected: value is ' + item);
+        console.log('students emails: ' + this.addUserForm.get('studentsEmails').value);
+    }
+    emailValidator: ValidatorFn = (control: AbstractControl) => {
+        const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        const isValid = emailPattern.test(control.value);
+        return isValid ? null : { 'invalidEmail': true };
+    }
     inviteUser() {
         this.loadingUsers = true;
         if (this.addUserForm.valid) {
-            this.institutionService.inviteUser(this.currentInstitution.id,
-                this.addUserForm.controls.email.value,
+            this.emailRequest = {
+                emails: this.addUserForm.controls.studentsEmails.value
+            };
+            console.log(this.emailRequest);
+            this.institutionService.inviteUsers(this.currentInstitution.id,
+                this.emailRequest,
                 this.addUserForm.controls.role.value.toUpperCase()).subscribe(
                 response => {
-                    this.toastr.success('User invited successfully');
+                    console.log(response);
+                    console.log('lengths',
+                        this.emailRequest.emails.length,
+                        response.emailsAlreadyAccepted.length,
+                        response.emailsNotFound.length);
+                    if (this.emailRequest.emails.length !== response.emailsNotFound.length + response.emailsAlreadyAccepted.length) {
+                        this.toastr.success('Users invited successfully');
+                    }
+                    if (response.emailsAlreadyAccepted.length > 0) {
+                        this.toastr.warning('Some users have already accepted an invitation : ' + response.emailsAlreadyAccepted.join(', '), '', {
+                            timeOut: 15000 // 15 seconds
+                        });
+                    }
+                    if (response.emailsNotFound.length > 0) {
+                        this.toastr.warning('Some users were not found : ' + response.emailsNotFound.join(', '), '', {
+                            timeOut: 15000 // 15 seconds
+                        });
+                    }
                     this.addUserForm.reset();
                     this.getInstitutionUsers(this.currentPageUsers, this.itemsPerPageUsers, null, null);
                     this.loadingUsers = false;
                 }, error => {
-                    this.handleResponse.handleError(error);
-                    this.loadingUsers = false;
+                    if (error.status === 409) {
+                        this.toastr.error('User already accepted an invitation');
+                        this.loadingUsers = false;
+                    } else {
+                        this.handleResponse.handleError(error);
+                        this.loadingUsers = false;
+                    }
                 }
             );
         } else {
@@ -239,7 +274,9 @@ export class InstitutionsComponent implements OnInit {
         this.loadingUsers = true;
         this.institutionService.getInstitutionUsers(this.currentInstitution.id, keyword, role, page - 1, size).subscribe(
             response => {
-                console.log(response);
+                response.users.forEach(user => {
+                    user.roles = user.roles.map(role1 => role1.toLowerCase());
+                });
                 this.users = response.users;
                 this._currentPageUsers = response.currentPage + 1;
                 this.totalPagesUsers = response.totalPages;
@@ -308,6 +345,21 @@ export class InstitutionsComponent implements OnInit {
                 this.handleResponse.handleError(error);
                 this.loadingUsers = false;
             });
+        }
+    }
+
+    getRoleIconClass(role: string): string {
+        switch (role) {
+            case 'student':
+                return 'fas fa-user-graduate';
+            case 'admin':
+                return 'fas fa-user-shield';
+            case 'superadmin':
+                return 'fas fa-user-tie'; // Changed icon
+            case 'teacher':
+                return 'fas fa-chalkboard-teacher';
+            default:
+                return 'fas fa-user';
         }
     }
 }
