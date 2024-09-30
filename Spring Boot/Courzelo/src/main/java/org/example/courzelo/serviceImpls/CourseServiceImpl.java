@@ -18,6 +18,7 @@ import org.example.courzelo.repositories.InstitutionRepository;
 import org.example.courzelo.repositories.UserRepository;
 import org.example.courzelo.services.ICourseService;
 import org.example.courzelo.services.QuizService;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -269,5 +270,28 @@ public class CourseServiceImpl implements ICourseService {
                 throw new RuntimeException(e);
             }
         }).toList();
+    }
+    //getallcourses:addedByNourChallouf
+    public List<CourseResponse>findAll() {
+        return courseRepository.findAll(Sort.by("id")).stream().map(course -> CourseResponse.builder()
+                .id(course.getId())
+                .name(course.getName())
+                .description(course.getDescription())
+                .credit(course.getCredit())
+                .teacher(course.getTeacher())
+                .group(course.getGroup())
+                .posts(course.getPosts() != null ? course.getPosts().stream().map(coursePost -> CoursePostResponse.builder()
+                        .id(coursePost.getId())
+                        .title(coursePost.getTitle())
+                        .description(coursePost.getDescription())
+                        .created(coursePost.getCreated())
+                        .files(coursePost.getFiles() != null ? returnOnlyFileName(coursePost.getFiles()) : null)
+                        .build()).toList() : List.of())
+                .institutionID(course.getInstitutionID())
+                .build()).toList();
+    }
+
+    public Course findCourseById(String id) {
+        return courseRepository.findById(id).orElseThrow();
     }
 }

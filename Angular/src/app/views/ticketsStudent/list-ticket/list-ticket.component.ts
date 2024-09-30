@@ -21,49 +21,49 @@ import { UpdateTicketComponent } from '../update-ticket/update-ticket.component'
   templateUrl: './list-ticket.component.html',
   styleUrls: ['./list-ticket.component.scss']
 })
-export class ListTicketComponent implements OnInit{
+export class ListTicketComponent implements OnInit {
   tickets$: Observable<any[]>;
-  ticket:Ticket []=[];
+  ticket: Ticket [] = [];
   trelloBoardList: TrelloBoard[] = [];
-  TrelloBoard:TrelloBoard;
-  types:any[]
+  TrelloBoard: TrelloBoard;
+  types: any[];
   idCards: string[] = [];
 ticketIds: string[] = [];
 cardDetails: any[] = [];
 connectedUser: UserResponse;
  message: Message = {
-  to: "spnahmed2@gmail.com",
-  subject: "Ticket",
-  text: "Hello, I am happy to inform you that your problem is resolved.",
+  to: 'spnahmed2@gmail.com',
+  subject: 'Ticket',
+  text: 'Hello, I am happy to inform you that your problem is resolved.',
 };
-    constructor (private router : Router,
-      private typeservice:TickettypeService,
-      private trelloservice:TrelloserviceService,
-    private ticketservice:TicketServiceService,
-    private ticketDataService:TicketDataService,
+    constructor (private router: Router,
+      private typeservice: TickettypeService,
+      private trelloservice: TrelloserviceService,
+    private ticketservice: TicketServiceService,
+    private ticketDataService: TicketDataService,
     private sessionStorageService: SessionStorageService,
-    public dialog: MatDialog){}
+    public dialog: MatDialog) {}
 
   ngOnInit(): void {
     this.getTickets();
-  //this.changeStatus();
+  // this.changeStatus();
    this.getAllCards();
   }
 
   getAllCards() {
     this.ticketservice.getCards().subscribe((res: any[]) => {
-      console.log("Le Details de Card", res);
-  
+      console.log('Le Details de Card', res);
+
       this.typeservice.getTypeList().subscribe(
         (typeList: any[]) => {
-          console.log("Type List:", typeList);
+          console.log('Type List:', typeList);
           const trelloBoardList: TrelloBoard[] = [];
-  
+
           let typeListCounter = 0;
-  
+
           typeList.forEach(item => {
-            console.log("Type Item:", item.type);
-  
+            console.log('Type Item:', item.type);
+
             this.typeservice.getTrelloBoard(item.type).subscribe(
               (boardResponse: any) => {
                 if (boardResponse && boardResponse.id && boardResponse.type) {
@@ -75,29 +75,29 @@ connectedUser: UserResponse;
                     type: boardResponse.type.type
                   };
                   trelloBoardList.push(trelloBoard);
-                  console.log("Trello Board Added:", trelloBoard);
+                  console.log('Trello Board Added:', trelloBoard);
                 } else {
                   console.warn(`Invalid board response for type: ${item.type}`);
                 }
-  
+
                 typeListCounter++;
-  
+
                 if (typeListCounter === typeList.length) {
                   // Proceed only after all trello boards are fetched
                   res.forEach(card => {
-                    console.log("le id de traitmene", card.idCard);
-  
+                    console.log('le id de traitmene', card.idCard);
+
                     this.trelloservice.getListOfCard(card.idCard).subscribe((cardRes: any) => {
                       if (cardRes && cardRes.id) {
-                        console.log("le id de list=====", cardRes.id);
-  
+                        console.log('le id de list=====', cardRes.id);
+
                         trelloBoardList.forEach(board => {
                           res.forEach(card => {
                             this.trelloservice.getListOfCard(card.idCard).subscribe(
                               (cardRes: any) => {
-                                console.log("Trello card fetched:", cardRes);
+                                console.log('Trello card fetched:', cardRes);
                                 if (cardRes.id === board.idListDone) {
-                                  console.log("Match found. Updating status for ticketId:", card.ticket.id);
+                                  console.log('Match found. Updating status for ticketId:', card.ticket.id);
                                   this.updateTicketStatus(card.ticket.id, Etat.FINIE);
                                 }
                               },
@@ -130,16 +130,16 @@ connectedUser: UserResponse;
       );
     });
   }
-  
-  
+
+
 
 // Assuming this is within an Angular component or service
 updateTicketStatus(ticketId: string, status: string) {
   this.ticketservice.updateStatusdone(ticketId, status).subscribe(
     (response: any) => {
       console.log(response);
-      console.log("Status updated successfully for ticketId:", ticketId);
-      
+      console.log('Status updated successfully for ticketId:', ticketId);
+
       /*// Check if response.status is 'FINIE'
       if (response.status === 'FINIE') {
         // Handle additional logic when status is 'FINIE'
@@ -162,7 +162,7 @@ updateTicketStatus(ticketId: string, status: string) {
 
  getTickets(): void {
   this.connectedUser = this.sessionStorageService.getUserFromSession();
-  console.log("Le USERRRRR CONNECTED :",this.connectedUser);
+  console.log('Le USERRRRR CONNECTED :', this.connectedUser);
     this.tickets$ = this.ticketservice.getTicketsByUser(this.connectedUser.email).pipe(
       tap(data => {
         console.log('Fetched tickets:', data);
@@ -184,21 +184,21 @@ updateTicketStatus(ticketId: string, status: string) {
     this.ticketDataService.sendTicketData(row); // Send row data to service
     this.router.navigate(['ticketsStudent/rate']); // Navigate to forward component
   }
-  update(id:any){
-    const dialogRef = this.dialog.open(UpdateTicketComponent,{
-      width : "40%",
-      height: "10%",
-      data: { ticket:id}
+  update(id: any) {
+    const dialogRef = this.dialog.open(UpdateTicketComponent, {
+      width : '40%',
+      height: '10%',
+      data: { ticket: id}
     });
-    dialogRef.afterClosed().subscribe(res =>{
+    dialogRef.afterClosed().subscribe(res => {
      this.ngOnInit();
-    })   
+    });
   }
 
-delete(id:any){
+delete(id: any) {
   Swal.fire({
     title: 'Êtes-vous sûr ?',
-    text: "Voulez-vous vraiment supprimer cette appartment ?",
+    text: 'Voulez-vous vraiment supprimer cette appartment ?',
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#3085d6',
@@ -206,35 +206,34 @@ delete(id:any){
     confirmButtonText: 'Oui, supprimez-le!'
   }).then((result) => {
     if (result.isConfirmed) {
-      this.ticketservice.deleteTicket(id).subscribe((res:any) =>{
-        if (res.message){
+      this.ticketservice.deleteTicket(id).subscribe((res: any) => {
+        if (res.message) {
           Swal.fire({
             icon: 'success',
             title: 'Success...',
             text: 'Supprimé avec succès !',
-          })
+          });
           this.ngOnInit();
-        }
-        else{
+        } else {
           Swal.fire({
             icon: 'error',
             title: 'Oops...',
-            text: "Quelque chose s'est mal passé!",
-          })
+            text: 'Quelque chose s\'est mal passé!',
+          });
         }
       },
-      err =>{
+      err => {
         Swal.fire({
           icon: 'warning',
           title: 'La suppression a échoué!...',
           text: err.error.message,
-        })
+        });
       }
-      )
+      );
     }
     this.ngOnInit();
   }
-  )
+  );
 }
 }
 

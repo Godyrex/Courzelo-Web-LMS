@@ -24,6 +24,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
+            "aot": false,
             "allowedCommonJsDependencies": [
                 "echarts",
                 "highlight.js",
