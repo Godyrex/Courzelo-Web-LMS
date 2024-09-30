@@ -23,6 +23,8 @@ import {CreateQuizComponent} from './Quiz/create-quiz/create-quiz.component';
 import { TakeQuizComponent } from './Quiz/take-quiz/take-quiz.component';
 import { QuizResultComponent } from './Quiz/quiz-result/quiz-result.component';
 import { EditQuizComponent } from './Quiz/edit-quiz/edit-quiz.component';
+import { TimetableComponent } from './Timetable/timetable/timetable.component';
+import { ElementModuleComponent } from './Timetable/element-module/element-module.component';
 @NgModule({
   imports: [
     CommonModule,
@@ -41,7 +43,7 @@ import { EditQuizComponent } from './Quiz/edit-quiz/edit-quiz.component';
   ],
 
 
-  declarations: [BasicFormComponent, TagInputsComponent, AppImgCropperComponent, WizardComponent, InputMaskComponent, InputGroupsComponent, FormLayoutsComponent, CreateQuizComponent, TakeQuizComponent, QuizResultComponent, EditQuizComponent],
+  declarations: [BasicFormComponent, TagInputsComponent, AppImgCropperComponent, WizardComponent, InputMaskComponent, InputGroupsComponent, FormLayoutsComponent, CreateQuizComponent, TakeQuizComponent, QuizResultComponent, EditQuizComponent, TimetableComponent, ElementModuleComponent],
   exports: [
     EditQuizComponent
   ]

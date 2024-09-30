@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { GroupRequest } from '../../models/institution/GroupRequest';
 import { GroupResponse } from '../../models/institution/GroupResponse';
 import { PaginatedGroupsResponse } from '../../models/institution/PaginatedGroupsResponse';
+import {UserResponse} from '../../models/user/UserResponse';
 
 @Injectable({
   providedIn: 'root'
@@ -44,5 +45,9 @@ export class GroupService {
   removeStudentFromGroup(groupID: string, student: string): Observable<void> {
     const params = new HttpParams().set('student', student);
     return this.http.put<void>(`${this.baseUrl}/${groupID}/removeStudent`, null, { params });
+  }
+
+  getAllClasses(): Observable<UserResponse> {
+    return  this.http.get<UserResponse>(`${this.baseUrl}/all`);
   }
 }

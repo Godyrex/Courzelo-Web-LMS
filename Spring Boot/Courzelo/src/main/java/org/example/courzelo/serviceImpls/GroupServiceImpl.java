@@ -15,6 +15,7 @@ import org.example.courzelo.repositories.GroupRepository;
 import org.example.courzelo.repositories.InstitutionRepository;
 import org.example.courzelo.repositories.UserRepository;
 import org.example.courzelo.services.IGroupService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -22,8 +23,11 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import springfox.documentation.swagger2.mappers.ModelMapper;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -39,6 +43,7 @@ public class GroupServiceImpl implements IGroupService {
     private final CourseRepository courseRepository;
     private final InstitutionRepository institutionRepository;
     private final MongoTemplate mongoTemplate;
+
     @Override
     public ResponseEntity<GroupResponse> getGroup(String groupID) {
         Group group = groupRepository.findById(groupID).orElseThrow(() -> new NoSuchElementException("Group not found"));
@@ -225,4 +230,5 @@ public class GroupServiceImpl implements IGroupService {
                 this::deleteGroup
         );
     }
+
 }

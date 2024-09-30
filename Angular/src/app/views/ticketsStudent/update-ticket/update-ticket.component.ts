@@ -15,7 +15,7 @@ import { TickettypeService } from '../../tickets/Services/TicketTypeService/tick
   templateUrl: './update-ticket.component.html',
   styleUrls: ['./update-ticket.component.scss']
 })
-export class UpdateTicketComponent implements OnInit{
+export class UpdateTicketComponent implements OnInit {
   onClose() {
     this.dialogRef.close();
   }

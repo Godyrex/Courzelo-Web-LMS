@@ -169,6 +169,19 @@ export class NavigationService {
                 ]
             },
             {
+                name: 'Timetable',
+                description: '',
+                type: 'dropDown',
+                icon: 'i-File-Horizontal-Text',
+                sub: [
+                    { icon: 'i-File-Horizontal-Text', name: 'Create Quiz', state: '/forms/Timetable', type: 'link' , roles: ['TEACHER'] },
+                    { icon: 'i-Full-View-Window', name: 'Take Quiz', state: '/forms/take-quiz', type: 'link', roles: ['STUDENT'] },
+                    { icon: 'i-Code-Window', name: 'Quiz Table', state: '/tables/QuizTable', type: 'link', roles: ['TEACHER', 'ADMIN'] },
+                    { icon: 'i-Filter-2', name: 'Quiz List', state: '/tables/QuizList', type: 'link' },
+                    { icon: 'i-Filter-2', name: 'Scoring', state: '/forms/QuizResult', type: 'link' },
+                ]
+            },
+            {
                 name: 'Project',
                 description: '',
                 type: 'dropDown',
