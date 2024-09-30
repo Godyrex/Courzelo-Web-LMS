@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.example.courzelo.dto.requests.program.ProgramRequest;
 import org.example.courzelo.dto.responses.program.PaginatedProgramsResponse;
 import org.example.courzelo.dto.responses.program.ProgramResponse;
+import org.example.courzelo.dto.responses.program.SimplifiedProgramResponse;
 import org.example.courzelo.models.User;
 import org.example.courzelo.models.institution.Institution;
 import org.example.courzelo.models.institution.Program;
@@ -46,6 +47,8 @@ public class ProgramService implements IProgramService {
                 .name(programRequest.getName())
                 .description(programRequest.getDescription())
                 .institutionID(user.getEducation().getInstitutionID())
+                .groups(new ArrayList<>())
+                .modules(new ArrayList<>())
                 .build();
         programRepository.save(program);
         addProgramToInstitution(program.getId(), user.getEducation().getInstitutionID());
@@ -141,5 +144,27 @@ public class ProgramService implements IProgramService {
             institution.getProgramsID().remove(programID);
             institutionRepository.save(institution);
         }
+    }
+
+    @Override
+    public ResponseEntity<SimplifiedProgramResponse> getSimplifiedProgramById(String id) {
+        Program program = programRepository.findById(id).orElseThrow(() -> new RuntimeException("Program not found"));
+        SimplifiedProgramResponse simplifiedProgramResponse = SimplifiedProgramResponse.builder()
+                .id(program.getId())
+                .name(program.getName())
+                .build();
+        return new ResponseEntity<>(simplifiedProgramResponse, HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<List<SimplifiedProgramResponse>> getSimplifiedProgramsByInstitution(String institutionID) {
+        List<Program> programs = programRepository.findAllByInstitutionID(institutionID).orElseThrow(() -> new RuntimeException("Programs not found"));
+        List<SimplifiedProgramResponse> simplifiedProgramResponses = programs.stream().map(
+                program -> SimplifiedProgramResponse.builder()
+                        .id(program.getId())
+                        .name(program.getName())
+                        .build()
+        ).toList();
+        return new ResponseEntity<>(simplifiedProgramResponses, HttpStatus.OK);
     }
 }

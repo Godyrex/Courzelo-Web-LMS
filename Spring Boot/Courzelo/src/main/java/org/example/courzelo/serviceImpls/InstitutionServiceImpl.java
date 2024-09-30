@@ -10,6 +10,7 @@ import org.example.courzelo.dto.requests.InstitutionRequest;
 import org.example.courzelo.dto.requests.UserEmailsRequest;
 import org.example.courzelo.dto.responses.*;
 import org.example.courzelo.dto.responses.institution.*;
+import org.example.courzelo.dto.responses.institution.InvitationsResultResponse;
 import org.example.courzelo.models.*;
 import org.example.courzelo.models.institution.*;
 import org.example.courzelo.repositories.*;
@@ -426,47 +427,56 @@ public class InstitutionServiceImpl implements IInstitutionService {
         }
     }
 
-    public ResponseEntity<UserEmailsRequest> inviteUsers(String institutionID, UserEmailsRequest emails, String role, Principal principal) {
+    public ResponseEntity<InvitationsResultResponse> inviteUsers(String institutionID, UserEmailsRequest emails, String role, Principal principal) {
         log.info("Inviting user to institution {} with emails: {} and role : {} ", institutionID, emails , role);
         Institution institution = institutionRepository.findById(institutionID).orElseThrow(()-> new NoSuchElementException("Institution not found"));
-        List<String> failedEmails = new ArrayList<>();
+        InvitationsResultResponse invitationsResultResponse = InvitationsResultResponse.builder()
+                .emailsAlreadyAccepted(new ArrayList<>())
+                .emailsNotFound(new ArrayList<>())
+                .build();
         emails.getEmails().forEach(
                 email -> {
-                   String result = inviteUser(institutionID, email, role, institution);
-                   if(result != null){
-                       failedEmails.add(result);
+                   InvitationsResultResponse emailResponse = inviteUser(institutionID, email, role, institution);
+                   if(emailResponse != null){
+                       if(!emailResponse.getEmailsNotFound().isEmpty()){
+                           invitationsResultResponse.getEmailsNotFound().addAll(emailResponse.getEmailsNotFound());
+                       }
+                       if(!emailResponse.getEmailsAlreadyAccepted().isEmpty()){
+                           invitationsResultResponse.getEmailsAlreadyAccepted().addAll(emailResponse.getEmailsAlreadyAccepted());
+                       }
                    }
                 }
         );
-        log.info("Failed emails: {}", failedEmails);
-        return ResponseEntity.ok(UserEmailsRequest
-                .builder()
-                        .emails(failedEmails)
-                .build()
-        );
+        log.info("Failed emails: {}", invitationsResultResponse);
+        return ResponseEntity.ok(invitationsResultResponse);
     }
 
-    private String inviteUser(String institutionID, String email, String role, Institution institution) {
+    private InvitationsResultResponse inviteUser(String institutionID, String email, String role, Institution institution) {
         User user = userRepository.findUserByEmail(email);
-        Invitation invitation = invitationRepository.findByEmailAndInstitutionID(email, institutionID).orElse(null);
-        if (invitation == null ||  !invitation.getStatus().equals(InvitationStatus.ACCEPTED)) {
-            CodeVerification codeVerification = codeVerificationRepository.findByEmailAndInstitutionID(email, institutionID).orElse(null);
-            if(codeVerification == null)
-            {
-                codeVerification = new CodeVerification(CodeType.INSTITUTION_INVITATION, UUID.randomUUID().toString(), email, Role.valueOf(role), institutionID, Instant.now().plusSeconds(20));
-                codeVerificationRepository.save(codeVerification);
+        InvitationsResultResponse invitationsResultResponse = InvitationsResultResponse.builder()
+                .emailsAlreadyAccepted(new ArrayList<>())
+                .emailsNotFound(new ArrayList<>())
+                .build();
+        if (user != null) {
+            Invitation invitation = invitationRepository.findByEmailAndInstitutionID(email, institutionID).orElse(null);
+            if (invitation == null ||  !invitation.getStatus().equals(InvitationStatus.ACCEPTED)) {
+                CodeVerification codeVerification = codeVerificationRepository.findByEmailAndInstitutionID(email, institutionID).orElse(null);
+                if(codeVerification == null)
+                {
+                    codeVerification = new CodeVerification(CodeType.INSTITUTION_INVITATION, UUID.randomUUID().toString(), email, Role.valueOf(role), institutionID, Instant.now().plusSeconds(20));
+                    codeVerificationRepository.save(codeVerification);
+                }
+                iInvitationService.createInvitation(institutionID, email, Role.valueOf(role), codeVerification.getId(), LocalDateTime.ofInstant(codeVerification.getExpiryDate(), ZoneId.systemDefault() )
+                        );
+                    mailService.sendInstituionInvitationEmail(email, institution,codeVerification);
+                return invitationsResultResponse;
+            }else{
+                invitationsResultResponse.getEmailsAlreadyAccepted().add(email);
+                return invitationsResultResponse;
             }
-            iInvitationService.createInvitation(institutionID, email, Role.valueOf(role), codeVerification.getId(), LocalDateTime.ofInstant(codeVerification.getExpiryDate(), ZoneId.systemDefault() )
-                    );
-            if(user == null){
-                log.info("User not found");
-                mailService.sendInstituionInvitationEmail(email, institution,codeVerification);
-            }else {
-                mailService.sendInstituionInvitationEmail(user, institution, codeVerification);
-            }
-            return null;
         }else{
-            return email;
+            invitationsResultResponse.getEmailsNotFound().add(email);
+            return invitationsResultResponse;
         }
     }
 

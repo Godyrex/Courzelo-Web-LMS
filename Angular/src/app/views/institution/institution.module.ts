@@ -13,14 +13,18 @@ import {NgbDatepickerModule, NgbTabsetModule} from '@ng-bootstrap/ng-bootstrap';
 import {CourseComponent, TimeRemainingPipe} from './course/course.component';
 import { ClassComponent } from './class/class.component';
 import { InvitationsComponent } from './invitations/invitations.component';
-import {TagInputModule} from "ngx-chips";
-import {ToolsModule} from "../tools/tools.module";
+import {TagInputModule} from 'ngx-chips';
+import {ToolsModule} from '../tools/tools.module';
 import { ProgramsComponent } from './programs/programs.component';
 import { AddProgramComponent } from './programs/add-program/add-program.component';
 import { EditProgramComponent } from './programs/edit-program/edit-program.component';
 import { ModulesComponent } from './modules/modules.component';
 import { AddModuleComponent } from './modules/add-module/add-module.component';
 import { EditModuleComponent } from './modules/edit-module/edit-module.component';
+import { AddClassComponent } from './class/add-class/add-class.component';
+import { EditClassComponent } from './class/edit-class/edit-class.component';
+import { ViewCoursesComponent } from './class/view-courses/view-courses.component';
+import { ViewStudentsComponent } from './class/view-students/view-students.component';
 
 
 @NgModule({
@@ -36,7 +40,11 @@ import { EditModuleComponent } from './modules/edit-module/edit-module.component
     EditProgramComponent,
     ModulesComponent,
     AddModuleComponent,
-    EditModuleComponent
+    EditModuleComponent,
+    AddClassComponent,
+    EditClassComponent,
+    ViewCoursesComponent,
+    ViewStudentsComponent
   ],
     imports: [
         CommonModule,

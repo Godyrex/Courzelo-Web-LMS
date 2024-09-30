@@ -12,8 +12,8 @@
     <div class="separator-breadcrumb border-top mb-3"></div>
     <div class="row  mr-4 justify-content-between">
         <div class="col-md-6 col-lg-4">
-            <div class="input-group mb-3 position-relative">
-                <input id="keyword" placeholder="Search Institutions" [formControl]="searchControl" class="form-control form-control-rounded pr-5" type="text">
+            <div class="input-group mb-3 ">
+                <input id="keyword-users" placeholder="Search Institutions" [formControl]="searchControl" class="form-control form-control-rounded pr-5" type="text">
                 <span class="input-group-text position-absolute search-icon"><i class="i-Magnifi-Glass1"></i></span>
             </div>
         </div>
@@ -352,7 +352,7 @@
                                     { name: 'Edit', prop: 'id', cellTemplate: editBtnTemplate, width: 250 },{ name: 'Actions', prop: 'id', cellTemplate: deleteBtnTemplate, width: 250 }]"
                                     [headerHeight]="50"
                                     [footerHeight]="0"
-                                    [rowHeight]="100"
+                                    [rowHeight]="60"
                                     [scrollbarV]="true"
                                     [scrollbarH]="true"
                                     [count]="totalItemsUsers"
@@ -367,13 +367,13 @@
                                     </div>
                                 </ng-template>
                                 <ng-template #editBtnTemplate let-row="row" let-value="value">
-                                    <form (ngSubmit)="changeUserRole(row)">
-                                        <div class="form-group">
+                                    <form class="form-inline" (ngSubmit)="changeUserRole(row)">
+                                        <div class="form-group mr-2">
                                             <select [(ngModel)]="selectedRole" class="form-control" name="role">
                                                 <option *ngFor="let role of availableRoles" [value]="role">{{ role }}</option>
                                             </select>
                                         </div>
-                                        <button class="btn btn-warning m-1" type="submit"><i class="i-Pen-2 mr-2"></i>Edit</button>
+                                        <button class="btn btn-warning" type="submit"><i class="fas fa-user-edit"></i></button>
                                     </form>
                                 </ng-template>
                                 <ng-template #deleteBtnTemplate let-row="row" let-value="value">

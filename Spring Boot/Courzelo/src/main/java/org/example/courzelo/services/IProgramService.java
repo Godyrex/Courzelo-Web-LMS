@@ -3,10 +3,12 @@ package org.example.courzelo.services;
 import org.example.courzelo.dto.requests.program.ProgramRequest;
 import org.example.courzelo.dto.responses.program.PaginatedProgramsResponse;
 import org.example.courzelo.dto.responses.program.ProgramResponse;
+import org.example.courzelo.dto.responses.program.SimplifiedProgramResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.security.Principal;
+import java.util.List;
 
 public interface IProgramService {
     ResponseEntity<HttpStatus> createProgram(ProgramRequest programRequest, Principal principal);
@@ -18,4 +20,7 @@ public interface IProgramService {
     void addProgramToInstitution(String programID, String institutionID);
     void removeProgramFromInstitution(String programID, String institutionID);
 
+    ResponseEntity<SimplifiedProgramResponse> getSimplifiedProgramById(String id);
+
+    ResponseEntity<List<SimplifiedProgramResponse>> getSimplifiedProgramsByInstitution(String institutionID);
 }

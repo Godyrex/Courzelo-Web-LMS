@@ -1,7 +1,7 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
 import {InstitutionService} from '../../../shared/services/institution/institution.service';
 import {ResponseHandlerService} from '../../../shared/services/user/response-handler.service';
-import {FormBuilder, Validators} from '@angular/forms';
+import {FormBuilder, FormControl, Validators} from '@angular/forms';
 import {ToastrService} from 'ngx-toastr';
 import {ActivatedRoute} from '@angular/router';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
@@ -9,6 +9,12 @@ import {GroupResponse} from '../../../shared/models/institution/GroupResponse';
 import {GroupRequest} from '../../../shared/models/institution/GroupRequest';
 import {GroupService} from '../../../shared/services/institution/group.service';
 import {InstitutionResponse} from '../../../shared/models/institution/InstitutionResponse';
+import {AddClassComponent} from './add-class/add-class.component';
+import {EditClassComponent} from './edit-class/edit-class.component';
+import {debounceTime} from 'rxjs/operators';
+import {ProgramService} from '../../../shared/services/institution/program.service';
+import {ViewCoursesComponent} from './view-courses/view-courses.component';
+import {ViewStudentsComponent} from "./view-students/view-students.component";
 
 @Component({
   selector: 'app-class',
@@ -18,7 +24,11 @@ import {InstitutionResponse} from '../../../shared/models/institution/Institutio
 export class ClassComponent implements OnInit {
   set currentPageClasses(value: number) {
     this._currentPageClasses = value;
-    this.loadGroups(this._currentPageClasses, this.itemsPerPageClasses);
+      if (this.searchControl.value == null) {
+          this.loadGroups(this._currentPageClasses, this.itemsPerPageClasses, null);
+      } else {
+          this.loadGroups(this._currentPageClasses, this.itemsPerPageClasses, this.searchControl.value);
+      }
   }
   get currentPageClasses(): number {
     return this._currentPageClasses;
@@ -33,13 +43,6 @@ export class ClassComponent implements OnInit {
     name: ['', Validators.required],
     students: [[], Validators.required]
   });
-    addUserForm = this.formBuilder.group({
-        userEmail: ['', [Validators.required, Validators.email]]
-    });
-    removeUserForm = this.formBuilder.group({
-        userEmail: ['', [Validators.required, Validators.email]]
-    });
-  groupRequest: GroupRequest;
   constructor(
       private institutionService: InstitutionService,
       private handleResponse: ResponseHandlerService,
@@ -47,11 +50,13 @@ export class ClassComponent implements OnInit {
       private toastr: ToastrService,
       private route: ActivatedRoute,
       private modalService: NgbModal,
-      private groupService: GroupService
+      private groupService: GroupService,
+      private programService: ProgramService,
   ) { }
   institutionID;
     currentInstitution: InstitutionResponse;
     currentGroup: GroupResponse;
+    searchControl: FormControl = new FormControl();
     loadingClasses = false;
     students;
     loading = false;
@@ -68,7 +73,7 @@ export class ClassComponent implements OnInit {
                 this.handleResponse.handleError(error);
             }
         );
-        this.loadGroups(this.currentPageClasses, this.itemsPerPageClasses);
+        this.loadGroups(this.currentPageClasses, this.itemsPerPageClasses, null);
     this.institutionService.getInstitutionStudents(this.institutionID).subscribe(
         response => {
           console.log(response);
@@ -77,77 +82,56 @@ export class ClassComponent implements OnInit {
           this.handleResponse.handleError(error);
         }
     );
+      this.searchControl.valueChanges
+          .pipe(debounceTime(200))
+          .subscribe(value => {
+              this.loadGroups(1, this.itemsPerPageClasses, value);
+          });
     }
-  addClass() {
-    if (this.createClassForm.valid) {
-      this.loadingClasses = true;
-      this.groupRequest = this.createClassForm.getRawValue();
-      this.groupRequest.institutionID = this.institutionID;
-      this.groupService.createGroup(this.groupRequest).subscribe(
-          response => {
-            this.toastr.success('Class created successfully');
-            this.createClassForm.reset();
+    openViewCoursesModal( group: GroupResponse) {
+        const modalRef = this.modalService.open(ViewCoursesComponent);
+        modalRef.componentInstance.program = group?.program;
+        modalRef.componentInstance.group = group;
+        modalRef.componentInstance.close.subscribe(() => {
+            modalRef.close();
+        });
+    }
+    openViewStudentsModal(group: GroupResponse) {
+        const modalRef = this.modalService.open(ViewStudentsComponent, { size: 'lg' });
+        modalRef.componentInstance.group = group;
+        modalRef.componentInstance.close.subscribe(() => {
+            modalRef.close();
+        });
+    }
+    openAddClassModal() {
+        const modalRef = this.modalService.open(AddClassComponent);
+        modalRef.componentInstance.institutionID = this.institutionID;
+        modalRef.componentInstance.classAdded.subscribe(() => {
             this.loadGroups(this.currentPageClasses, this.itemsPerPageClasses);
-            this.loadingClasses = false;
-          }, error => {
-            this.handleResponse.handleError(error);
-            this.loadingClasses = false;
-          }
-      );
-    } else {
-      this.toastr.error('Please fill all fields');
+            modalRef.close();
+        });
     }
-  }
-    openUserModal(content, group: GroupResponse): void {
-      this.currentGroup = group;
-        this.modalService.open(content, { size: 'lg' });
-    }
-    addUser() {
-        if (this.addUserForm.valid) {
-            this.loading = true;
-            this.groupService.addStudentToGroup(this.currentGroup.id, this.addUserForm.controls.userEmail.value).subscribe(
-                response => {
-                    this.toastr.success('User added successfully');
-                    this.addUserForm.reset();
-                    this.loading = false;
-                    this.loadGroups(this.currentPageClasses, this.itemsPerPageClasses);
-                }, error => {
-                    this.handleResponse.handleError(error);
-                    this.loading = false;
-                }
-            );
-        } else {
-            this.toastr.error('Please fill all fields');
-        }
-    }
-    removeUser() {
-        if (this.removeUserForm.valid) {
-            this.loading = true;
-            this.groupService.removeStudentFromGroup(this.currentGroup.id, this.removeUserForm.controls.userEmail.value).subscribe(
-                response => {
-                    this.toastr.success('User removed successfully');
-                    this.removeUserForm.reset();
-                    this.loading = false;
-                    this.loadGroups(this.currentPageClasses, this.itemsPerPageClasses);
-                }, error => {
-                    this.handleResponse.handleError(error);
-                    this.loading = false;
-                }
-            );
-        } else {
-            this.toastr.error('Please fill all fields');
-        }
-    }
-  loadGroups(page: number, size: number) {
+  loadGroups(page: number, size: number, keyword?: string) {
     this.loadingClasses = true;
-    this.groupService.getGroupsByInstitution(this.institutionID, page - 1, size).subscribe(
+    console.log('loading info', page, size, keyword);
+    this.groupService.getGroupsByInstitution(this.institutionID, page - 1, keyword, size).subscribe(
         response => {
           console.log(response);
           this.classes = response.groups;
+          this.classes.forEach(group => {
+              if (group.program != null) {
+                    this.programService.getSimplifiedProgram(group.program).subscribe(
+                        program => {
+                            group.simplifiedProgram = program;
+                        }, error => {
+                            this.handleResponse.handleError(error);
+                        }
+                    );
+              }
+          });
           this._currentPageClasses = response.currentPage + 1;
           this.totalPagesClasses = response.totalPages;
           this.totalItemsClasses = response.totalItems;
-          this.itemsPerPageClasses = response.itemsPerPage;
           this.loadingClasses = false;
         }, error => {
           this.handleResponse.handleError(error);
@@ -155,7 +139,7 @@ export class ClassComponent implements OnInit {
         }
     );
   }
-    openModal(type: string, list: any[]): void {
+  openModal(type: string, list: any[]): void {
         this.modalTitle = type === 'students' ? 'Students' : 'Courses';
         if (type === 'courses') {
             this.modalList = list.map(course => course.courseName);
@@ -164,14 +148,6 @@ export class ClassComponent implements OnInit {
         }
         this.modalService.open(this.listModal, { size: 'lg' });
     }
-  createClassModel(content) {
-    this.modalService.open(content, { ariaLabelledBy: 'create Class' })
-        .result.then((result) => {
-      console.log(result);
-    }, (reason) => {
-      console.log('Err!', reason);
-    });
-  }
   modalConfirmClassFunction(content: any, group: GroupResponse) {
     this.currentClass = group;
     this.modalService.open(content, { ariaLabelledBy: 'confirm class' })
@@ -183,6 +159,23 @@ export class ClassComponent implements OnInit {
       console.log('Err!', reason);
     });
   }
+    openEditClassModal(group: GroupResponse) {
+        const modalRef = this.modalService.open(EditClassComponent);
+        modalRef.componentInstance.group = group;
+        modalRef.componentInstance.groupUpdated.subscribe((groupUpdated: GroupResponse) => {
+                if (groupUpdated != null) {
+                    const index = this.classes.findIndex(p => p.id === groupUpdated.id);
+                    if (index !== -1) {
+                        this.classes[index] = groupUpdated;
+                    }
+                }
+                modalRef.close();
+            }, (reason) => {
+                console.log('Err!', reason);
+                modalRef.close();
+            }
+        );
+    }
   removeGroup(group: GroupResponse) {
     this.loadingClasses = true;
     this.groupService.deleteGroup(group.id).subscribe(

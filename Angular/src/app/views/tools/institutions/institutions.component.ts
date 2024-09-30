@@ -149,7 +149,24 @@ export class InstitutionsComponent implements OnInit {
                 this.emailRequest,
                 this.addUserForm.controls.role.value.toUpperCase()).subscribe(
                 response => {
-                    this.toastr.success('User invited successfully');
+                    console.log(response);
+                    console.log('lengths',
+                        this.emailRequest.emails.length,
+                        response.emailsAlreadyAccepted.length,
+                        response.emailsNotFound.length);
+                    if (this.emailRequest.emails.length !== response.emailsNotFound.length + response.emailsAlreadyAccepted.length) {
+                        this.toastr.success('Users invited successfully');
+                    }
+                    if (response.emailsAlreadyAccepted.length > 0) {
+                        this.toastr.warning('Some users have already accepted an invitation : ' + response.emailsAlreadyAccepted.join(', '), '', {
+                            timeOut: 15000 // 15 seconds
+                        });
+                    }
+                    if (response.emailsNotFound.length > 0) {
+                        this.toastr.warning('Some users were not found : ' + response.emailsNotFound.join(', '), '', {
+                            timeOut: 15000 // 15 seconds
+                        });
+                    }
                     this.addUserForm.reset();
                     this.getInstitutionUsers(this.currentPageUsers, this.itemsPerPageUsers, null, null);
                     this.loadingUsers = false;

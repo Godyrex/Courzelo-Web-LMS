@@ -11,8 +11,8 @@
 
     <div class="row">
         <div class="col-md-6 col-lg-4">
-            <div class="input-group mb-3 position-relative">
-                <input id="keyword" placeholder="Search Users" [formControl]="searchControl" class="form-control form-control-rounded pr-5" type="text">
+            <div class="input-group mb-3 ">
+                <input id="keyword-users" placeholder="Search Users" [formControl]="searchControl" class="form-control form-control-rounded pr-5" type="text">
                 <span class="input-group-text position-absolute search-icon"><i class="i-Magnifi-Glass1"></i></span>
             </div>
         </div>
@@ -33,7 +33,7 @@
                         [columnMode]="'force'"
                         [headerHeight]="50"
                         [footerHeight]="0"
-                        [rowHeight]="95"
+                        [rowHeight]="85"
                         [scrollbarV]="true"
                         [scrollbarH]="true"
                         [rows]="users | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }">
@@ -137,13 +137,13 @@
                             Add/Remove role
                         </ng-template>
                         <ng-template ngx-datatable-cell-template let-row="row" >
-                            <form (ngSubmit)="changeUserRole(row)">
-                                <div class="form-group">
+                            <form class="form-inline" (ngSubmit)="changeUserRole(row)">
+                                <div class="form-group mr-2">
                                     <select [(ngModel)]="selectedRole" class="form-control" name="role">
                                         <option *ngFor="let role of availableRoles" [value]="role">{{ role }}</option>
                                     </select>
                                 </div>
-                                <button class="btn btn-primary" type="submit"><i class="fas fa-user-edit mr-2"></i>Add/Remove Role</button>
+                                <button class="btn btn-warning" type="submit"><i class="fas fa-user-edit"></i></button>
                             </form>
                         </ng-template>
                     </ngx-datatable-column>

@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import {ProgramRequest} from '../../models/institution/ProgramRequest';
 import {PaginatedProgramsResponse} from '../../models/institution/PaginatedProgramsResponse';
 import {ProgramResponse} from '../../models/institution/ProgramResponse';
+import {SimplifiedProgramResponse} from '../../models/institution/SimplifiedProgramResponse';
 
 
 @Injectable({
@@ -36,8 +37,15 @@ export class ProgramService {
     }
     return this.http.get<PaginatedProgramsResponse>(`${this.baseUrl}/`, { params });
   }
-
+  getSimplifiedPrograms(institutionID: string): Observable<SimplifiedProgramResponse[]> {
+    const params = new HttpParams()
+        .set('institutionID', institutionID);
+    return this.http.get<SimplifiedProgramResponse[]>(`${this.baseUrl}/simplified`, { params });
+  }
   getProgram(id: string): Observable<ProgramResponse> {
     return this.http.get<ProgramResponse>(`${this.baseUrl}/${id}`);
+  }
+  getSimplifiedProgram(id: string): Observable<SimplifiedProgramResponse> {
+    return this.http.get<SimplifiedProgramResponse>(`${this.baseUrl}/simplified/${id}`);
   }
 }

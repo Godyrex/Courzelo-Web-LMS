@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.example.courzelo.dto.requests.program.ProgramRequest;
 import org.example.courzelo.dto.responses.program.PaginatedProgramsResponse;
 import org.example.courzelo.dto.responses.program.ProgramResponse;
+import org.example.courzelo.dto.responses.program.SimplifiedProgramResponse;
 import org.example.courzelo.services.IProgramService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/program")
@@ -44,5 +46,15 @@ public class ProgramController {
     @PreAuthorize("hasAnyRole('ADMIN')&&@customAuthorization.canAccessProgram(#id)")
     public ResponseEntity<ProgramResponse> getProgram(@PathVariable String id){
         return programService.getProgramById(id);
+    }
+    @GetMapping("/simplified/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')&&@customAuthorization.canAccessProgram(#id)")
+    public ResponseEntity<SimplifiedProgramResponse> getSimplifiedProgram(@PathVariable String id){
+        return programService.getSimplifiedProgramById(id);
+    }
+    @GetMapping("/simplified")
+    @PreAuthorize("hasAnyRole('ADMIN')&&@customAuthorization.isAdminInInstitution()")
+    public ResponseEntity<List<SimplifiedProgramResponse>> getSimplifiedPrograms(@RequestParam String institutionID){
+        return programService.getSimplifiedProgramsByInstitution(institutionID);
     }
 }

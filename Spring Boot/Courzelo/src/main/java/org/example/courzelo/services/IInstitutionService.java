@@ -5,9 +5,9 @@ import org.example.courzelo.dto.requests.InstitutionMapRequest;
 import org.example.courzelo.dto.requests.InstitutionRequest;
 import org.example.courzelo.dto.requests.UserEmailsRequest;
 import org.example.courzelo.dto.responses.GroupResponse;
-import org.example.courzelo.dto.responses.PaginatedGroupsResponse;
 import org.example.courzelo.dto.responses.StatusMessageResponse;
 import org.example.courzelo.dto.responses.institution.InstitutionResponse;
+import org.example.courzelo.dto.responses.institution.InvitationsResultResponse;
 import org.example.courzelo.dto.responses.institution.PaginatedInstitutionUsersResponse;
 import org.example.courzelo.dto.responses.institution.PaginatedInstitutionsResponse;
 import org.example.courzelo.models.institution.Institution;
@@ -41,7 +41,7 @@ public interface IInstitutionService {
 
     ResponseEntity<byte[]> getInstitutionImage(String institutionID, Principal principal);
 
-    ResponseEntity<UserEmailsRequest> inviteUsers(String institutionID, UserEmailsRequest emailsRequest, String role, Principal principal);
+    ResponseEntity<InvitationsResultResponse> inviteUsers(String institutionID, UserEmailsRequest emailsRequest, String role, Principal principal);
 
     ResponseEntity<HttpStatus> acceptInvite(String code,Principal principal);
 

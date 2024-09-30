@@ -10,7 +10,8 @@ import {InstitutionMapRequest} from '../../models/institution/InstitutionMapRequ
 import {CalendarEventRequest} from '../../models/institution/CalendarEventRequest';
 import {map} from 'rxjs/operators';
 import {GroupResponse} from '../../models/institution/GroupResponse';
-import {UserEmailsRequest} from "../../models/institution/UserEmailsRequest";
+import {UserEmailsRequest} from '../../models/institution/UserEmailsRequest';
+import {InvitationsResultResponse} from '../../models/institution/InvitationsResultResponse';
 
 @Injectable({
   providedIn: 'root'
@@ -53,10 +54,10 @@ export class InstitutionService {
   deleteInstitution(institutionID: string): Observable<StatusMessageResponse> {
     return this.http.delete<StatusMessageResponse>(`${this.baseUrl}/delete/${institutionID}`);
   }
-  inviteUsers(institutionID: string, emails: UserEmailsRequest, role: string): Observable<UserEmailsRequest> {
+  inviteUsers(institutionID: string, emails: UserEmailsRequest, role: string): Observable<InvitationsResultResponse> {
     const params = new HttpParams()
         .set('role', role);
-    return this.http.put<UserEmailsRequest>(`${this.baseUrl}/${institutionID}/invite_users`, emails, { params });
+    return this.http.put<InvitationsResultResponse>(`${this.baseUrl}/${institutionID}/invite_users`, emails, { params });
   }
   removeInstitutionUserRole(institutionID: string, email: string, role: string) {
     console.log(email, role, institutionID);

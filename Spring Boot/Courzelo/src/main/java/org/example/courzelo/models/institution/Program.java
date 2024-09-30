@@ -17,4 +17,5 @@ public class Program {
     private String description;
     private String institutionID;
     private List<String> modules;
+    private List<String> groups;
 }
