@@ -47,6 +47,8 @@ public class ProgramService implements IProgramService {
                 .name(programRequest.getName())
                 .description(programRequest.getDescription())
                 .institutionID(user.getEducation().getInstitutionID())
+                .credits(programRequest.getCredits())
+                .duration(programRequest.getDuration())
                 .groups(new ArrayList<>())
                 .modules(new ArrayList<>())
                 .build();
@@ -60,6 +62,8 @@ public class ProgramService implements IProgramService {
         Program program = programRepository.findById(id).orElseThrow(() -> new RuntimeException("Program not found"));
         program.setName(programRequest.getName());
         program.setDescription(programRequest.getDescription());
+        program.setCredits(programRequest.getCredits());
+        program.setDuration(programRequest.getDuration());
         programRepository.save(program);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -89,6 +93,8 @@ public class ProgramService implements IProgramService {
                                 .name(program.getName())
                                 .description(program.getDescription())
                                 .institutionID(program.getInstitutionID())
+                                .credits(program.getCredits())
+                                .duration(program.getDuration())
                                 .build()
                 ).toList()
                 )
@@ -107,6 +113,8 @@ public class ProgramService implements IProgramService {
                 .name(program.getName())
                 .description(program.getDescription())
                 .institutionID(program.getInstitutionID())
+                .credits(program.getCredits())
+                .duration(program.getDuration())
                 .build();
         return new ResponseEntity<>(programResponse, HttpStatus.OK);
     }

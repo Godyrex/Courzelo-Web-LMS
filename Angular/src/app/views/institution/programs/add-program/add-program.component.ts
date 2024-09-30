@@ -21,7 +21,9 @@ export class AddProgramComponent {
   ) {
     this.addProgramForm = this.fb.group({
       name: ['', Validators.required],
-      description: ['', Validators.required]
+      description: ['', Validators.required],
+      credits: [0, Validators.required],
+      duration: ['']
     });
   }
 

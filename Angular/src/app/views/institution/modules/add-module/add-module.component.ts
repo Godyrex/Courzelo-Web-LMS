@@ -25,6 +25,7 @@ export class AddModuleComponent {
     this.addModuleForm = this.fb.group({
       name: ['', Validators.required],
       description: ['', Validators.required],
+      duration: ['', Validators.required],
       credit: [0, Validators.required],
     });
   }
@@ -33,6 +34,7 @@ export class AddModuleComponent {
     if (this.addModuleForm.valid) {
       this.moduleRequest = this.addModuleForm.value;
         this.moduleRequest.program = this.programID;
+        console.log(this.moduleRequest);
       this.moduleService.createModule(this.moduleRequest).subscribe(
           () => {
             this.toastr.success('Program added successfully');

@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 public class ModuleRequest {
     private String name;
     private String description;
+    private String duration;
     private int credit;
     private String program;
 

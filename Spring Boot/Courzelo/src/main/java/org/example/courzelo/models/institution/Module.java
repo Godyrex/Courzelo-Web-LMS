@@ -13,6 +13,7 @@ public class Module {
     private String id;
     private String name;
     private String description;
+    private String duration;
     private int credit;
     private String institutionID;
     private String program;

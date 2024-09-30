@@ -25,7 +25,9 @@ export class EditProgramComponent implements OnInit {
   ngOnInit(): void {
     this.editProgramForm = this.fb.group({
       name: [this.program.name, Validators.required],
-      description: [this.program.description, Validators.required]
+      description: [this.program.description, Validators.required],
+      credits: [this.program.credits, Validators.required],
+      duration: [this.program.duration]
     });
   }
 

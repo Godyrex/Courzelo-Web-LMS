@@ -5,7 +5,11 @@
     </button>
 </div>
 <div class="modal-body">
-    <form [formGroup]="editProgramForm" (ngSubmit)="onSubmit()">
+    <div *ngIf="!program" class="loadscreen">
+        <img src="assets/images/logo.png" class="logo mb-3" style="display: none" alt="">
+        <div class="loader-bubble loader-bubble-primary d-block"></div>
+    </div>
+    <form *ngIf="program" [formGroup]="editProgramForm" (ngSubmit)="onSubmit()">
         <div class="form-group">
             <label for="name">Name</label>
             <input id="name" formControlName="name" class="form-control" />
@@ -14,7 +18,14 @@
             <label for="description">Description</label>
             <textarea id="description" formControlName="description" class="form-control"></textarea>
         </div>
-
+        <div class="form-group">
+            <label for="credits">Credits</label>
+            <input id="credits" formControlName="credits" type="number" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label for="duration">Duration</label>
+            <input id="duration" formControlName="duration"  class="form-control" />
+        </div>
         <button type="submit" class="btn btn-primary" [disabled]="editProgramForm.invalid">Save Changes</button>
     </form>
 </div>

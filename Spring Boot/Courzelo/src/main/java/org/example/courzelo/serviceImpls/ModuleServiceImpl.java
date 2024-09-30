@@ -38,6 +38,7 @@ public class ModuleServiceImpl implements IModuleService {
                 .name(moduleRequest.getName())
                 .description(moduleRequest.getDescription())
                 .program(moduleRequest.getProgram())
+                .duration(moduleRequest.getDuration())
                 .credit(moduleRequest.getCredit())
                 .institutionID(program.getInstitutionID())
                 .build();
@@ -48,17 +49,12 @@ public class ModuleServiceImpl implements IModuleService {
 
     @Override
     public ResponseEntity<HttpStatus> updateModule(String id, ModuleRequest moduleRequest) {
+        log.info("Updating module info :" + moduleRequest);
         Module module = moduleRepository.findById(id).orElseThrow(() -> new RuntimeException("Module not found"));
         module.setName(moduleRequest.getName());
+        module.setDuration(moduleRequest.getDuration());
         module.setDescription(moduleRequest.getDescription());
         module.setCredit(moduleRequest.getCredit());
-        if(!moduleRequest.getProgram().equals(module.getProgram())) {
-            module.setProgram(moduleRequest.getProgram());
-            Program program = programRepository.findById(moduleRequest.getProgram()).orElseThrow(() -> new RuntimeException("Program not found"));
-            addModuleToProgram(program, module.getId());
-            Program oldProgram = programRepository.findById(module.getProgram()).orElseThrow(() -> new RuntimeException("Program not found"));
-            removeModuleFromProgram(oldProgram, module.getId());
-        }
         moduleRepository.save(module);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -90,6 +86,7 @@ public class ModuleServiceImpl implements IModuleService {
                                 .id(module.getId())
                                 .name(module.getName())
                                 .description(module.getDescription())
+                                .duration(module.getDuration())
                                 .credit(module.getCredit())
                                 .program(module.getProgram())
                                 .institutionID(module.getInstitutionID())
@@ -108,6 +105,7 @@ public class ModuleServiceImpl implements IModuleService {
                 .id(module.getId())
                 .name(module.getName())
                 .description(module.getDescription())
+                .duration(module.getDuration())
                 .credit(module.getCredit())
                 .program(module.getProgram())
                 .institutionID(module.getInstitutionID())

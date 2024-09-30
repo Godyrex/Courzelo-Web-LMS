@@ -15,6 +15,8 @@ public class Program {
     private String id;
     private String name;
     private String description;
+    private Integer credits;
+    private String duration;
     private String institutionID;
     private List<String> modules;
     private List<String> groups;

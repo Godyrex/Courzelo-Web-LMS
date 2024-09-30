@@ -14,6 +14,14 @@
             <label for="description">Description</label>
             <textarea id="description" formControlName="description" class="form-control"></textarea>
         </div>
+        <div class="form-group">
+            <label for="credits">Credits</label>
+            <input id="credits" formControlName="credits" type="number" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label for="duration">Duration</label>
+            <input id="duration" formControlName="duration"  class="form-control" />
+        </div>
         <button type="submit" class="btn btn-primary" [disabled]="addProgramForm.invalid">Add Program</button>
     </form>
 </div>

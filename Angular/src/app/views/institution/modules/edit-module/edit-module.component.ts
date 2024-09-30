@@ -26,12 +26,14 @@ export class EditModuleComponent implements OnInit {
     this.editModuleForm = this.fb.group({
       name: [this.module.name, Validators.required],
       description: [this.module.description, Validators.required],
+      duration: [this.module.duration, Validators.required],
       credit: [this.module.credit, Validators.required]
     });
   }
 
   onSubmit() {
     if (this.editModuleForm.valid) {
+      console.log(this.editModuleForm.value);
       this.moduleService.updateModule(this.module.id, this.editModuleForm.value).subscribe(
           () => {
             this.toastr.success('Program updated successfully');
