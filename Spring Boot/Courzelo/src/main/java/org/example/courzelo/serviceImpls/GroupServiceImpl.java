@@ -37,7 +37,6 @@ public class GroupServiceImpl implements IGroupService {
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
     private final InstitutionRepository institutionRepository;
-    private final MongoTemplate mongoTemplate;
     private final ProgramRepository programRepository;
     @Override
     public ResponseEntity<GroupResponse> getGroup(String groupID) {
@@ -236,7 +235,7 @@ public class GroupServiceImpl implements IGroupService {
         }
 
 
-        if(groupRequest.getProgram()!=null && groupRequest.getProgram().equals(group.getProgram())){
+        if(groupRequest.getProgram()!=null && !groupRequest.getProgram().equals(group.getProgram())){
             programRepository.findById(groupRequest.getProgram()).ifPresent(program -> {
                 group.setProgram(program.getId());
                 if(program.getGroups()==null){
@@ -266,13 +265,13 @@ public class GroupServiceImpl implements IGroupService {
             );
         }
         Institution institution = institutionRepository.findById(group.getInstitutionID()).orElseThrow(() -> new NoSuchElementException("Institution not found"));
-        if (institution.getGroupsID() != null) {
+        if (institution.getGroupsID() != null && institution.getGroupsID().contains(groupID)) {
             institution.getGroupsID().remove(groupID);
             institutionRepository.save(institution);
         }
         if(group.getProgram()!=null){
             programRepository.findById(group.getProgram()).ifPresent(program -> {
-                if (program.getGroups() != null) {
+                if (program.getGroups() != null && program.getGroups().contains(groupID)) {
                     program.getGroups().remove(groupID);
                     programRepository.save(program);
                 }
@@ -335,13 +334,15 @@ public class GroupServiceImpl implements IGroupService {
     @Override
     public void deleteGroupsByInstitution(String institutionID) {
         Institution institution = institutionRepository.findById(institutionID).orElseThrow(() -> new NoSuchElementException("Institution not found"));
-        institution.getGroupsID().forEach(
-                this::deleteGroup
-        );
+        if (institution.getGroupsID() != null) {
+            institution.getGroupsID().forEach(
+                    this::deleteGroup
+            );
+        }
     }
 
     @Override
-    public void removeStudentFromAllGroups(User user) {
+    public void removeStudentFromGroup(User user) {
         if (user.getEducation() != null && user.getEducation().getGroupID() != null) {
             Group group = groupRepository.findById(user.getEducation().getGroupID()).orElseThrow(() -> new NoSuchElementException("Group not found"));
             group.getStudents().remove(user.getEmail());

@@ -7,6 +7,7 @@ import org.example.courzelo.dto.responses.module.ModuleResponse;
 import org.example.courzelo.dto.responses.module.PaginatedModulesResponse;
 import org.example.courzelo.models.institution.Module;
 import org.example.courzelo.models.institution.Program;
+import org.example.courzelo.repositories.CourseRepository;
 import org.example.courzelo.repositories.ModuleRepository;
 import org.example.courzelo.repositories.ProgramRepository;
 import org.example.courzelo.services.IModuleService;
@@ -25,6 +26,7 @@ import java.util.ArrayList;
 public class ModuleServiceImpl implements IModuleService {
     private final ModuleRepository moduleRepository;
     private final ProgramRepository programRepository;
+    private final CourseRepository courseRepository;
     @Override
     public ResponseEntity<HttpStatus> createModule(ModuleRequest moduleRequest) {
         if(moduleRequest.getName() == null || moduleRequest.getDescription() == null || moduleRequest.getProgram() == null) {
@@ -64,8 +66,13 @@ public class ModuleServiceImpl implements IModuleService {
         Module module = moduleRepository.findById(id).orElseThrow(() -> new RuntimeException("Module not found"));
         Program program = programRepository.findById(module.getProgram()).orElseThrow(() -> new RuntimeException("Program not found"));
         removeModuleFromProgram(program, id);
+        removeModuleFromCourses(id);
         moduleRepository.deleteById(id);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    private void removeModuleFromCourses(String id) {
+        courseRepository.deleteAllByModule(id);
     }
 
     @Override
@@ -116,10 +123,7 @@ public class ModuleServiceImpl implements IModuleService {
     public void deleteAllProgramModules(String programID) {
         Program program = programRepository.findById(programID).orElseThrow(() -> new RuntimeException("Program not found"));
         if (program.getModules() != null) {
-            program.getModules().forEach(moduleID -> {
-                Module module = moduleRepository.findById(moduleID).orElseThrow(() -> new RuntimeException("Module not found"));
-                moduleRepository.delete(module);
-            });
+            program.getModules().forEach(this::deleteModule);
             program.setModules(new ArrayList<>());
             programRepository.save(program);
         }
@@ -140,7 +144,9 @@ public class ModuleServiceImpl implements IModuleService {
 
     @Override
     public void removeModuleFromProgram(Program program, String moduleID) {
-        program.getModules().remove(moduleID);
-        programRepository.save(program);
+        if (program.getModules() != null && program.getModules().contains(moduleID)) {
+            program.getModules().remove(moduleID);
+            programRepository.save(program);
+        }
     }
 }

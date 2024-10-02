@@ -5,6 +5,7 @@ export interface CourseResponse {
     id?: string;
     name?: string;
     description?: string;
+    module?: string;
     credit?: number;
     teacher?: string;
     group?: string;

@@ -8,6 +8,7 @@ import lombok.Data;
 public class CourseRequest {
     private String name;
     private String description;
+    private String module;
     private int credit;
     private String group;
     private String teacher;

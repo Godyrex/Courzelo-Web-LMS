@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.courzelo.dto.responses.InvitationResponse;
 import org.example.courzelo.dto.responses.PaginatedInvitationsResponse;
+import org.example.courzelo.exceptions.InstitutionNotFoundException;
+import org.example.courzelo.exceptions.InvitationNotFoundException;
 import org.example.courzelo.models.CodeType;
 import org.example.courzelo.models.CodeVerification;
 import org.example.courzelo.models.Role;
@@ -38,11 +40,13 @@ public class InvitationService implements IInvitationService {
     private final CodeVerificationService codeVerificationService;
     private final IMailService mailService;
     private final InstitutionRepository institutionRepository;
+    private final static String INSTITUTION_NOT_FOUND = "Institution not found";
+    private final static String INVITATION_NOT_FOUND = "Invitation not found";
     @Override
     public void createInvitation(String institutionID, String email, Role role, String code, LocalDateTime expiryDate) {
         Invitation invitation = null;
         if (invitationRepository.existsByEmailAndInstitutionID(email, institutionID)) {
-            invitation = invitationRepository.findByEmailAndInstitutionID(email,institutionID).orElseThrow(() -> new NoSuchElementException("Invitation not found"));
+            invitation = invitationRepository.findByEmailAndInstitutionID(email,institutionID).orElseThrow(() -> new InstitutionNotFoundException(INSTITUTION_NOT_FOUND));
             invitation.setRole(role);
             invitation.setCode(code);
             invitation.setStatus(InvitationStatus.PENDING);
@@ -85,8 +89,8 @@ public class InvitationService implements IInvitationService {
 
     @Override
     public ResponseEntity<HttpStatus> resendInvitation(String invitationID) {
-        Invitation invitation = invitationRepository.findById(invitationID).orElseThrow(() -> new NoSuchElementException("Invitation not found"));
-        Institution institution = institutionRepository.findById(invitation.getInstitutionID()).orElseThrow(() -> new NoSuchElementException("Institution not found"));
+        Invitation invitation = invitationRepository.findById(invitationID).orElseThrow(() -> new InvitationNotFoundException(INVITATION_NOT_FOUND));
+        Institution institution = institutionRepository.findById(invitation.getInstitutionID()).orElseThrow(() -> new InstitutionNotFoundException(INSTITUTION_NOT_FOUND));
         CodeVerification codeVerification = codeVerificationRepository.findById(invitation.getCode()).orElseGet(() ->
                 codeVerificationService.saveCode(
                         CodeType.INSTITUTION_INVITATION,
@@ -115,7 +119,7 @@ public class InvitationService implements IInvitationService {
 
     @Override
     public ResponseEntity<HttpStatus> deleteInvitation(String invitationID) {
-        Invitation invitation = invitationRepository.findById(invitationID).orElseThrow(() -> new NoSuchElementException("Invitation not found"));
+        Invitation invitation = invitationRepository.findById(invitationID).orElseThrow(() -> new InvitationNotFoundException(INVITATION_NOT_FOUND));
         if(invitation.getCode() != null){
             codeVerificationRepository.deleteById(invitation.getCode());
         }

@@ -17,5 +17,5 @@ public interface IGroupService {
     void removeStudentFromGroup(String groupID, String studentID);
 
     void deleteGroupsByInstitution(String institutionID);
-    void removeStudentFromAllGroups(User user);
+    void removeStudentFromGroup(User user);
 }

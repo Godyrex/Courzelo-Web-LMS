@@ -4,6 +4,7 @@ import com.lowagie.text.DocumentException;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.courzelo.dto.Timetable.TimetableDTO;
 import org.example.courzelo.models.Timetable.ElementModule;
@@ -24,23 +25,12 @@ import java.util.Map;
 @RestController
 @Slf4j
 @RequestMapping(value = "/api/TimeTable", produces = MediaType.APPLICATION_JSON_VALUE)
+@AllArgsConstructor
 public class TimetableController {
-    private TimetableService timeTableService;
-    private ElementModuleRepo elementModuleRepo;
-    private PdfExportService pdfExportService;
+    private final TimetableService timeTableService;
+    private final ElementModuleRepo elementModuleRepo;
+    private final PdfExportService pdfExportService;
 
-    @Autowired
-    public void TimeTableController(TimetableService timeTableService, ElementModuleRepo elementModuleRepository) {
-        this.timeTableService = timeTableService;
-        this.elementModuleRepo = elementModuleRepository;
-        this.pdfExportService = pdfExportService;
-    }
-
-    public TimetableController(TimetableService timeTableService, ElementModuleRepo elementModuleRepository, ElementModuleRepo elementModuleRepo, PdfExportService pdfExportService) {
-        this.timeTableService = timeTableService;
-        this.elementModuleRepo = elementModuleRepo;
-        this.pdfExportService = pdfExportService;
-    }
 
     @PostMapping
     @ApiResponse(responseCode = "201")

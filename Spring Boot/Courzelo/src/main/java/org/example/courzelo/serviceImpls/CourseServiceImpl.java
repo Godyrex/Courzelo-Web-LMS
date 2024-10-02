@@ -12,10 +12,7 @@ import org.example.courzelo.models.institution.Course;
 import org.example.courzelo.models.institution.CoursePost;
 import org.example.courzelo.models.institution.Group;
 import org.example.courzelo.models.institution.Institution;
-import org.example.courzelo.repositories.CourseRepository;
-import org.example.courzelo.repositories.GroupRepository;
-import org.example.courzelo.repositories.InstitutionRepository;
-import org.example.courzelo.repositories.UserRepository;
+import org.example.courzelo.repositories.*;
 import org.example.courzelo.services.ICourseService;
 import org.example.courzelo.services.QuizService;
 import org.springframework.data.domain.Sort;
@@ -49,6 +46,7 @@ public class CourseServiceImpl implements ICourseService {
                 .name(courseRequest.getName())
                 .description(courseRequest.getDescription())
                 .credit(courseRequest.getCredit())
+                .module(courseRequest.getModule())
                 .institutionID(institution.getId())
                 .teacher(courseRequest.getTeacher())
                 .group(courseRequest.getGroup())
@@ -59,9 +57,13 @@ public class CourseServiceImpl implements ICourseService {
         institutionRepository.save(institution);
         if(courseRequest.getTeacher()!=null){
             log.info("Adding course to teacher");
-            User teacher = userRepository.findUserByEmail(courseRequest.getTeacher());
-            teacher.getEducation().getCoursesID().add(course.getId());
-            userRepository.save(teacher);
+            if (institution.getTeachers().contains(courseRequest.getTeacher())) {
+                User teacher = userRepository.findUserByEmail(courseRequest.getTeacher());
+                teacher.getEducation().getCoursesID().add(course.getId());
+                userRepository.save(teacher);
+            }else{
+                //TODO throw exception
+            }
         }
         if(courseRequest.getGroup()!=null){
             log.info("Adding course to group");
@@ -78,6 +80,20 @@ public class CourseServiceImpl implements ICourseService {
         Course course = courseRepository.findById(courseID).orElseThrow();
         course.setName(courseRequest.getName());
         course.setDescription(courseRequest.getDescription());
+        if (!course.getTeacher().equals(courseRequest.getTeacher())) {
+            Institution institution = institutionRepository.findById(course.getInstitutionID()).orElseThrow();
+            if (institution.getTeachers().contains(courseRequest.getTeacher())) {
+                userRepository.findByEmail(courseRequest.getTeacher()).ifPresent(
+                        teacher -> {
+                            course.setTeacher(courseRequest.getTeacher());
+                            if (teacher.getEducation() != null && teacher.getEducation().getCoursesID() != null && !teacher.getEducation().getCoursesID().contains(course.getId())) {
+                                teacher.getEducation().getCoursesID().add(course.getId());
+                                userRepository.save(teacher);
+                            }
+                        }
+                );
+            }
+        }
         course.setCredit(courseRequest.getCredit());
         courseRepository.save(course);
         return ResponseEntity.ok(HttpStatus.OK);
@@ -87,23 +103,30 @@ public class CourseServiceImpl implements ICourseService {
     public ResponseEntity<HttpStatus> deleteCourse(String courseID) {
         log.info("Deleting course with id: " + courseID);
         Course course = courseRepository.findById(courseID).orElseThrow();
-        if(course.getGroup()!= null ){
+        if (course.getGroup() != null) {
             log.info("Deleting course from group");
-            Group group = groupRepository.findById(course.getGroup()).orElse(null);
-            if (group != null) {
+            groupRepository.findById(course.getGroup()).ifPresent(group -> {
                 group.getCourses().remove(course.getId());
                 groupRepository.save(group);
-            }
+            });
         }
         if(course.getTeacher()!= null) {
             log.info("Deleting course from teacher");
-            User teacher = userRepository.findUserByEmail(course.getTeacher());
-            teacher.getEducation().getCoursesID().remove(course.getId());
-            userRepository.save(teacher);
+             userRepository.findByEmail(course.getTeacher()).ifPresent(teacher -> {
+                 if (teacher.getEducation() != null && teacher.getEducation().getCoursesID() != null && teacher.getEducation().getCoursesID().contains(course.getId())) {
+                     teacher.getEducation().getCoursesID().remove(course.getId());
+                     userRepository.save(teacher);
+                 }
+             });
         }
-        Institution institution = institutionRepository.findById(course.getInstitutionID()).orElseThrow();
-        institution.getCoursesID().remove(course.getId());
-        institutionRepository.save(institution);
+         institutionRepository.findById(course.getInstitutionID()).ifPresent(
+                institution -> {
+                    if (institution.getCoursesID() != null && institution.getCoursesID().contains(course.getId())) {
+                        institution.getCoursesID().remove(course.getId());
+                        institutionRepository.save(institution);
+                    }
+                }
+         );
         courseRepository.delete(course);
         log.info("Course deleted");
         return ResponseEntity.ok(HttpStatus.OK);
@@ -123,6 +146,7 @@ public class CourseServiceImpl implements ICourseService {
                 .id(course.getId())
                 .name(course.getName())
                 .description(course.getDescription())
+                .module(course.getModule())
                 .credit(course.getCredit())
                 .teacher(course.getTeacher())
                 .group(course.getGroup())
@@ -142,6 +166,9 @@ public class CourseServiceImpl implements ICourseService {
     public ResponseEntity<HttpStatus> setTeacher(String courseID, String email) {
         Course course = courseRepository.findById(courseID).orElseThrow();
         Institution institution = institutionRepository.findById(course.getInstitutionID()).orElseThrow();
+        if(course.getTeacher().equals(email)){
+        //TODO custom exception
+        }
         if(institution.getTeachers().contains(email)){
             User teacher = userRepository.findUserByEmail(email);
             course.setTeacher(teacher.getEmail());
@@ -277,6 +304,7 @@ public class CourseServiceImpl implements ICourseService {
                 .id(course.getId())
                 .name(course.getName())
                 .description(course.getDescription())
+                .module(course.getModule())
                 .credit(course.getCredit())
                 .teacher(course.getTeacher())
                 .group(course.getGroup())

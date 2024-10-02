@@ -11,6 +11,7 @@ import org.example.courzelo.models.institution.Program;
 import org.example.courzelo.repositories.InstitutionRepository;
 import org.example.courzelo.repositories.ProgramRepository;
 import org.example.courzelo.repositories.UserRepository;
+import org.example.courzelo.serviceImpls.Groups.GroupService;
 import org.example.courzelo.services.IModuleService;
 import org.example.courzelo.services.IProgramService;
 import org.springframework.data.domain.Page;
@@ -31,6 +32,7 @@ public class ProgramService implements IProgramService {
     private final UserRepository userRepository;
     private final IModuleService moduleService;
     private final InstitutionRepository institutionRepository;
+    private final GroupService groupService;
     @Override
     public ResponseEntity<HttpStatus> createProgram(ProgramRequest programRequest, Principal principal) {
         if(programRequest.getName() == null || programRequest.getDescription() == null) {
@@ -73,6 +75,9 @@ public class ProgramService implements IProgramService {
         Program program = programRepository.findById(id).orElseThrow(() -> new RuntimeException("Program not found"));
         removeProgramFromInstitution(program.getId(), program.getInstitutionID());
         moduleService.deleteAllProgramModules(program.getId());
+        if(program.getGroups()!=null) {
+            program.getGroups().forEach(groupService::deleteGroup);
+        }
         programRepository.delete(program);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -122,12 +127,11 @@ public class ProgramService implements IProgramService {
     @Override
     public void deleteAllInstitutionPrograms(String institutionID) {
         Institution institution = institutionRepository.findById(institutionID).orElseThrow(() -> new RuntimeException("Institution not found"));
-        List<Program> programs = programRepository.findAllByInstitutionID(institutionID).orElseThrow(() -> new RuntimeException("Programs not found"));
-        programs.forEach(program ->
-                institution.getProgramsID().remove(program.getId())
-        );
-        programs.forEach(program -> moduleService.deleteAllProgramModules(program.getId()));
-        programRepository.deleteAll(programs);
+        if (institution.getProgramsID() != null) {
+            institution.getProgramsID().forEach(this::deleteProgram);
+            institution.setProgramsID(new ArrayList<>());
+            institutionRepository.save(institution);
+        }
     }
 
     @Override
@@ -145,10 +149,7 @@ public class ProgramService implements IProgramService {
     @Override
     public void removeProgramFromInstitution(String programID, String institutionID) {
         Institution institution = institutionRepository.findById(institutionID).orElseThrow(() -> new RuntimeException("Institution not found"));
-        if(institution.getProgramsID()==null) {
-            institution.setProgramsID(new ArrayList<>());
-        }
-        if (institution.getProgramsID().contains(programID)) {
+        if (institution.getProgramsID()!= null&&institution.getProgramsID().contains(programID)) {
             institution.getProgramsID().remove(programID);
             institutionRepository.save(institution);
         }
