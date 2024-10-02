@@ -66,7 +66,7 @@ public class InvitationService implements IInvitationService {
 
     @Override
     public void updateInvitationStatus(String email,String institutionID, InvitationStatus status) {
-        Invitation invitation = invitationRepository.findByEmailAndInstitutionID(email,institutionID).orElse(null);
+        Invitation invitation = invitationRepository.findByEmailAndInstitutionID(email,institutionID).orElseThrow(() -> new InvitationNotFoundException(INVITATION_NOT_FOUND));
         if (invitation != null) {
             invitation.setStatus(status);
             if(status.equals(InvitationStatus.ACCEPTED)){

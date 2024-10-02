@@ -7,6 +7,7 @@ import org.example.courzelo.dto.requests.CoursePostRequest;
 import org.example.courzelo.dto.requests.CourseRequest;
 import org.example.courzelo.dto.responses.CoursePostResponse;
 import org.example.courzelo.dto.responses.CourseResponse;
+import org.example.courzelo.exceptions.*;
 import org.example.courzelo.models.User;
 import org.example.courzelo.models.institution.Course;
 import org.example.courzelo.models.institution.CoursePost;
@@ -61,8 +62,6 @@ public class CourseServiceImpl implements ICourseService {
                 User teacher = userRepository.findUserByEmail(courseRequest.getTeacher());
                 teacher.getEducation().getCoursesID().add(course.getId());
                 userRepository.save(teacher);
-            }else{
-                //TODO throw exception
             }
         }
         if(courseRequest.getGroup()!=null){
@@ -102,7 +101,7 @@ public class CourseServiceImpl implements ICourseService {
     @Override
     public ResponseEntity<HttpStatus> deleteCourse(String courseID) {
         log.info("Deleting course with id: " + courseID);
-        Course course = courseRepository.findById(courseID).orElseThrow();
+        Course course = courseRepository.findById(courseID).orElseThrow(() -> new CourseNotFoundException("Course not found"));
         if (course.getGroup() != null) {
             log.info("Deleting course from group");
             groupRepository.findById(course.getGroup()).ifPresent(group -> {
@@ -134,7 +133,7 @@ public class CourseServiceImpl implements ICourseService {
 
     @Override
     public ResponseEntity<CourseResponse> getCourse(String courseID) {
-        Course course = courseRepository.findById(courseID).orElseThrow(() -> new NoSuchElementException("Course not found"));
+        Course course = courseRepository.findById(courseID).orElseThrow(() -> new CourseNotFoundException("Course not found"));
         List<QuizDTO> quizzes = new ArrayList<>();
         if(course.getQuizzes()!= null){
             course.getQuizzes().forEach(quizID -> {
@@ -164,10 +163,10 @@ public class CourseServiceImpl implements ICourseService {
 
     @Override
     public ResponseEntity<HttpStatus> setTeacher(String courseID, String email) {
-        Course course = courseRepository.findById(courseID).orElseThrow();
-        Institution institution = institutionRepository.findById(course.getInstitutionID()).orElseThrow();
+        Course course = courseRepository.findById(courseID).orElseThrow(()-> new CourseNotFoundException("Course not found"));
+        Institution institution = institutionRepository.findById(course.getInstitutionID()).orElseThrow(() -> new InstitutionNotFoundException("Institution not found"));
         if(course.getTeacher().equals(email)){
-        //TODO custom exception
+            throw new TeacherAlreadyAssignedException("Teacher already assigned to course");
         }
         if(institution.getTeachers().contains(email)){
             User teacher = userRepository.findUserByEmail(email);
@@ -177,7 +176,7 @@ public class CourseServiceImpl implements ICourseService {
             courseRepository.save(course);
             return ResponseEntity.ok(HttpStatus.OK);
         }
-        return ResponseEntity.badRequest().build();
+        throw new UserNotPartOfInstitutionException(email+" is not part of "+institution.getName());
     }
     public List<String> returnOnlyFileName(List<String> files) {
         log.info("Returning only file name {}", files);
@@ -194,8 +193,8 @@ public class CourseServiceImpl implements ICourseService {
         log.info("Title: " + coursePostRequest.getTitle());
         log.info("Description: " + coursePostRequest.getDescription());
         log.info("Files: " + Arrays.toString(files));
-        Course course = courseRepository.findById(courseID).orElseThrow();
-        Institution institution = institutionRepository.findById(course.getInstitutionID()).orElseThrow();
+        Course course = courseRepository.findById(courseID).orElseThrow(() -> new CourseNotFoundException("Course not found"));
+        Institution institution = institutionRepository.findById(course.getInstitutionID()).orElseThrow(() -> new InstitutionNotFoundException("Institution not found"));
         if(course.getPosts()==null){
             course.setPosts(new ArrayList<>());
         }
@@ -212,7 +211,7 @@ public class CourseServiceImpl implements ICourseService {
 
     @Override
     public ResponseEntity<HttpStatus> deletePost(String courseID, String postID) {
-        Course course = courseRepository.findById(courseID).orElseThrow();
+        Course course = courseRepository.findById(courseID).orElseThrow(() -> new CourseNotFoundException("Course not found"));
         //delete files
         course.getPosts().stream().filter(coursePost -> coursePost.getId().equals(postID)).findFirst().ifPresent(coursePost -> {
             coursePost.getFiles().forEach(file -> {
@@ -230,8 +229,8 @@ public class CourseServiceImpl implements ICourseService {
 
     @Override
     public void removeTeacherFromCourses(String teacherEmail) {
-        List<Course> courses = courseRepository.findAllByTeacher(teacherEmail).orElseThrow(() -> new NoSuchElementException("Courses not found"));
-        User teacher = userRepository.findByEmail(teacherEmail).orElseThrow(() -> new NoSuchElementException("Teacher not found"));
+        List<Course> courses = courseRepository.findAllByTeacher(teacherEmail).orElseThrow(() -> new CourseNotFoundException("Courses not found"));
+        User teacher = userRepository.findByEmail(teacherEmail).orElseThrow(() -> new UserNotFoundException("Teacher not found"));
         courses.forEach(course -> {
             course.setTeacher(null);
             teacher.getEducation().getCoursesID().remove(course.getId());
@@ -320,6 +319,6 @@ public class CourseServiceImpl implements ICourseService {
     }
 
     public Course findCourseById(String id) {
-        return courseRepository.findById(id).orElseThrow();
+        return courseRepository.findById(id).orElseThrow(() -> new CourseNotFoundException("Course not found"));
     }
 }

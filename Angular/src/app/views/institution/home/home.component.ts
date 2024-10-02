@@ -66,7 +66,7 @@ export class HomeComponent implements OnInit {
                     },
                     error => {
                         console.error(error);
-                        this.toastr.error('Error accepting invitation');
+                        this.toastr.error(error.error);
                     }
                 );
             } else {

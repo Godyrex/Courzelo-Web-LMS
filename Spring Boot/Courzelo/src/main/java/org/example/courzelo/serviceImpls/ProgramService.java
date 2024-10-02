@@ -5,6 +5,7 @@ import org.example.courzelo.dto.requests.program.ProgramRequest;
 import org.example.courzelo.dto.responses.program.PaginatedProgramsResponse;
 import org.example.courzelo.dto.responses.program.ProgramResponse;
 import org.example.courzelo.dto.responses.program.SimplifiedProgramResponse;
+import org.example.courzelo.exceptions.*;
 import org.example.courzelo.models.User;
 import org.example.courzelo.models.institution.Institution;
 import org.example.courzelo.models.institution.Program;
@@ -36,14 +37,14 @@ public class ProgramService implements IProgramService {
     @Override
     public ResponseEntity<HttpStatus> createProgram(ProgramRequest programRequest, Principal principal) {
         if(programRequest.getName() == null || programRequest.getDescription() == null) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            throw new RequestNotValidException("Name and description are required");
         }
-        User user = userRepository.findByEmail(principal.getName()).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findByEmail(principal.getName()).orElseThrow(() -> new UserNotFoundException('"' + principal.getName() + '"' + " not found"));
         if(user.getEducation() == null) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            throw new NotAllowedException("User is not part of an institution");
         }
         if(programRepository.existsByNameAndInstitutionID(programRequest.getName(), user.getEducation().getInstitutionID())) {
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
+            throw new ProgramAlreadyExistsException("Program with name " + programRequest.getName() + " already exists");
         }
         Program program = Program.builder()
                 .name(programRequest.getName())
@@ -61,7 +62,13 @@ public class ProgramService implements IProgramService {
 
     @Override
     public ResponseEntity<HttpStatus> updateProgram(String id, ProgramRequest programRequest) {
-        Program program = programRepository.findById(id).orElseThrow(() -> new RuntimeException("Program not found"));
+        if(programRequest.getName() == null || programRequest.getDescription() == null) {
+            throw new RequestNotValidException("Name and description are required");
+        }
+        Program program = programRepository.findById(id).orElseThrow(() -> new ProgramNotFoundException("Program not found"));
+        if(programRepository.existsByNameAndInstitutionID(programRequest.getName(), program.getInstitutionID())) {
+            throw new ProgramAlreadyExistsException("Program with name " + programRequest.getName() + " already exists");
+        }
         program.setName(programRequest.getName());
         program.setDescription(programRequest.getDescription());
         program.setCredits(programRequest.getCredits());
@@ -72,7 +79,7 @@ public class ProgramService implements IProgramService {
 
     @Override
     public ResponseEntity<HttpStatus> deleteProgram(String id) {
-        Program program = programRepository.findById(id).orElseThrow(() -> new RuntimeException("Program not found"));
+        Program program = programRepository.findById(id).orElseThrow(() -> new ProgramNotFoundException("Program not found"));
         removeProgramFromInstitution(program.getId(), program.getInstitutionID());
         moduleService.deleteAllProgramModules(program.getId());
         if(program.getGroups()!=null) {
@@ -112,7 +119,7 @@ public class ProgramService implements IProgramService {
 
     @Override
     public ResponseEntity<ProgramResponse> getProgramById(String id) {
-        Program program = programRepository.findById(id).orElseThrow(() -> new RuntimeException("Program not found"));
+        Program program = programRepository.findById(id).orElseThrow(() -> new ProgramNotFoundException("Program not found"));
         ProgramResponse programResponse = ProgramResponse.builder()
                 .id(program.getId())
                 .name(program.getName())
@@ -126,7 +133,7 @@ public class ProgramService implements IProgramService {
 
     @Override
     public void deleteAllInstitutionPrograms(String institutionID) {
-        Institution institution = institutionRepository.findById(institutionID).orElseThrow(() -> new RuntimeException("Institution not found"));
+        Institution institution = institutionRepository.findById(institutionID).orElseThrow(() -> new InstitutionNotFoundException("Institution not found"));
         if (institution.getProgramsID() != null) {
             institution.getProgramsID().forEach(this::deleteProgram);
             institution.setProgramsID(new ArrayList<>());
@@ -136,7 +143,7 @@ public class ProgramService implements IProgramService {
 
     @Override
     public void addProgramToInstitution(String programID, String institutionID) {
-        Institution institution = institutionRepository.findById(institutionID).orElseThrow(() -> new RuntimeException("Institution not found"));
+        Institution institution = institutionRepository.findById(institutionID).orElseThrow(() -> new InstitutionNotFoundException("Institution not found"));
         if(institution.getProgramsID()==null) {
             institution.setProgramsID(new ArrayList<>());
         }
@@ -148,7 +155,7 @@ public class ProgramService implements IProgramService {
 
     @Override
     public void removeProgramFromInstitution(String programID, String institutionID) {
-        Institution institution = institutionRepository.findById(institutionID).orElseThrow(() -> new RuntimeException("Institution not found"));
+        Institution institution = institutionRepository.findById(institutionID).orElseThrow(() -> new InstitutionNotFoundException("Institution not found"));
         if (institution.getProgramsID()!= null&&institution.getProgramsID().contains(programID)) {
             institution.getProgramsID().remove(programID);
             institutionRepository.save(institution);
@@ -157,7 +164,7 @@ public class ProgramService implements IProgramService {
 
     @Override
     public ResponseEntity<SimplifiedProgramResponse> getSimplifiedProgramById(String id) {
-        Program program = programRepository.findById(id).orElseThrow(() -> new RuntimeException("Program not found"));
+        Program program = programRepository.findById(id).orElseThrow(() -> new ProgramNotFoundException("Program not found"));
         SimplifiedProgramResponse simplifiedProgramResponse = SimplifiedProgramResponse.builder()
                 .id(program.getId())
                 .name(program.getName())
@@ -167,7 +174,7 @@ public class ProgramService implements IProgramService {
 
     @Override
     public ResponseEntity<List<SimplifiedProgramResponse>> getSimplifiedProgramsByInstitution(String institutionID) {
-        List<Program> programs = programRepository.findAllByInstitutionID(institutionID).orElseThrow(() -> new RuntimeException("Programs not found"));
+        List<Program> programs = programRepository.findAllByInstitutionID(institutionID).orElseThrow(() -> new ProgramNotFoundException("Programs not found"));
         List<SimplifiedProgramResponse> simplifiedProgramResponses = programs.stream().map(
                 program -> SimplifiedProgramResponse.builder()
                         .id(program.getId())

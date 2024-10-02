@@ -6,6 +6,7 @@ import org.example.courzelo.dto.requests.GroupRequest;
 import org.example.courzelo.dto.responses.GroupResponse;
 import org.example.courzelo.dto.responses.PaginatedGroupsResponse;
 import org.example.courzelo.dto.responses.institution.SimplifiedCourseResponse;
+import org.example.courzelo.exceptions.*;
 import org.example.courzelo.models.Role;
 import org.example.courzelo.models.User;
 import org.example.courzelo.models.institution.Course;
@@ -40,7 +41,7 @@ public class GroupServiceImpl implements IGroupService {
     private final ProgramRepository programRepository;
     @Override
     public ResponseEntity<GroupResponse> getGroup(String groupID) {
-        Group group = groupRepository.findById(groupID).orElseThrow(() -> new NoSuchElementException("Group not found"));
+        Group group = groupRepository.findById(groupID).orElseThrow(() -> new GroupNotFoundException("Group not found"));
         return ResponseEntity.ok(GroupResponse.builder()
                 .id(group.getId())
                 .name(group.getName())
@@ -48,7 +49,7 @@ public class GroupServiceImpl implements IGroupService {
                 .institutionID(group.getInstitutionID())
                 .courses(group.getCourses().stream().map(
                         courseID -> {
-                            Course course = courseRepository.findById(courseID).orElseThrow(() -> new NoSuchElementException("Course not found"));
+                            Course course = courseRepository.findById(courseID).orElseThrow(() -> new CourseNotFoundException("Course not found"));
                             return SimplifiedCourseResponse.builder()
                                     .courseID(course.getId())
                                     .courseName(course.getName())
@@ -80,7 +81,7 @@ public class GroupServiceImpl implements IGroupService {
                         .students(group.getStudents())
                         .courses(group.getCourses().stream().map(
                                         courseID -> {
-                                            Course course = courseRepository.findById(courseID).orElseThrow(() -> new NoSuchElementException("Course not found"));
+                                            Course course = courseRepository.findById(courseID).orElseThrow(() -> new CourseNotFoundException("Course not found"));
                                             return SimplifiedCourseResponse.builder()
                                                     .courseID(course.getId())
                                                     .courseName(course.getName())
@@ -203,7 +204,7 @@ public class GroupServiceImpl implements IGroupService {
     }
     @Override
     public ResponseEntity<HttpStatus> updateGroup(String groupID, GroupRequest groupRequest) {
-        Group group = groupRepository.findById(groupID).orElseThrow(() -> new NoSuchElementException("Group not found"));
+        Group group = groupRepository.findById(groupID).orElseThrow(() -> new GroupNotFoundException("Group not found"));
         group.setName(groupRequest.getName());
         if (groupRequest.getStudents() != null) {
             List<String> students = new ArrayList<>(groupRequest.getStudents());
@@ -251,7 +252,7 @@ public class GroupServiceImpl implements IGroupService {
 
     @Override
     public ResponseEntity<HttpStatus> deleteGroup(String groupID) {
-        Group group = groupRepository.findById(groupID).orElseThrow(() -> new NoSuchElementException("Group not found"));
+        Group group = groupRepository.findById(groupID).orElseThrow(() -> new GroupNotFoundException("Group not found"));
         if (group.getStudents() != null) {
             log.info("Removing group from students");
             group.getStudents().forEach(
@@ -264,7 +265,7 @@ public class GroupServiceImpl implements IGroupService {
                     this::removeGroupFromCourse
             );
         }
-        Institution institution = institutionRepository.findById(group.getInstitutionID()).orElseThrow(() -> new NoSuchElementException("Institution not found"));
+        Institution institution = institutionRepository.findById(group.getInstitutionID()).orElseThrow(() -> new InstitutionNotFoundException("Institution not found"));
         if (institution.getGroupsID() != null && institution.getGroupsID().contains(groupID)) {
             institution.getGroupsID().remove(groupID);
             institutionRepository.save(institution);
@@ -297,16 +298,15 @@ public class GroupServiceImpl implements IGroupService {
 
     @Override
     public ResponseEntity<HttpStatus> addStudentToGroup(String groupID, String student) {
-        Group group = groupRepository.findById(groupID).orElseThrow(() -> new NoSuchElementException("Group not found"));
+        Group group = groupRepository.findById(groupID).orElseThrow(() -> new GroupNotFoundException("Group not found"));
         if(group.getStudents().contains(student)) {
             return ResponseEntity.ok(HttpStatus.OK);
         }
         log.info("Adding user {} to group {}", student, groupID);
-        User user = userRepository.findByEmail(student).orElseThrow(() -> new NoSuchElementException("User not found"));
+        User user = userRepository.findByEmail(student).orElseThrow(() -> new UserNotFoundException("User not found"));
         if(!Objects.equals(user.getEducation().getInstitutionID(), group.getInstitutionID()))
         {
-            log.info("User {} is not in the same institution as group {}", student, groupID);
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            throw new UserNotPartOfInstitutionException("User "+student+" is not in the same institution as group " +group.getName());
         }
         group.getStudents().add(user.getEmail());
         user.getEducation().setGroupID(groupID);
@@ -319,8 +319,8 @@ public class GroupServiceImpl implements IGroupService {
     @Override
     public void removeStudentFromGroup(String groupID, String studentID) {
         log.info("Removing user {} from group {}", studentID, groupID);
-        User user = userRepository.findByEmail(studentID).orElse(null);
-        Group group = groupRepository.findById(groupID).orElseThrow(() -> new NoSuchElementException("Group not found"));
+        User user = userRepository.findByEmail(studentID).orElseThrow(() -> new UserNotFoundException("User not found"));
+        Group group = groupRepository.findById(groupID).orElseThrow(() -> new GroupNotFoundException("Group not found"));
         if (user != null && group.getStudents() != null && group.getStudents().contains(user.getEmail())) {
             log.info("Removing user {} from group {}", studentID, groupID);
             group.getStudents().remove(user.getEmail());
@@ -333,7 +333,7 @@ public class GroupServiceImpl implements IGroupService {
 
     @Override
     public void deleteGroupsByInstitution(String institutionID) {
-        Institution institution = institutionRepository.findById(institutionID).orElseThrow(() -> new NoSuchElementException("Institution not found"));
+        Institution institution = institutionRepository.findById(institutionID).orElseThrow(() -> new InstitutionNotFoundException("Institution not found"));
         if (institution.getGroupsID() != null) {
             institution.getGroupsID().forEach(
                     this::deleteGroup
@@ -344,7 +344,7 @@ public class GroupServiceImpl implements IGroupService {
     @Override
     public void removeStudentFromGroup(User user) {
         if (user.getEducation() != null && user.getEducation().getGroupID() != null) {
-            Group group = groupRepository.findById(user.getEducation().getGroupID()).orElseThrow(() -> new NoSuchElementException("Group not found"));
+            Group group = groupRepository.findById(user.getEducation().getGroupID()).orElseThrow(() -> new GroupNotFoundException("Group not found"));
             group.getStudents().remove(user.getEmail());
             user.getEducation().setGroupID(null);
             userRepository.save(user);

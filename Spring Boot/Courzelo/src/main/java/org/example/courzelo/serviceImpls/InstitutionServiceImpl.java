@@ -470,7 +470,7 @@ public class InstitutionServiceImpl implements IInstitutionService {
                 CodeVerification codeVerification = codeVerificationRepository.findByEmailAndInstitutionID(email, institutionID).orElse(null);
                 if(codeVerification == null)
                 {
-                    codeVerification = new CodeVerification(CodeType.INSTITUTION_INVITATION, UUID.randomUUID().toString(), email, Role.valueOf(role), institutionID, Instant.now().plusSeconds(20));
+                    codeVerification = new CodeVerification(CodeType.INSTITUTION_INVITATION, UUID.randomUUID().toString(), email, Role.valueOf(role), institutionID, Instant.now().plusSeconds(86400));
                     codeVerificationRepository.save(codeVerification);
                 }
                 iInvitationService.createInvitation(institutionID, email, Role.valueOf(role), codeVerification.getId(), LocalDateTime.ofInstant(codeVerification.getExpiryDate(), ZoneId.systemDefault() )
@@ -498,7 +498,7 @@ public class InstitutionServiceImpl implements IInstitutionService {
         log.info("Removing user from old institution");
         if(isUserInInstitution(user, institution) && getUserRoleInInstitution(user, institution).contains(codeVerification.getRole())){
             log.info("User already in institution");
-            throw new UserAlreadyPartOfInstitutionException("User already in institution");
+            throw new UserAlreadyPartOfInstitutionException(user.getEmail()+" already "+codeVerification.getRole() + " in "+institution.getName());
         }
         if(user.getEducation().getInstitutionID()!=null && !isUserInInstitution(user, institution)){
             removeInstitutionUser(user.getEducation().getInstitutionID(), codeVerification.getEmail(), null);

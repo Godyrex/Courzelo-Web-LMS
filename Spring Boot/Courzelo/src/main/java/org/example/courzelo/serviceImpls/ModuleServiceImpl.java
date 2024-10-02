@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.courzelo.dto.requests.module.ModuleRequest;
 import org.example.courzelo.dto.responses.module.ModuleResponse;
 import org.example.courzelo.dto.responses.module.PaginatedModulesResponse;
+import org.example.courzelo.exceptions.*;
 import org.example.courzelo.models.institution.Module;
 import org.example.courzelo.models.institution.Program;
 import org.example.courzelo.repositories.CourseRepository;
@@ -30,12 +31,12 @@ public class ModuleServiceImpl implements IModuleService {
     @Override
     public ResponseEntity<HttpStatus> createModule(ModuleRequest moduleRequest) {
         if(moduleRequest.getName() == null || moduleRequest.getDescription() == null || moduleRequest.getProgram() == null) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            throw new RequestNotValidException("Module name, description and program are required");
         }
         if(moduleRepository.existsByNameAndProgram(moduleRequest.getName(), moduleRequest.getProgram())) {
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
+            throw new ModuleAlreadyExistsException("Module with name " + moduleRequest.getName() + " already exists");
         }
-        Program program = programRepository.findById(moduleRequest.getProgram()).orElseThrow(() -> new RuntimeException("Program not found"));
+        Program program = programRepository.findById(moduleRequest.getProgram()).orElseThrow(() -> new ProgramNotFoundException("Program not found"));
         Module module = Module.builder()
                 .name(moduleRequest.getName())
                 .description(moduleRequest.getDescription())
@@ -52,7 +53,13 @@ public class ModuleServiceImpl implements IModuleService {
     @Override
     public ResponseEntity<HttpStatus> updateModule(String id, ModuleRequest moduleRequest) {
         log.info("Updating module info :" + moduleRequest);
-        Module module = moduleRepository.findById(id).orElseThrow(() -> new RuntimeException("Module not found"));
+        if(moduleRequest.getName() == null || moduleRequest.getDescription() == null) {
+            throw new RequestNotValidException("Module name and description are required");
+        }
+        if(moduleRepository.existsByNameAndProgram(moduleRequest.getName(), moduleRequest.getProgram())) {
+            throw new ModuleAlreadyExistsException("Module with name " + moduleRequest.getName() + " already exists");
+        }
+        Module module = moduleRepository.findById(id).orElseThrow(() -> new ModuleNotFoundException("Module not found"));
         module.setName(moduleRequest.getName());
         module.setDuration(moduleRequest.getDuration());
         module.setDescription(moduleRequest.getDescription());
@@ -63,8 +70,8 @@ public class ModuleServiceImpl implements IModuleService {
 
     @Override
     public ResponseEntity<HttpStatus> deleteModule(String id) {
-        Module module = moduleRepository.findById(id).orElseThrow(() -> new RuntimeException("Module not found"));
-        Program program = programRepository.findById(module.getProgram()).orElseThrow(() -> new RuntimeException("Program not found"));
+        Module module = moduleRepository.findById(id).orElseThrow(() -> new ModuleNotFoundException("Module not found"));
+        Program program = programRepository.findById(module.getProgram()).orElseThrow(() -> new ProgramAlreadyExistsException("Program not found"));
         removeModuleFromProgram(program, id);
         removeModuleFromCourses(id);
         moduleRepository.deleteById(id);
@@ -107,7 +114,7 @@ public class ModuleServiceImpl implements IModuleService {
 
     @Override
     public ResponseEntity<ModuleResponse> getModuleById(String id) {
-        Module module = moduleRepository.findById(id).orElseThrow(() -> new RuntimeException("Module not found"));
+        Module module = moduleRepository.findById(id).orElseThrow(() -> new ModuleNotFoundException("Module not found"));
         return new ResponseEntity<>(ModuleResponse.builder()
                 .id(module.getId())
                 .name(module.getName())
@@ -121,7 +128,7 @@ public class ModuleServiceImpl implements IModuleService {
 
     @Override
     public void deleteAllProgramModules(String programID) {
-        Program program = programRepository.findById(programID).orElseThrow(() -> new RuntimeException("Program not found"));
+        Program program = programRepository.findById(programID).orElseThrow(() -> new ProgramNotFoundException("Program not found"));
         if (program.getModules() != null) {
             program.getModules().forEach(this::deleteModule);
             program.setModules(new ArrayList<>());

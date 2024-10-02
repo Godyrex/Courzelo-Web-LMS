@@ -54,4 +54,32 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleUserAlreadyPartOfInstitutionException(UserAlreadyPartOfInstitutionException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
+    @ExceptionHandler(TeacherAlreadyAssignedException.class)
+    public ResponseEntity<String> handleTeacherAlreadyAssignedException(TeacherAlreadyAssignedException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+    @ExceptionHandler(RequestNotValidException.class)
+    public ResponseEntity<String> handleRequestNotValidException(RequestNotValidException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+    @ExceptionHandler(NotAllowedException.class)
+    public ResponseEntity<String> handleNotAllowedException(NotAllowedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+    }
+    @ExceptionHandler(ProgramAlreadyExistsException.class)
+    public ResponseEntity<String> handleProgramAlreadyExistsException(ProgramAlreadyExistsException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+    @ExceptionHandler(ProgramNotFoundException.class)
+    public ResponseEntity<String> handleProgramNotFoundException(ProgramNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+    @ExceptionHandler(ModuleNotFoundException.class)
+    public ResponseEntity<String> handleModuleNotFoundException(ModuleNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+    @ExceptionHandler(ModuleAlreadyExistsException.class)
+    public ResponseEntity<String> handleModuleAlreadyExistsException(ModuleAlreadyExistsException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
 }
