@@ -1,27 +1,35 @@
     <!-- Welcome Banner -->
     <div class="row">
         <div class="col-12">
-            <div class="jumbotron text-center bg-light p-4 rounded">
-                <h1 class="display-5">Welcome, {{currentUser.profile.name +" "+currentUser.profile.lastname || "User"}}</h1>
+            <div class="jumbotron text-center  bg-primary text-white p-5 rounded">
+                <h1 class=" text-white">Welcome,<span class=" text-secondary"> {{currentUser.profile.name +" "+currentUser.profile.lastname || "User"}}</span></h1>
                 <p class="lead">Stay up to date with your courses and institution.</p>
-                <button class="btn btn-outline-primary" [routerLink]="'/pages/profile/' + currentUser?.email">My Profile</button>
+                <button class="btn btn-outline-secondary" [routerLink]="'/pages/profile/' + currentUser?.email">My Profile</button>
             </div>
         </div>
     </div>
 
     <div class="row">
         <!-- Courses Section -->
-        <div class="col-lg-8 mb-4">
-            <h2>Your Courses</h2>
-            <div class="row">
+        <div class="col-lg-8 mb-4 bg-primary p-4 rounded">
+            <h2 class="text-white">Your Courses</h2>
+            <div *ngIf="loading" class="loadscreen mt-5">
+                <img src="assets/images/logo.png" class="logo mb-3" style="display: none" alt="">
+                <div class="loader-bubble loader-bubble-primary d-block"></div>
+            </div>
+            <div *ngIf="!loading" class="row">
                 <div *ngFor="let course of courses" class="col-md-6 mb-3">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">{{course.name}}</h5>
-                            <p class="card-text">Instructor: {{course.teacher}}</p>
-                            <p class="card-text">Progress: {{course.progress}}%</p>
-                            <p class="card-text text-muted">Next Due: {{course.nextDue}}</p>
-                            <a href="{{course.link}}" class="btn btn-primary">Go to Course</a>
+                    <div class="card bg-secondary">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h5 class="card-title">{{course.name}}</h5>
+                                <p class="card-text">Instructor: {{course.teacher || "Not assigned"}}</p>
+                                <p class="card-text">Credit: {{course.credit}}</p>
+                                <a [routerLink]="'/institution/course/'+course.id" class="btn btn-outline-primary">Go to Course</a>
+                            </div>
+                            <div class="user-info ms-3">
+                                <img class="profile-picture rounded avatar-lg mb-2" [src]="course.imageSrc || 'assets/default-image.jpg'" alt="">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -30,13 +38,15 @@
 
         <!-- Program & Group Information -->
         <div class="col-lg-4 mb-4">
-            <div class="card mb-4">
+            <div *ngIf="myProgram && myGroup" class="card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">Program Information</h5>
-                    <p class="card-text"><strong>Program:</strong> {{student.program}}</p>
-                    <p class="card-text"><strong>Group:</strong> {{student.group}}</p>
-                    <p class="card-text"><strong>Academic Advisor:</strong> {{student.advisor}}</p>
-                    <button class="btn btn-outline-secondary">View Group Members</button>
+                    <p class="card-text"><strong>Program:</strong> {{myProgram.name}}</p>
+                    <p class="card-text"><strong>Description:</strong> {{myProgram.description}}</p>
+                    <p class="card-text"><strong>Credits:</strong> {{myProgram.credits}}</p>
+                    <p class="card-text"><strong>Duration:</strong> {{myProgram.duration}}</p>
+                    <p class="card-text"><strong>Group:</strong> {{myGroup.name}}</p>
+                    <button class="btn btn-outline-secondary" (click)="openViewStudentsModal(myGroup)">View Group Members</button>
                 </div>
             </div>
 

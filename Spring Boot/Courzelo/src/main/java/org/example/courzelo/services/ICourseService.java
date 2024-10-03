@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
+import java.util.List;
 
 public interface ICourseService {
     ResponseEntity<HttpStatus> createCourse(String institutionID,CourseRequest courseRequest,Principal principal);
@@ -19,4 +20,6 @@ public interface ICourseService {
     ResponseEntity<HttpStatus> deletePost(String courseID, String postID);
     void removeTeacherFromCourses(String teacherEmail);
     ResponseEntity<byte[]> downloadFile(String courseID, String fileName);
+
+    ResponseEntity<List<CourseResponse>> getMyCourses(Principal principal);
 }

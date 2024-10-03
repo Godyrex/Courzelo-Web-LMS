@@ -7,6 +7,8 @@ import org.example.courzelo.models.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.security.Principal;
+
 public interface IGroupService {
     ResponseEntity<GroupResponse> getGroup(String groupID);
     ResponseEntity<PaginatedGroupsResponse> getGroupsByInstitution(String institutionID, int page,String keyword, int sizePerPage);
@@ -18,4 +20,6 @@ public interface IGroupService {
 
     void deleteGroupsByInstitution(String institutionID);
     void removeStudentFromGroup(User user);
+
+    ResponseEntity<GroupResponse> getMyGroup(Principal principal);
 }

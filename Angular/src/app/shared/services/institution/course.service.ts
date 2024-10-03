@@ -28,6 +28,9 @@ export class CourseService {
   getCourse(courseID: string): Observable<CourseResponse> {
     return this.http.get<CourseResponse>(`${this.baseUrl}/${courseID}`);
   }
+  getMyCourses(): Observable<CourseResponse[]> {
+    return this.http.get<CourseResponse[]>(`${this.baseUrl}/myCourses`);
+  }
   downloadFile(courseID: string, fileName: string): Observable<Blob> {
     return this.http.get(`${this.baseUrl}/${courseID}/${fileName}/download`, { responseType: 'blob' });
   }

@@ -35,7 +35,11 @@ export class AddProgramComponent {
             this.programAdded.emit();
           },
           error => {
-            this.handleResponse.handleError(error);
+            if (error.error) {
+              this.toastr.error(error.error, 'Error');
+            } else {
+              this.toastr.error('An error occurred', 'Error');
+            }
           }
       );
     }

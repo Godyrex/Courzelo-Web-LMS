@@ -17,6 +17,9 @@ export class GroupService {
   getGroup(groupID: string): Observable<GroupResponse> {
     return this.http.get<GroupResponse>(`${this.baseUrl}/${groupID}`);
   }
+  getMyGroup(): Observable<GroupResponse> {
+    return this.http.get<GroupResponse>(`${this.baseUrl}/myGroup`);
+  }
 
   getGroupsByInstitution(institutionID: string, page: number, keyword: string, sizePerPage: number): Observable<PaginatedGroupsResponse> {
     let params = new HttpParams()

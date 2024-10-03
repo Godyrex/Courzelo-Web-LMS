@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/course")
@@ -23,17 +24,17 @@ public class CourseController {
     private final ICourseService iCourseService;
     private final CustomAuthorization customAuthorization;
     @PostMapping("/{institutionID}/add")
-    @PreAuthorize("hasRole('TEACHER')&&@customAuthorization.canCreateCourse(#institutionID)")
+    @PreAuthorize("hasRole('ADMIN')&&@customAuthorization.canCreateCourse(#institutionID)")
     public ResponseEntity<HttpStatus> addCourse(@PathVariable String institutionID,@RequestBody CourseRequest courseRequest,Principal principal) {
         return iCourseService.createCourse(institutionID,courseRequest,principal);
     }
     @PutMapping("/{courseID}/update")
-    @PreAuthorize("hasRole('TEACHER')&&@customAuthorization.canAccessCourse(#courseID)")
+    @PreAuthorize("hasRole('ADMIN')&&@customAuthorization.canAccessCourse(#courseID)")
     public ResponseEntity<HttpStatus> updateCourse(@PathVariable String courseID,@RequestBody CourseRequest courseRequest) {
         return iCourseService.updateCourse(courseID,courseRequest);
     }
     @DeleteMapping("/{courseID}/delete")
-    @PreAuthorize("hasRole('TEACHER')&&@customAuthorization.canAccessCourse(#courseID)")
+    @PreAuthorize("hasRole('ADMIN')&&@customAuthorization.canAccessCourse(#courseID)")
     public ResponseEntity<HttpStatus> deleteCourse(@PathVariable String courseID) {
         return iCourseService.deleteCourse(courseID);
     }
@@ -43,7 +44,7 @@ public class CourseController {
         return iCourseService.getCourse(courseID);
     }
     @PutMapping("/{courseID}/setTeacher")
-    @PreAuthorize("hasRole('TEACHER')&&@customAuthorization.canAccessCourse(#courseID)")
+    @PreAuthorize("hasRole('ADMIN')&&@customAuthorization.canAccessCourse(#courseID)")
     public ResponseEntity<HttpStatus> setTeacher(@PathVariable String courseID,@RequestParam String email) {
         return iCourseService.setTeacher(courseID,email);
     }
@@ -66,5 +67,10 @@ public class CourseController {
     @PreAuthorize("hasRole('TEACHER')&&@customAuthorization.canAccessCourse(#courseID)")
     public ResponseEntity<HttpStatus> deletePost(@PathVariable String courseID,@RequestParam String postID) {
         return iCourseService.deletePost(courseID,postID);
+    }
+    @GetMapping("/myCourses")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<CourseResponse>> getMyCourses(Principal principal) {
+        return iCourseService.getMyCourses(principal);
     }
 }

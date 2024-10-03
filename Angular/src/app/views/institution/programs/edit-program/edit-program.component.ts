@@ -39,7 +39,11 @@ export class EditProgramComponent implements OnInit {
             this.programUpdated.emit({ ...this.program, ...this.editProgramForm.value });
           },
           error => {
-            this.handleResponse.handleError(error);
+            if (error.error) {
+                this.toastr.error(error.error, 'Error');
+            } else {
+                this.toastr.error('An error occurred', 'Error');
+            }
           }
       );
     }

@@ -8,6 +8,7 @@ import org.example.courzelo.dto.requests.CourseRequest;
 import org.example.courzelo.dto.responses.CoursePostResponse;
 import org.example.courzelo.dto.responses.CourseResponse;
 import org.example.courzelo.exceptions.*;
+import org.example.courzelo.models.Role;
 import org.example.courzelo.models.User;
 import org.example.courzelo.models.institution.Course;
 import org.example.courzelo.models.institution.CoursePost;
@@ -260,6 +261,26 @@ public class CourseServiceImpl implements ICourseService {
             }
         }
         return ResponseEntity.notFound().build();
+    }
+
+    @Override
+    public ResponseEntity<List<CourseResponse>> getMyCourses(Principal principal) {
+        User user = userRepository.findUserByEmail(principal.getName());
+        List<Course> courses = new ArrayList<>();
+        if(user.getRoles().contains(Role.TEACHER))
+        {
+            courses = courseRepository.findAllByTeacher(user.getEmail()).orElseThrow(() -> new CourseNotFoundException("Courses not found"));
+        }else{
+            courses = courseRepository.findAllByGroup(user.getEducation().getGroupID()).orElseThrow(() -> new CourseNotFoundException("Courses not found"));
+        }
+        return ResponseEntity.ok(courses.stream().map(course -> CourseResponse.builder()
+                .id(course.getId())
+                .module(course.getModule())
+                .credit(course.getCredit())
+                .teacher(course.getTeacher())
+                .group(course.getGroup())
+                .institutionID(course.getInstitutionID())
+                .build()).toList());
     }
 
     private List<byte[]> getBytesFromFiles(List<String> files) {

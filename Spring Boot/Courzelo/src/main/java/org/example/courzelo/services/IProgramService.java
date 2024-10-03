@@ -23,4 +23,6 @@ public interface IProgramService {
     ResponseEntity<SimplifiedProgramResponse> getSimplifiedProgramById(String id);
 
     ResponseEntity<List<SimplifiedProgramResponse>> getSimplifiedProgramsByInstitution(String institutionID);
+
+    ResponseEntity<ProgramResponse> getMyProgram(Principal principal);
 }

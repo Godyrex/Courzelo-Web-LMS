@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+
 @RestController
 @RequestMapping("/api/v1/group")
 @AllArgsConstructor
@@ -20,6 +22,11 @@ public class ClassGroupController {
     @PreAuthorize("isAuthenticated()&&@customAuthorization.canAccessGroup(#groupID)")
     public ResponseEntity<GroupResponse> getGroup(@PathVariable String groupID) {
         return iGroupService.getGroup(groupID);
+    }
+    @GetMapping("/myGroup")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<GroupResponse> getMyGroup(Principal principal) {
+        return iGroupService.getMyGroup(principal);
     }
     @GetMapping("/groups/{institutionID}")
     @PreAuthorize("hasRole('ADMIN')&&@customAuthorization.canAccessInstitution(#institutionID)")

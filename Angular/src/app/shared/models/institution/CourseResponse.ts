@@ -1,7 +1,9 @@
 import {CoursePostResponse} from './CoursePostResponse';
 import {Quiz} from '../Quiz';
+import {SafeUrl} from '@angular/platform-browser';
 
 export interface CourseResponse {
+    imageSrc: SafeUrl;
     id?: string;
     name?: string;
     description?: string;

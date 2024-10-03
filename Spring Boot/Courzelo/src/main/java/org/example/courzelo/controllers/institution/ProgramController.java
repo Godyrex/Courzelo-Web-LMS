@@ -47,6 +47,10 @@ public class ProgramController {
     public ResponseEntity<ProgramResponse> getProgram(@PathVariable String id){
         return programService.getProgramById(id);
     }
+    @GetMapping("/myProgram")
+    public ResponseEntity<ProgramResponse> getProgram(Principal principal){
+        return programService.getMyProgram(principal);
+    }
     @GetMapping("/simplified/{id}")
     @PreAuthorize("hasAnyRole('ADMIN')&&@customAuthorization.canAccessProgram(#id)")
     public ResponseEntity<SimplifiedProgramResponse> getSimplifiedProgram(@PathVariable String id){

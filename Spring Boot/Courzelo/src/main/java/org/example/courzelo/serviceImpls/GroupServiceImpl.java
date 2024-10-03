@@ -21,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -349,5 +350,20 @@ public class GroupServiceImpl implements IGroupService {
             userRepository.save(user);
             groupRepository.save(group);
         }
+    }
+
+    @Override
+    public ResponseEntity<GroupResponse> getMyGroup(Principal principal) {
+        User user = userRepository.findByEmail(principal.getName()).orElseThrow(() -> new UserNotFoundException("User not found"));
+        if (user.getEducation() == null || user.getEducation().getGroupID() == null) {
+            throw new UserNotInGroupException("User not in a group");
+        }
+        Group group = groupRepository.findById(user.getEducation().getGroupID()).orElseThrow(() -> new GroupNotFoundException("Group not found"));
+        return ResponseEntity.ok(GroupResponse.builder()
+                .id(group.getId())
+                .name(group.getName())
+                .students(group.getStudents())
+                .institutionID(group.getInstitutionID())
+                .build());
     }
 }

@@ -74,7 +74,11 @@ export class ProgramsComponent implements OnInit {
           this.loadingPrograms = false;
         },
         error => {
-          this.handleResponse.handleError(error);
+          if (error.error) {
+            this.toastr.error(error.error, 'Error');
+          } else {
+            this.toastr.error('An error occurred', 'Error');
+          }
           this.loadingPrograms = false;
         }
     );
@@ -88,7 +92,11 @@ export class ProgramsComponent implements OnInit {
           this.loadingPrograms = false;
         },
         error => {
-          this.handleResponse.handleError(error);
+          if (error.error) {
+            this.toastr.error(error.error, 'Error');
+          } else {
+            this.toastr.error('An error occurred', 'Error');
+          }
           this.loadingPrograms = false;
         }
     );

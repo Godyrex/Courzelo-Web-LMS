@@ -45,6 +45,9 @@ export class ProgramService {
   getProgram(id: string): Observable<ProgramResponse> {
     return this.http.get<ProgramResponse>(`${this.baseUrl}/${id}`);
   }
+  getMyProgram(): Observable<ProgramResponse> {
+    return this.http.get<ProgramResponse>(`${this.baseUrl}/myProgram`);
+  }
   getSimplifiedProgram(id: string): Observable<SimplifiedProgramResponse> {
     return this.http.get<SimplifiedProgramResponse>(`${this.baseUrl}/simplified/${id}`);
   }

@@ -82,4 +82,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleModuleAlreadyExistsException(ModuleAlreadyExistsException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
+    @ExceptionHandler(UserNotInGroupException.class)
+    public ResponseEntity<String> handleUserNotInGroupException(UserNotInGroupException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
 }

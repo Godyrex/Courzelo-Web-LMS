@@ -1,18 +1,20 @@
 package org.example.courzelo.serviceImpls;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.courzelo.dto.requests.program.ProgramRequest;
 import org.example.courzelo.dto.responses.program.PaginatedProgramsResponse;
 import org.example.courzelo.dto.responses.program.ProgramResponse;
 import org.example.courzelo.dto.responses.program.SimplifiedProgramResponse;
 import org.example.courzelo.exceptions.*;
 import org.example.courzelo.models.User;
+import org.example.courzelo.models.institution.Group;
 import org.example.courzelo.models.institution.Institution;
 import org.example.courzelo.models.institution.Program;
+import org.example.courzelo.repositories.GroupRepository;
 import org.example.courzelo.repositories.InstitutionRepository;
 import org.example.courzelo.repositories.ProgramRepository;
 import org.example.courzelo.repositories.UserRepository;
-import org.example.courzelo.serviceImpls.Groups.GroupService;
 import org.example.courzelo.services.IModuleService;
 import org.example.courzelo.services.IProgramService;
 import org.springframework.data.domain.Page;
@@ -28,12 +30,14 @@ import java.util.List;
 
 @AllArgsConstructor
 @Service
+@Slf4j
 public class ProgramService implements IProgramService {
     private final ProgramRepository programRepository;
     private final UserRepository userRepository;
     private final IModuleService moduleService;
     private final InstitutionRepository institutionRepository;
-    private final GroupService groupService;
+    private final GroupServiceImpl groupService;
+    private final GroupRepository groupRepository;
     @Override
     public ResponseEntity<HttpStatus> createProgram(ProgramRequest programRequest, Principal principal) {
         if(programRequest.getName() == null || programRequest.getDescription() == null) {
@@ -66,7 +70,7 @@ public class ProgramService implements IProgramService {
             throw new RequestNotValidException("Name and description are required");
         }
         Program program = programRepository.findById(id).orElseThrow(() -> new ProgramNotFoundException("Program not found"));
-        if(programRepository.existsByNameAndInstitutionID(programRequest.getName(), program.getInstitutionID())) {
+        if(!program.getName().equals(programRequest.getName()) && programRepository.existsByNameAndInstitutionID(programRequest.getName(), program.getInstitutionID())) {
             throw new ProgramAlreadyExistsException("Program with name " + programRequest.getName() + " already exists");
         }
         program.setName(programRequest.getName());
@@ -182,5 +186,30 @@ public class ProgramService implements IProgramService {
                         .build()
         ).toList();
         return new ResponseEntity<>(simplifiedProgramResponses, HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<ProgramResponse> getMyProgram(Principal principal) {
+        User user = userRepository.findByEmail(principal.getName()).orElseThrow(() -> new UserNotFoundException('"' + principal.getName() + '"' + " not found"));
+        if(user.getEducation() == null) {
+            throw new NotAllowedException("User is not part of an institution");
+        }
+        if(user.getEducation().getGroupID()== null)
+        {
+            throw new NotAllowedException("User is not part of a group");
+        }
+        Group group = groupRepository.findById(user.getEducation().getGroupID()).orElseThrow(() -> new GroupNotFoundException("Group not found"));
+        log.info("Group: " + group);
+        Program program = programRepository.findById(group.getProgram()).orElseThrow(() -> new ProgramNotFoundException("Program not found"));
+        log.info("Program: " + program);
+        ProgramResponse programResponse = ProgramResponse.builder()
+                .id(program.getId())
+                .name(program.getName())
+                .description(program.getDescription())
+                .institutionID(program.getInstitutionID())
+                .credits(program.getCredits())
+                .duration(program.getDuration())
+                .build();
+        return new ResponseEntity<>(programResponse, HttpStatus.OK);
     }
 }
