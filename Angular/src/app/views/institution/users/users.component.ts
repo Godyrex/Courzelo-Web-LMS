@@ -130,7 +130,7 @@ export class UsersComponent implements OnInit {
     }
   }
   addUserModel(content) {
-    this.modalService.open(content, { ariaLabelledBy: 'Invite user' })
+    this.modalService.open(content, { ariaLabelledBy: 'Invite user' , backdrop: false})
         .result.then((result) => {
       console.log(result);
     }, (reason) => {
@@ -172,7 +172,7 @@ export class UsersComponent implements OnInit {
   }
   modalConfirmUserFunction(content: any, user: InstitutionUserResponse) {
     this.currentUser = user;
-    this.modalService.open(content, { ariaLabelledBy: 'confirm User' })
+    this.modalService.open(content, { ariaLabelledBy: 'confirm User', backdrop: false })
         .result.then((result) => {
       if (result === 'Ok') {
         this.removeInstitutionUser(user);

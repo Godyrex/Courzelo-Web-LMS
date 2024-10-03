@@ -155,6 +155,11 @@ const userRoutes: Routes = [
         path: 'institution',
         loadChildren: () => import('./views/institution/institution.module').then(m => m.InstitutionModule),
         canActivate: [AuthGuard],
+    },
+    {
+        path: 'home',
+        loadChildren: () => import('./views/home/home.module').then(m => m.HomeModule),
+        canActivate: [AuthGuard],
     }
 
   ];
@@ -162,7 +167,7 @@ const userRoutes: Routes = [
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'dashboard/v1',
+    redirectTo: 'home',
     pathMatch: 'full'
   },
   {

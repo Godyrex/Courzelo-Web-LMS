@@ -88,7 +88,7 @@ export class ModulesComponent implements OnInit {
     );
   }
   openAddModuleModal() {
-    const modalRef = this.modalService.open(AddModuleComponent);
+    const modalRef = this.modalService.open(AddModuleComponent, {backdrop: false});
     modalRef.componentInstance.programID = this.currentProgram.id;
     modalRef.componentInstance.moduleAdded.subscribe(() => {
       this.getModules(this.currentPage, this.itemsPerPage, this.currentProgram.id, null);
@@ -96,7 +96,7 @@ export class ModulesComponent implements OnInit {
     });
   }
   openEditModuleModal(module: ModuleResponse) {
-    const modalRef = this.modalService.open(EditModuleComponent);
+    const modalRef = this.modalService.open(EditModuleComponent, {backdrop: false});
     modalRef.componentInstance.module = module;
     modalRef.componentInstance.moduleUpdated.subscribe((updatedModule: ModuleResponse) => {
           if (updatedModule != null) {
@@ -114,7 +114,7 @@ export class ModulesComponent implements OnInit {
   }
   modalConfirmFunction(content: any, module: ModuleResponse) {
     this.currentModule = module;
-    this.modalService.open(content, { ariaLabelledBy: 'confirm Module' })
+    this.modalService.open(content, { ariaLabelledBy: 'confirm Module', backdrop: false })
         .result.then((result) => {
       if (result === 'Ok') {
         this.deleteModule(this.currentModule.id);

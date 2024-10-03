@@ -2,6 +2,8 @@ package org.example.courzelo.serviceImpls;
 
 import lombok.AllArgsConstructor;
 import org.example.courzelo.dto.responses.*;
+import org.example.courzelo.exceptions.UserAlreadyHasRoleException;
+import org.example.courzelo.exceptions.UserNotFoundException;
 import org.example.courzelo.models.Role;
 import org.example.courzelo.models.User;
 import org.example.courzelo.repositories.UserRepository;
@@ -74,10 +76,7 @@ public class SuperAdminServiceImpl implements ISuperAdminService {
 
     @Override
     public ResponseEntity<StatusMessageResponse> toggleUserEnabledStatus(String email) {
-        User user = userRepository.findUserByEmail(email);
-        if (user == null) {
-            return ResponseEntity.badRequest().body(new StatusMessageResponse("Error", "User not found"));
-        }
+        User user = userRepository.findByEmail(email).orElseThrow(()->new UserNotFoundException("User not found"));
         user.getSecurity().setEnabled(!user.getSecurity().isEnabled());
         userRepository.save(user);
         return ResponseEntity.ok(new StatusMessageResponse("Success", user.getEmail()+" enabled status toggled"));
@@ -85,12 +84,9 @@ public class SuperAdminServiceImpl implements ISuperAdminService {
 
     @Override
     public ResponseEntity<StatusMessageResponse> addRoleToUser(String email, String role) {
-        User user = userRepository.findUserByEmail(email);
-        if (user == null) {
-            return ResponseEntity.badRequest().body(new StatusMessageResponse("Error", "User not found"));
-        }
+        User user = userRepository.findByEmail(email).orElseThrow(()->new UserNotFoundException("User not found"));
         if(user.getRoles().contains(Role.valueOf(role))){
-            return ResponseEntity.badRequest().body(new StatusMessageResponse("Error", "Role already assigned"));
+            throw new UserAlreadyHasRoleException("Role already assigned");
         }
         user.getRoles().add(Role.valueOf(role));
         userRepository.save(user);
@@ -99,10 +95,7 @@ public class SuperAdminServiceImpl implements ISuperAdminService {
 
     @Override
     public ResponseEntity<StatusMessageResponse> removeRoleFromUser(String email, String role) {
-        User user = userRepository.findUserByEmail(email);
-        if (user == null) {
-            return ResponseEntity.badRequest().body(new StatusMessageResponse("Error", "User not found"));
-        }
+        User user = userRepository.findByEmail(email).orElseThrow(()->new UserNotFoundException("User not found"));
         if(!user.getRoles().contains(Role.valueOf(role))){
             return ResponseEntity.badRequest().body(new StatusMessageResponse("Error", "Role not assigned"));
         }

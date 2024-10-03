@@ -14,7 +14,7 @@ import {EditClassComponent} from './edit-class/edit-class.component';
 import {debounceTime} from 'rxjs/operators';
 import {ProgramService} from '../../../shared/services/institution/program.service';
 import {ViewCoursesComponent} from './view-courses/view-courses.component';
-import {ViewStudentsComponent} from "./view-students/view-students.component";
+import {ViewStudentsComponent} from './view-students/view-students.component';
 
 @Component({
   selector: 'app-class',
@@ -89,7 +89,8 @@ export class ClassComponent implements OnInit {
           });
     }
     openViewCoursesModal( group: GroupResponse) {
-        const modalRef = this.modalService.open(ViewCoursesComponent);
+        const modalRef = this.modalService.open(ViewCoursesComponent,
+            { size : 'lg', backdrop: false });
         modalRef.componentInstance.program = group?.program;
         modalRef.componentInstance.group = group;
         modalRef.componentInstance.close.subscribe(() => {
@@ -97,14 +98,14 @@ export class ClassComponent implements OnInit {
         });
     }
     openViewStudentsModal(group: GroupResponse) {
-        const modalRef = this.modalService.open(ViewStudentsComponent, { size: 'lg' });
+        const modalRef = this.modalService.open(ViewStudentsComponent, { size : 'lg' , backdrop: false});
         modalRef.componentInstance.group = group;
         modalRef.componentInstance.close.subscribe(() => {
             modalRef.close();
         });
     }
     openAddClassModal() {
-        const modalRef = this.modalService.open(AddClassComponent);
+        const modalRef = this.modalService.open(AddClassComponent, { backdrop: false});
         modalRef.componentInstance.institutionID = this.institutionID;
         modalRef.componentInstance.classAdded.subscribe(() => {
             this.loadGroups(this.currentPageClasses, this.itemsPerPageClasses);
@@ -120,11 +121,18 @@ export class ClassComponent implements OnInit {
           this.classes = response.groups;
           this.classes.forEach(group => {
               if (group.program != null) {
+                  this.loadingClasses = true;
                     this.programService.getSimplifiedProgram(group.program).subscribe(
                         program => {
                             group.simplifiedProgram = program;
+                            this.loadingClasses = false;
                         }, error => {
-                            this.handleResponse.handleError(error);
+                            if (error.error) {
+                                this.toastr.error(error.error);
+                            } else {
+                                this.toastr.error('An error occurred while loading classes');
+                            }
+                            this.loadingClasses = false;
                         }
                     );
               }
@@ -134,8 +142,12 @@ export class ClassComponent implements OnInit {
           this.totalItemsClasses = response.totalItems;
           this.loadingClasses = false;
         }, error => {
-          this.handleResponse.handleError(error);
-          this.loadingClasses = false;
+            if (error.error) {
+                this.toastr.error(error.error);
+            } else {
+                this.toastr.error('An error occurred while loading classes');
+            }
+            this.loadingClasses = false;
         }
     );
   }
@@ -150,7 +162,7 @@ export class ClassComponent implements OnInit {
     }
   modalConfirmClassFunction(content: any, group: GroupResponse) {
     this.currentClass = group;
-    this.modalService.open(content, { ariaLabelledBy: 'confirm class' })
+    this.modalService.open(content, { ariaLabelledBy: 'confirm class' , backdrop: false })
         .result.then((result) => {
       if (result === 'Ok') {
         this.removeGroup(group);
@@ -160,7 +172,7 @@ export class ClassComponent implements OnInit {
     });
   }
     openEditClassModal(group: GroupResponse) {
-        const modalRef = this.modalService.open(EditClassComponent);
+        const modalRef = this.modalService.open(EditClassComponent, {backdrop: false});
         modalRef.componentInstance.group = group;
         modalRef.componentInstance.groupUpdated.subscribe((groupUpdated: GroupResponse) => {
                 if (groupUpdated != null) {

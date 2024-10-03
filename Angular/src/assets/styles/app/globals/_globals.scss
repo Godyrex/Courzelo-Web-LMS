@@ -167,3 +167,17 @@ blockquote {
   position: relative;
   color: var(--primary-color); /* Primary color before hover */
 }
+.fullscreen-modal .modal-dialog {
+  max-width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+.fullscreen-modal .modal-content {
+  height: 100%;
+}
+.logo-img {
+  width: 150px; /* Adjust the width as needed */
+  height: auto; /* Maintain aspect ratio */
+}

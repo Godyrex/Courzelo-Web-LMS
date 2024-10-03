@@ -79,6 +79,7 @@ export class NavigationService {
                 type: 'dropDown',
                 icon: 'i-Bar-Chart',
                 sub: [
+                    { icon: 'fa fa-house', name: 'Home ', state: '/home', type: 'link' },
                     { icon: 'i-Clock', name: 'Acitivity ', state: '/dashboard/v5', type: 'link' },
 
                 ]

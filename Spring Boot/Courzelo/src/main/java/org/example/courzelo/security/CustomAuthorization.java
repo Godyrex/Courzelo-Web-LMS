@@ -2,6 +2,7 @@ package org.example.courzelo.security;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.courzelo.exceptions.*;
 import org.example.courzelo.models.*;
 import org.example.courzelo.models.institution.*;
 import org.example.courzelo.models.institution.Module;
@@ -67,14 +68,14 @@ public class CustomAuthorization {
         if(user.getRoles().contains(Role.SUPERADMIN)){
             return true;
         }
-        Module module = moduleRepository.findById(moduleID).orElseThrow(() -> new NoSuchElementException("Module not found"));
+        Module module = moduleRepository.findById(moduleID).orElseThrow(() -> new ModuleNotFoundException("Module not found"));
         return user.getEducation().getInstitutionID().equals(module.getInstitutionID());
     }
     public boolean canAccessGroup(String groupID) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
         User user = userRepository.findUserByEmail(userEmail);
-        Group group = groupRepository.findById(groupID).orElseThrow(() -> new NoSuchElementException("Group not found"));
+        Group group = groupRepository.findById(groupID).orElseThrow(() -> new GroupNotFoundException("Group not found"));
         return user.getEducation().getInstitutionID().equals(group.getInstitutionID());
     }
     public boolean canAccessInvitation(String invitationID) {
@@ -84,7 +85,7 @@ public class CustomAuthorization {
         if(user == null || user.getEducation() == null || user.getEducation().getInstitutionID() == null){
             return false;
         }
-        Invitation invitation = invitationRepository.findById(invitationID).orElseThrow(()->new NoSuchElementException("Invitation not found"));
+        Invitation invitation = invitationRepository.findById(invitationID).orElseThrow(()->new InvitationNotFoundException("Invitation not found"));
         return invitation.getInstitutionID().equals(user.getEducation().getInstitutionID());
     }
     public boolean canAccessInstitution(String institutionId) {
@@ -117,14 +118,11 @@ public class CustomAuthorization {
     public boolean canCreateCourse(String institutionID) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
-        User user = userRepository.findUserByEmail(userEmail);
-        if(user != null && user.getRoles().contains(Role.SUPERADMIN)){
+        User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new UserNotFoundException("User not found"));
+        if(user.getRoles().contains(Role.SUPERADMIN)){
             return true;
         }
-        Institution institution = institutionRepository.findById(institutionID).orElse(null);
-        if (institution == null) {
-            return false;
-        }
+        Institution institution = institutionRepository.findById(institutionID).orElseThrow(() -> new InstitutionNotFoundException("Institution not found"));
         return institution.getTeachers().stream().anyMatch(teacher -> teacher.equals(userEmail));
     }
     public boolean canAccessCourse(String courseID) {
@@ -136,14 +134,10 @@ public class CustomAuthorization {
             log.info("User is superadmin");
             return true;
         }
-        Course course= courseRepository.findById(courseID).orElse(null);
-        if(course == null){
-            log.info("Course not found");
-            return false;
-        }
+        Course course= courseRepository.findById(courseID).orElseThrow(() -> new CourseNotFoundException("Course not found"));
         if(course.getGroup()!=null) {
             log.info("Course has group");
-            Group group = groupRepository.findById(course.getGroup()).orElseThrow(() -> new NoSuchElementException("Group not found"));
+            Group group = groupRepository.findById(course.getGroup()).orElseThrow(() -> new GroupNotFoundException("Group not found"));
             return course.getTeacher().equals(userEmail) || group.getStudents().stream().anyMatch(student -> student.equals(userEmail));
         }
         return course.getTeacher().equals(userEmail);

@@ -39,7 +39,7 @@ public class ModuleController {
         return moduleService.getModulesByProgram(page, sizePerPage, programID, keyword);
     }
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN')&&@customAuthorization.canAccessModule(#id)")
+    @PreAuthorize("@customAuthorization.canAccessModule(#id)")
     public ResponseEntity<ModuleResponse> getModule(@PathVariable String id){
         return moduleService.getModuleById(id);
     }

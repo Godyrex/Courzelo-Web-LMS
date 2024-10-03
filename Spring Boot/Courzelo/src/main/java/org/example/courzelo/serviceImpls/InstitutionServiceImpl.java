@@ -544,6 +544,7 @@ public class InstitutionServiceImpl implements IInstitutionService {
                                             return SimplifiedCourseResponse.builder()
                                                     .courseID(course.getId())
                                                     .courseName(course.getName())
+                                                    .module(course.getModule())
                                                     .build();
                                         }
                                 ).toList()

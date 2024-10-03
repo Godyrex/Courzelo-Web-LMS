@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.courzelo.dto.requests.ProfileInformationRequest;
 import org.example.courzelo.dto.requests.UpdatePasswordRequest;
 import org.example.courzelo.dto.responses.*;
+import org.example.courzelo.exceptions.UserNotFoundException;
 import org.example.courzelo.models.*;
 import org.example.courzelo.models.institution.Institution;
 import org.example.courzelo.repositories.InstitutionRepository;
@@ -179,10 +180,7 @@ public class UserServiceImpl implements UserDetailsService, IUserService {
 
     @Override
     public ResponseEntity<LoginResponse> getUserProfile(String email) {
-        User user = userRepository.findUserByEmail(email);
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new LoginResponse("error", "User not found"));
-        }
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User not found"));
         Institution institution = null;
         if (user.getEducation() != null && user.getEducation().getInstitutionID() != null) {
             institution = institutionRepository.findById(user.getEducation().getInstitutionID()).orElse(null);

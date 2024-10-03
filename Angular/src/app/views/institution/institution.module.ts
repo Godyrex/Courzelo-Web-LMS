@@ -9,7 +9,14 @@ import {NgxPaginationModule} from 'ngx-pagination';
 import {NgxDatatableModule} from '@swimlane/ngx-datatable';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {SharedComponentsModule} from '../../shared/components/shared-components.module';
-import {NgbDatepickerModule, NgbTabsetModule} from '@ng-bootstrap/ng-bootstrap';
+import {
+    NgbDatepickerModule,
+    NgbNav,
+    NgbNavContent,
+    NgbNavItem,
+    NgbNavLink,
+    NgbNavOutlet
+} from '@ng-bootstrap/ng-bootstrap';
 import {CourseComponent, TimeRemainingPipe} from './course/course.component';
 import { ClassComponent } from './class/class.component';
 import { InvitationsComponent } from './invitations/invitations.component';
@@ -54,11 +61,15 @@ import { ViewStudentsComponent } from './class/view-students/view-students.compo
         FormsModule,
         ReactiveFormsModule,
         SharedComponentsModule,
-        NgbTabsetModule,
         NgbDatepickerModule,
         TimeRemainingPipe,
         TagInputModule,
-        ToolsModule
+        ToolsModule,
+        NgbNavOutlet,
+        NgbNavItem,
+        NgbNavLink,
+        NgbNavContent,
+        NgbNav
     ]
 })
 export class InstitutionModule { }

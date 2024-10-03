@@ -17,6 +17,7 @@ import {QuestionType} from '../../../shared/models/QuestionType';
 import {Quiz, StudentQuizAnswers} from '../../../shared/models/Quiz';
 import {Question} from '../../../shared/models/Question';
 import {QuizService} from '../../../shared/services/quiz.service';
+import {ModuleService} from '../../../shared/services/institution/module.service';
 @Pipe({
     standalone: true,
     name: 'timeRemaining'
@@ -49,7 +50,8 @@ export class CourseComponent implements OnInit, OnDestroy {
       private courseService: CourseService,
       private userService: UserService,
       private sanitizer: DomSanitizer,
-        private quizService: QuizService
+        private quizService: QuizService,
+      private moduleService: ModuleService
   ) { }
     quizToAdd: Quiz = {
         id: '',
@@ -278,7 +280,7 @@ export class CourseComponent implements OnInit, OnDestroy {
         return title && description && duration && questions && questionsValid;
     }
     addQuizModel(content) {
-        this.modalService.open( content, { ariaLabelledBy: 'add Quiz' })
+        this.modalService.open( content, { ariaLabelledBy: 'add Quiz', backdrop: false })
             .result.then((result) => {
                 this.quizToAdd = {
                     id: '',
@@ -318,6 +320,14 @@ this.quizToAdd = {
         this.courseService.getCourse(this.courseID).subscribe(
             course => {
                 this.course = course;
+                if (this.course.module) {
+                    this.moduleService.getModule(this.course.module).subscribe(module => {
+                        this.course.name = module.name;
+                        this.course.description = module.description;
+                        this.course.credit = module.credit;
+                    });
+
+                }
                 if (this.course.posts) {
                     this.course.posts.forEach(post => {
                         if (Array.isArray(post.created)) {
@@ -363,7 +373,7 @@ this.quizToAdd = {
         );
     }
     deleteCourse(content: any) {
-        this.modalService.open(content, { ariaLabelledBy: 'delete course' })
+        this.modalService.open(content, { ariaLabelledBy: 'delete course', backdrop: false })
             .result.then((result) => {
             if (result === 'Ok') {
                 this.courseService.deleteCourse(this.courseID).subscribe(
@@ -381,7 +391,7 @@ this.quizToAdd = {
         });
     }
     deletePostModal(content: any, postID: string) {
-        this.modalService.open(content, { ariaLabelledBy: 'delete post' })
+        this.modalService.open(content, { ariaLabelledBy: 'delete post', backdrop: false })
             .result.then((result) => {
             if (result === 'Ok') {
                 this.deletePost(postID);
@@ -391,7 +401,7 @@ this.quizToAdd = {
         });
     }
     deleteQuizModal(content: any, quizID: string) {
-        this.modalService.open(content, { ariaLabelledBy: 'delete post' })
+        this.modalService.open(content, { ariaLabelledBy: 'delete post', backdrop: false })
             .result.then((result) => {
             if (result === 'Ok') {
                 this.deleteQuiz(quizID);
@@ -403,7 +413,7 @@ this.quizToAdd = {
     quizSubmissionsModal(content: any, quiz: Quiz) {
         if (quiz.studentSubmissions) {
             this.selectedQuiz = quiz;
-            this.modalService.open(content, {ariaLabelledBy: 'quiz submissions'})
+            this.modalService.open(content, {ariaLabelledBy: 'quiz submissions', backdrop: false})
                 .result.then((result) => {
                 console.log(result);
             }, (reason) => {
@@ -430,7 +440,7 @@ this.quizToAdd = {
             description: this.course.description,
             credit: this.course.credit
         });
-        this.modalService.open( content, { ariaLabelledBy: 'Update Course' })
+        this.modalService.open( content, { ariaLabelledBy: 'Update Course' , backdrop: false})
             .result.then((result) => {
             console.log(result);
         }, (reason) => {
@@ -459,7 +469,7 @@ this.quizToAdd = {
         }
     }
     addPostModel(content) {
-        this.modalService.open( content, { ariaLabelledBy: 'add Post' })
+        this.modalService.open( content, { ariaLabelledBy: 'add Post', backdrop: false })
             .result.then((result) => {
             console.log(result);
         }, (reason) => {

@@ -66,11 +66,12 @@ public class CourseServiceImpl implements ICourseService {
         }
         if(courseRequest.getGroup()!=null){
             log.info("Adding course to group");
-            Group group = groupRepository.findById(courseRequest.getGroup()).orElseThrow(() -> new NoSuchElementException("Group not found"));
+            Group group = groupRepository.findById(courseRequest.getGroup()).orElseThrow(() -> new GroupNotFoundException("Group not found"));
             group.getCourses().add(course.getId());
             groupRepository.save(group);
             log.info("Course added to group");
         }
+        log.info("Course created");
         return ResponseEntity.ok(HttpStatus.OK);
     }
 

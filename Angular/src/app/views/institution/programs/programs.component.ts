@@ -94,14 +94,14 @@ export class ProgramsComponent implements OnInit {
     );
   }
   openAddProgramModal() {
-    const modalRef = this.modalService.open(AddProgramComponent);
+    const modalRef = this.modalService.open(AddProgramComponent, {backdrop: false});
     modalRef.componentInstance.programAdded.subscribe(() => {
       this.getPrograms(this.currentPage, this.itemsPerPage, null);
       modalRef.close();
     });
   }
   openEditProgramModal(program: ProgramResponse) {
-    const modalRef = this.modalService.open(EditProgramComponent);
+    const modalRef = this.modalService.open(EditProgramComponent, {backdrop: false});
     modalRef.componentInstance.program = program;
     modalRef.componentInstance.programUpdated.subscribe((updatedProgram: ProgramResponse) => {
       if (updatedProgram != null) {
@@ -119,7 +119,7 @@ export class ProgramsComponent implements OnInit {
   }
   modalConfirmFunction(content: any, program: ProgramResponse) {
     this.currentProgram = program;
-    this.modalService.open(content, { ariaLabelledBy: 'confirm Program' })
+    this.modalService.open(content, { ariaLabelledBy: 'confirm Program', backdrop: false })
         .result.then((result) => {
       if (result === 'Ok') {
         this.deleteProgram(this.currentProgram.id);

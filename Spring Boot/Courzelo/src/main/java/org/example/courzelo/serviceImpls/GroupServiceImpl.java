@@ -17,16 +17,12 @@ import org.example.courzelo.services.IGroupService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -42,6 +38,7 @@ public class GroupServiceImpl implements IGroupService {
     @Override
     public ResponseEntity<GroupResponse> getGroup(String groupID) {
         Group group = groupRepository.findById(groupID).orElseThrow(() -> new GroupNotFoundException("Group not found"));
+        log.info("Fetching group {}", group);
         return ResponseEntity.ok(GroupResponse.builder()
                 .id(group.getId())
                 .name(group.getName())
@@ -53,6 +50,7 @@ public class GroupServiceImpl implements IGroupService {
                             return SimplifiedCourseResponse.builder()
                                     .courseID(course.getId())
                                     .courseName(course.getName())
+                                    .module(course.getModule())
                                     .build();
                         }
                         ).toList()
@@ -85,6 +83,7 @@ public class GroupServiceImpl implements IGroupService {
                                             return SimplifiedCourseResponse.builder()
                                                     .courseID(course.getId())
                                                     .courseName(course.getName())
+                                                    .module(course.getModule())
                                                     .build();
                                         }
                                 ).toList()

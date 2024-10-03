@@ -209,7 +209,7 @@ export class InstitutionsComponent implements OnInit {
     );
   }
     addInstitutionModel(content) {
-        this.modalService.open(content, { ariaLabelledBy: 'add Institution' })
+        this.modalService.open(content, { ariaLabelledBy: 'add Institution', backdrop: false })
             .result.then((result) => {
             console.log(result);
         }, (reason) => {
@@ -252,7 +252,7 @@ export class InstitutionsComponent implements OnInit {
     }
     deleteInstitutionModal(content, institution: InstitutionResponse) {
         this.currentInstitution = institution;
-        const modalRef = this.modalService.open(content, { ariaLabelledBy: 'delete Institution'});
+        const modalRef = this.modalService.open(content, { ariaLabelledBy: 'delete Institution', backdrop: false});
         modalRef.result.then((result) => {
             if (result === 'Ok') {
                 this.deleteInstitution(this.currentInstitution.id);
@@ -263,7 +263,7 @@ export class InstitutionsComponent implements OnInit {
     }
     addUserModel(content, institution: InstitutionResponse) {
         this.currentInstitution = institution;
-        this.modalService.open(content, { ariaLabelledBy: 'invite User' })
+        this.modalService.open(content, { ariaLabelledBy: 'invite User', backdrop: false })
             .result.then((result) => {
             console.log(result);
         }, (reason) => {
@@ -339,7 +339,7 @@ export class InstitutionsComponent implements OnInit {
     }
     modalConfirmUserFunction(content: any, user: InstitutionUserResponse) {
       this.currentUser = user;
-        this.modalService.open(content, { ariaLabelledBy: 'confirm User' })
+        this.modalService.open(content, { ariaLabelledBy: 'confirm User', backdrop: false })
             .result.then((result) => {
             if (result === 'Ok') {
                 this.removeInstitutionUser(user);

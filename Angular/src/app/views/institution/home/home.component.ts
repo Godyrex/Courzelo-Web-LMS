@@ -92,18 +92,21 @@ export class HomeComponent implements OnInit {
       });
 
   }
-  onTabChange(event: any) {
-    if (event.nextId === 'mapTab') {
-      setTimeout(() => {
-        this.initializeMap();
-      }, 0);
+    onTabChange(event: any) {
+        if (event.nextId === 2) {
+            this.toastr.info('Loading Map...');
+            setTimeout(() => {
+                this.initializeMap();
+            }, 1000);
+        }
+
+        if (event.nextId === 4) {  // The numeric ID for the Tools tab
+            setTimeout(() => {
+                this.loadGroupsAndTeachers();
+            }, 0);
+        }
     }
-      if (event.nextId === 'tools') {
-          setTimeout(() => {
-            this.loadGroupsAndTeachers();
-          }, 0);
-      }
-  }
+
   loadGroupsAndTeachers() {
     this.institutionService.getInstitutionGroups(this.institutionID).subscribe(
         response => {
@@ -154,7 +157,7 @@ export class HomeComponent implements OnInit {
         return control && control.errors && control.errors[errorName] && (control.dirty || control.touched);
     }
     addCourseModel(content) {
-        this.modalService.open( content, { ariaLabelledBy: 'Create Course' })
+        this.modalService.open( content, { ariaLabelledBy: 'Create Course', backdrop: false })
             .result.then((result) => {
             console.log(result);
         }, (reason) => {
@@ -179,14 +182,14 @@ export class HomeComponent implements OnInit {
     );
   }
   initializeMap() {
-    if (this.currentInstitution.latitude === 0 || this.currentInstitution.longitude === 0 ||
+      if (this.currentInstitution.latitude === 0 || this.currentInstitution.longitude === 0 ||
         this.currentInstitution.latitude === undefined || this.currentInstitution.longitude === undefined) {
       this.toastr.warning('You Don\'t have a location set, setting default location.');
       this.currentInstitution.latitude = 36.7832;
       this.currentInstitution.longitude = 10.1843;
     }
     if (this.map) {
-      this.map.remove();
+        this.map.remove();
     }
     this.map = L.map('map').setView([this.currentInstitution.latitude, this.currentInstitution.longitude], 15);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {}).addTo(this.map);

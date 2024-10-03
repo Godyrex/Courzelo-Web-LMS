@@ -120,7 +120,7 @@ export class InvitationsComponent implements OnInit {
     }
     modalConfirmFunction(content: any, invitation: InvitationResponse) {
         this.currentInvitation = invitation;
-        this.modalService.open(content, { ariaLabelledBy: 'confirm Invitation' })
+        this.modalService.open(content, { ariaLabelledBy: 'confirm Invitation', backdrop: false })
             .result.then((result) => {
             if (result === 'Ok') {
                 this.deleteInvitation(this.currentInvitation.id);
