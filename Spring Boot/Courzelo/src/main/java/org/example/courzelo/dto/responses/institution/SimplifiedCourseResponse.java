@@ -11,6 +11,7 @@ import java.util.List;
 public class SimplifiedCourseResponse {
     private String courseID;
     private String courseName;
+    private String teacher;
     private String module;
     private List<ElementModule> elementModules;
 

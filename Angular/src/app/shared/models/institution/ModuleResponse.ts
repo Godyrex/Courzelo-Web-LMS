@@ -1,4 +1,5 @@
 export interface ModuleResponse {
+    courseTeacher?: string;
     id?: string;
     name?: string;
     description?: string;

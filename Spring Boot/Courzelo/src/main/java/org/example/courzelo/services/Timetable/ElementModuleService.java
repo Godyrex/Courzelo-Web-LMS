@@ -118,7 +118,6 @@ public class ElementModuleService {
                     .orElseThrow(() -> new NoSuchElementException("Course not found"));
             return SimplifiedCourseResponse.builder()
                     .courseID(course.getId())
-                    .courseName(course.getName())
                     .build();
         }).toList();
         GroupResponse groupResponse = GroupResponse.builder()

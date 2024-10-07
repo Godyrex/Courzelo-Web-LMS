@@ -6,7 +6,6 @@ import {ToastrService} from 'ngx-toastr';
 import {ActivatedRoute} from '@angular/router';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {GroupResponse} from '../../../shared/models/institution/GroupResponse';
-import {GroupRequest} from '../../../shared/models/institution/GroupRequest';
 import {GroupService} from '../../../shared/services/institution/group.service';
 import {InstitutionResponse} from '../../../shared/models/institution/InstitutionResponse';
 import {AddClassComponent} from './add-class/add-class.component';
@@ -14,7 +13,7 @@ import {EditClassComponent} from './edit-class/edit-class.component';
 import {debounceTime} from 'rxjs/operators';
 import {ProgramService} from '../../../shared/services/institution/program.service';
 import {ViewCoursesComponent} from './view-courses/view-courses.component';
-import {ViewStudentsComponent} from './view-students/view-students.component';
+import {ViewStudentsComponent} from "../../../shared/components/view-students/view-students.component";
 
 @Component({
   selector: 'app-class',

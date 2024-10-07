@@ -15,16 +15,47 @@
                 <div  class="col-md-6 mb-4" *ngFor="let module of modules">
                     <div class="card h-100">
                         <div class="card-body d-flex flex-column">
-                            <h5 class="card-title">{{ module.name }}</h5>
-                            <p class="card-text">{{ module.description }}</p>
+                            <h5 class="card-title text-primary">{{ module.name }}</h5>
+                            <p class="card-text text-muted">{{ module.description }}</p>
+                            <p class="card-text"><strong>Teacher:</strong><span [ngClass]="{'text-danger': !module.courseTeacher}">
+                                {{ module.courseTeacher || "Not assigned" }}</span></p>
                             <p class="card-text">
                                 <strong>Credits:</strong> {{ module.credit }}
                             </p>
                             <!-- Buttons aligned at the bottom -->
-                            <div class="mt-auto">
-                                <button class="btn btn-primary btn-block" *ngIf="module.courseCreated" (click)="onClose()" routerLink="institution/course/{{module.courseID}}"  >View Course</button>
-                                <button class="btn btn-success btn-block mt-2" *ngIf="!module.courseCreated" (click)="createCourse(module)" >Create Course</button>
-                                <button class="btn btn-danger btn-block mt-2" *ngIf="module.courseCreated" (click)="deleteCourse(module.courseID)" >Delete Course</button>
+                            <div class="mt-auto d-grid gap-2">
+                                <!-- View Course Button -->
+                                <button
+                                        class="btn btn-primary mr-2"
+                                        *ngIf="module.courseCreated"
+                                        (click)="onClose()"
+                                        routerLink="institution/course/{{ module.courseID }}">
+                                    View Course
+                                </button>
+
+                                <!-- Create Course Button -->
+                                <button
+                                        class="btn btn-success mr-2"
+                                        *ngIf="!module.courseCreated"
+                                        (click)="createCourse(module)">
+                                    Create Course
+                                </button>
+
+                                <!-- Delete Course Button -->
+                                <button
+                                        class="btn btn-danger mr-2"
+                                        *ngIf="module.courseCreated"
+                                        (click)="deleteCourse(module.courseID)">
+                                    Delete Course
+                                </button>
+
+                                <!-- Set Teacher Button -->
+                                <button
+                                        class="btn btn-warning mr-2"
+                                        (click)="openAsssignTeacherModal(module)"
+                                >
+                                    Set Teacher
+                                </button>
                             </div>
                         </div>
                     </div>

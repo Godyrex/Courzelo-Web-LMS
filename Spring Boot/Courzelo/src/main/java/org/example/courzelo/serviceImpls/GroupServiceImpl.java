@@ -50,7 +50,7 @@ public class GroupServiceImpl implements IGroupService {
                             Course course = courseRepository.findById(courseID).orElseThrow(() -> new CourseNotFoundException("Course not found"));
                             return SimplifiedCourseResponse.builder()
                                     .courseID(course.getId())
-                                    .courseName(course.getName())
+                                    .teacher(course.getTeacher())
                                     .module(course.getModule())
                                     .build();
                         }
@@ -83,7 +83,7 @@ public class GroupServiceImpl implements IGroupService {
                                             Course course = courseRepository.findById(courseID).orElseThrow(() -> new CourseNotFoundException("Course not found"));
                                             return SimplifiedCourseResponse.builder()
                                                     .courseID(course.getId())
-                                                    .courseName(course.getName())
+                                                    .teacher(course.getTeacher())
                                                     .module(course.getModule())
                                                     .build();
                                         }
@@ -207,46 +207,39 @@ public class GroupServiceImpl implements IGroupService {
         Group group = groupRepository.findById(groupID).orElseThrow(() -> new GroupNotFoundException("Group not found"));
         group.setName(groupRequest.getName());
         if (groupRequest.getStudents() != null) {
-            List<String> students = new ArrayList<>(groupRequest.getStudents());
-            List<String> studentsToRemove = new ArrayList<>();
+            List<String> studentsToBeRemoved = new ArrayList<>();
+            List<String> studentsToBeAdded = new ArrayList<>();
             group.getStudents().forEach(
                     studentEmail -> {
-                        if (!students.contains(studentEmail)) {
-                            studentsToRemove.add(studentEmail);
+                        if (!groupRequest.getStudents().contains(studentEmail)) {
+                            log.info("Removing user {} from group", studentEmail);
+                            studentsToBeRemoved.add(studentEmail);
                         }
                     }
             );
-            students.forEach(
+            groupRequest.getStudents().forEach(
                     studentEmail -> {
-                        if (!checkIfUserCanBeAddedToGroup(studentEmail, group.getInstitutionID())) {
-                            log.info("User {} cannot be added to group", studentEmail);
-                            groupRequest.getStudents().remove(studentEmail);
+                        if (!group.getStudents().contains(studentEmail)) {
+                            log.info("Adding user {} to group", studentEmail);
+                            studentsToBeAdded.add(studentEmail);
                         }
                     }
             );
-            group.setStudents(groupRequest.getStudents());
-                groupRequest.getStudents().forEach(
-                        studentEmail -> addGroupToUser(group.getId(), studentEmail)
-                );
-                if(!studentsToRemove.isEmpty()){
-                    studentsToRemove.forEach(
-                            studentEmail -> removeStudentFromGroup(group.getId(), studentEmail)
-                    );
-                }
+            studentsToBeRemoved.forEach(
+                    studentEmail -> removeStudentFromGroup(groupID, studentEmail)
+            );
+            studentsToBeAdded.forEach(
+                    studentEmail -> {
+                        if (checkIfUserCanBeAddedToGroup(studentEmail, group.getInstitutionID())) {
+                            addStudentToGroup(groupID, studentEmail);
+                        }
+                    }
+            );
+        }else if(group.getStudents()!=null){
+            group.getStudents().forEach(
+                    studentEmail -> removeStudentFromGroup(groupID, studentEmail)
+            );
         }
-
-
-        if(groupRequest.getProgram()!=null && !groupRequest.getProgram().equals(group.getProgram())){
-            programRepository.findById(groupRequest.getProgram()).ifPresent(program -> {
-                group.setProgram(program.getId());
-                if(program.getGroups()==null){
-                    program.setGroups(new ArrayList<>());
-                }
-                program.getGroups().add(groupID);
-                programRepository.save(program);
-            });
-        }
-        groupRepository.save(group);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
@@ -309,6 +302,7 @@ public class GroupServiceImpl implements IGroupService {
             throw new UserNotPartOfInstitutionException("User "+student+" is not in the same institution as group " +group.getName());
         }
         group.getStudents().add(user.getEmail());
+        log.info("group : "+group);
         user.getEducation().setGroupID(groupID);
         groupRepository.save(group);
         userRepository.save(user);

@@ -376,6 +376,9 @@ export class InstitutionsComponent implements OnInit {
                 }
                 this.loadingUsers = false;
             });
+        } else {
+            this.toastr.error('Please select a role');
+            this.loadingUsers = false;
         }
     }
 

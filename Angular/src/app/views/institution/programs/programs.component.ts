@@ -12,6 +12,7 @@ import {ProgramService} from '../../../shared/services/institution/program.servi
 import {AddProgramComponent} from './add-program/add-program.component';
 import {debounceTime} from 'rxjs/operators';
 import {EditProgramComponent} from './edit-program/edit-program.component';
+import {CourseService} from '../../../shared/services/institution/course.service';
 
 @Component({
   selector: 'app-programs',
@@ -32,7 +33,7 @@ export class ProgramsComponent implements OnInit {
   constructor(
       private institutionService: InstitutionService,
       private programService: ProgramService,
-      private handleResponse: ResponseHandlerService,
+      private courseService: CourseService,
       private toastr: ToastrService,
       private route: ActivatedRoute,
       private modalService: NgbModal,
@@ -63,6 +64,19 @@ export class ProgramsComponent implements OnInit {
     } else {
       this.getPrograms(this._currentPage, this.itemsPerPage, this.searchControl.value);
     }
+  }
+  createCourses(programResponse: ProgramResponse) {
+  this.courseService.addProgramCourses(this.institutionID, programResponse.id).subscribe(
+    response => {
+      this.toastr.success('Courses created successfully');
+    },
+    error => {
+      if (error.error) {
+        this.toastr.error(error.error, 'Error');
+      } else {
+        this.toastr.error('An error occurred', 'Error');
+      }
+    });
   }
   getPrograms(page: number, sizePerPage: number, keyword?: string): void {
     this.loadingPrograms = true;

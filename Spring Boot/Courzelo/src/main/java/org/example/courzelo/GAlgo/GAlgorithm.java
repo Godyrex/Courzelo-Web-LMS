@@ -130,9 +130,8 @@ public class GAlgorithm {
             for (ElementModule element : classTimetable) {
                 String day = element.getDayOfWeek().toString();
                 String period = element.getPeriod().toString();
-                String course = element.getCourse().getName();
 
-                System.out.println("Day: " + day + ", Period: " + period + ", Room: "  + course + ", Teacher: " + element.getTeacher().getProfile().getName() + " Element: " + element.getName());
+                System.out.println("Day: " + day + ", Period: " + period   + ", Teacher: " + element.getTeacher().getProfile().getName() + " Element: " + element.getName());
             }
             System.out.println();
         }

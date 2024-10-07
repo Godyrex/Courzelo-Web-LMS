@@ -3,11 +3,6 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-<<<<<<< HEAD
-
-=======
-upload
->>>>>>> 63b83bffeb61fb808090bd7eeb2bff3a8d16d26b
 ### STS ###
 .apt_generated
 .classpath
@@ -81,3 +76,4 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+/upload

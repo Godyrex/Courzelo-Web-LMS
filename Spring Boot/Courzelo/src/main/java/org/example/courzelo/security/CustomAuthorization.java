@@ -138,7 +138,7 @@ public class CustomAuthorization {
         if(course.getGroup()!=null) {
             log.info("Course has group");
             Group group = groupRepository.findById(course.getGroup()).orElseThrow(() -> new GroupNotFoundException("Group not found"));
-            return course.getTeacher().equals(userEmail) || group.getStudents().stream().anyMatch(student -> student.equals(userEmail));
+            return (course.getTeacher()!= null&&course.getTeacher().equals(userEmail)) || group.getStudents().stream().anyMatch(student -> student.equals(userEmail));
         }
         return course.getTeacher().equals(userEmail);
     }

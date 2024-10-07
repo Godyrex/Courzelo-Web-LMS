@@ -61,7 +61,6 @@ import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
     ProjectDetailsComponent,
     ProgressDashboardComponent,
    ProjectCalendarComponent ,
-
    PublicationComponent,
    AddpublicationComponent,
   RevisionComponent,

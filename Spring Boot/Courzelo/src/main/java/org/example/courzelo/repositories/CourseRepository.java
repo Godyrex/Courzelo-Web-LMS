@@ -12,4 +12,5 @@ public interface CourseRepository extends MongoRepository<Course,String> {
     Optional<List<Course>> findAllByTeacher(String teacher);
     Optional<List<Course>> findAllByGroup(String group);
     void deleteAllByModule(String module);
+    Boolean existsByModuleAndGroup(String module, String group);
 }

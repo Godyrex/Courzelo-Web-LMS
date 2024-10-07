@@ -10,10 +10,7 @@ import org.example.courzelo.dto.responses.CourseResponse;
 import org.example.courzelo.exceptions.*;
 import org.example.courzelo.models.Role;
 import org.example.courzelo.models.User;
-import org.example.courzelo.models.institution.Course;
-import org.example.courzelo.models.institution.CoursePost;
-import org.example.courzelo.models.institution.Group;
-import org.example.courzelo.models.institution.Institution;
+import org.example.courzelo.models.institution.*;
 import org.example.courzelo.repositories.*;
 import org.example.courzelo.services.ICourseService;
 import org.example.courzelo.services.QuizService;
@@ -40,14 +37,12 @@ public class CourseServiceImpl implements ICourseService {
     private final UserRepository userRepository;
     private final GroupRepository groupRepository;
     private final QuizService quizService;
+    private final ProgramRepository programRepository;
     @Override
     public ResponseEntity<HttpStatus> createCourse(String institutionID, CourseRequest courseRequest,Principal principal) {
         log.info("Creating course");
-        Institution institution = institutionRepository.findById(institutionID).orElseThrow();
+        Institution institution = institutionRepository.findById(institutionID).orElseThrow(() -> new InstitutionNotFoundException("Institution not found"));
         Course course = Course.builder()
-                .name(courseRequest.getName())
-                .description(courseRequest.getDescription())
-                .credit(courseRequest.getCredit())
                 .module(courseRequest.getModule())
                 .institutionID(institution.getId())
                 .teacher(courseRequest.getTeacher())
@@ -79,8 +74,6 @@ public class CourseServiceImpl implements ICourseService {
     @Override
     public ResponseEntity<HttpStatus> updateCourse(String courseID, CourseRequest courseRequest) {
         Course course = courseRepository.findById(courseID).orElseThrow();
-        course.setName(courseRequest.getName());
-        course.setDescription(courseRequest.getDescription());
         if (!course.getTeacher().equals(courseRequest.getTeacher())) {
             Institution institution = institutionRepository.findById(course.getInstitutionID()).orElseThrow();
             if (institution.getTeachers().contains(courseRequest.getTeacher())) {
@@ -95,7 +88,6 @@ public class CourseServiceImpl implements ICourseService {
                 );
             }
         }
-        course.setCredit(courseRequest.getCredit());
         courseRepository.save(course);
         return ResponseEntity.ok(HttpStatus.OK);
     }
@@ -145,11 +137,8 @@ public class CourseServiceImpl implements ICourseService {
             }
         return ResponseEntity.ok(CourseResponse.builder()
                 .id(course.getId())
-                .name(course.getName())
-                .description(course.getDescription())
                 .module(course.getModule())
-                .credit(course.getCredit())
-                .teacher(course.getTeacher())
+                .teacher(course.getTeacher() == null ? null : course.getTeacher())
                 .group(course.getGroup())
                 .posts(course.getPosts() != null ? course.getPosts().stream().map(coursePost -> CoursePostResponse.builder()
                         .id(coursePost.getId())
@@ -165,12 +154,17 @@ public class CourseServiceImpl implements ICourseService {
 
     @Override
     public ResponseEntity<HttpStatus> setTeacher(String courseID, String email) {
+        log.info("Setting teacher to course");
+        log.info("Course ID: " + courseID);
+        log.info("Email: " + email);
         Course course = courseRepository.findById(courseID).orElseThrow(()-> new CourseNotFoundException("Course not found"));
         Institution institution = institutionRepository.findById(course.getInstitutionID()).orElseThrow(() -> new InstitutionNotFoundException("Institution not found"));
-        if(course.getTeacher().equals(email)){
+        if(course.getTeacher() != null && course.getTeacher().equals(email)){
             throw new TeacherAlreadyAssignedException("Teacher already assigned to course");
         }
-        if(institution.getTeachers().contains(email)){
+        if(institution.getTeachers()!=null&&institution.getTeachers().contains(email)){
+            log.info("Teacher is part of institution");
+            removeOldTeacher(course);
             User teacher = userRepository.findUserByEmail(email);
             course.setTeacher(teacher.getEmail());
             teacher.getEducation().getCoursesID().add(course.getId());
@@ -178,7 +172,19 @@ public class CourseServiceImpl implements ICourseService {
             courseRepository.save(course);
             return ResponseEntity.ok(HttpStatus.OK);
         }
-        throw new UserNotPartOfInstitutionException(email+" is not part of "+institution.getName());
+        throw new UserNotPartOfInstitutionException(email+" is not a teacher in the institution");
+    }
+    private void removeOldTeacher(Course course) {
+        if (course.getTeacher() != null) {
+           userRepository.findByEmail(course.getTeacher()).ifPresent(
+                    teacher -> {
+                        if (teacher.getEducation() != null && teacher.getEducation().getCoursesID() != null && teacher.getEducation().getCoursesID().contains(course.getId())) {
+                            teacher.getEducation().getCoursesID().remove(course.getId());
+                            userRepository.save(teacher);
+                        }
+                    }
+            );
+        }
     }
     public List<String> returnOnlyFileName(List<String> files) {
         log.info("Returning only file name {}", files);
@@ -276,11 +282,39 @@ public class CourseServiceImpl implements ICourseService {
         return ResponseEntity.ok(courses.stream().map(course -> CourseResponse.builder()
                 .id(course.getId())
                 .module(course.getModule())
-                .credit(course.getCredit())
                 .teacher(course.getTeacher())
                 .group(course.getGroup())
                 .institutionID(course.getInstitutionID())
                 .build()).toList());
+    }
+
+    @Override
+    public ResponseEntity<HttpStatus> createProgramCourses(String institutionID, String programID, Principal principal) {
+        Institution institution = institutionRepository.findById(institutionID).orElseThrow(() -> new InstitutionNotFoundException("Institution not found"));
+        Program program = programRepository.findById(programID).orElseThrow(() -> new ProgramNotFoundException("Program not found"));
+         groupRepository.findByProgram(programID).ifPresentOrElse(groups -> {
+             groups.forEach(group -> {
+                 program.getModules().forEach( module -> {
+                     if (!courseRepository.existsByModuleAndGroup(module, group.getId())) {
+                         Course course = Course.builder()
+                                 .module(module)
+                                 .institutionID(institution.getId())
+                                 .teacher(null)
+                                 .group(group.getId())
+                                 .posts(new ArrayList<>())
+                                 .build();
+                         courseRepository.save(course);
+                         institution.getCoursesID().add(course.getId());
+                         institutionRepository.save(institution);
+                         group.getCourses().add(course.getId());
+                         groupRepository.save(group);
+                     }
+                 });
+             });
+         }, () -> {
+             throw new GroupNotFoundException("No groups found for program");
+         });
+         return ResponseEntity.ok(HttpStatus.OK);
     }
 
     private List<byte[]> getBytesFromFiles(List<String> files) {
@@ -323,10 +357,7 @@ public class CourseServiceImpl implements ICourseService {
     public List<CourseResponse>findAll() {
         return courseRepository.findAll(Sort.by("id")).stream().map(course -> CourseResponse.builder()
                 .id(course.getId())
-                .name(course.getName())
-                .description(course.getDescription())
                 .module(course.getModule())
-                .credit(course.getCredit())
                 .teacher(course.getTeacher())
                 .group(course.getGroup())
                 .posts(course.getPosts() != null ? course.getPosts().stream().map(coursePost -> CoursePostResponse.builder()

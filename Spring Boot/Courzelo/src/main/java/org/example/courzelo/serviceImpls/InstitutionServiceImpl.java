@@ -543,7 +543,7 @@ public class InstitutionServiceImpl implements IInstitutionService {
                                             Course course = courseRepository.findById(courseID).orElseThrow(() -> new CourseNotFoundException("Course not found"));
                                             return SimplifiedCourseResponse.builder()
                                                     .courseID(course.getId())
-                                                    .courseName(course.getName())
+                                                    .teacher(course.getTeacher())
                                                     .module(course.getModule())
                                                     .build();
                                         }

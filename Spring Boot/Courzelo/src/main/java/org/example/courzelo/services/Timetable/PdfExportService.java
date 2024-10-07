@@ -331,12 +331,9 @@ public class PdfExportService {
                 if(elms.size()>0){
                     Paragraph Libele = new Paragraph(elms.get(0).getName()+" ("+elms.get(0).getNmbrHours()+")",Calibri1);
                     Libele.setAlignment(Element.ALIGN_CENTER);
-                    Paragraph course = new Paragraph(elms.get(0).getCourse().getName(),Calibri3);
-                    course.setAlignment(Element.ALIGN_CENTER);
                     Paragraph Prof = new Paragraph(elms.get(0).getTeacher().getProfile().getName()+" "+elms.get(0).getTeacher().getProfile().getLastname(),Calibri3);
                     Prof.setAlignment(Element.ALIGN_CENTER);
                     CellList.add(Libele);
-                    CellList.add(course);
                     CellList.add(Prof);
                 }
                 else{

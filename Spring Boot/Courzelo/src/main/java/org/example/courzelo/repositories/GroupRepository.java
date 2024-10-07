@@ -7,9 +7,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+import java.util.Optional;
+
 
 @Repository
 public interface GroupRepository extends MongoRepository<Group,String> {
     Page<Group> findByInstitutionID(String institutionID, Pageable pageable);
     Page<Group> findByInstitutionIDAndNameContainingIgnoreCase(String institutionID, String keyword, Pageable pageable);
+    Optional<List<Group>> findByProgram(String program);
 }

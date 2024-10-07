@@ -61,6 +61,9 @@
                         <button class="btn btn-link" (click)="viewModules(row)">View Modules</button>
                     </ng-template>
                     <ng-template #deleteBtnTemplate let-row="row" let-value="value">
+                        <button class="btn btn-primary btn-rounded m-1 mr-2" (click)="createCourses(row)">
+                            <i class="fa fa-add"></i> Create Courses
+                        </button>
                         <button class="btn btn-warning btn-rounded m-1 mr-2" (click)="openEditProgramModal(row)">
                             <i class="fa fa-edit"></i> Edit
                         </button>

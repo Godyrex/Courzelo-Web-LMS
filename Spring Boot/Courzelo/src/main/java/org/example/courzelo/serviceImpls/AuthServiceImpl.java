@@ -192,14 +192,7 @@ public class AuthServiceImpl implements IAuthService {
                                             courseID -> {
                                                 log.info("Course ID: "+courseID);
                                                 Course course = courseRepository.findById(courseID).orElseThrow();
-                                                if(course.getModule()!=null){
-                                                    moduleRepository.findById(course.getModule()).ifPresent(
-                                                            module -> {
-                                                                course.setName(module.getName());
-                                                            }
-                                                    );
-                                                }
-                                                return SimplifiedCourseResponse.builder().courseID(course.getId()).courseName(course.getName()).build();
+                                                return SimplifiedCourseResponse.builder().courseID(course.getId()).module(course.getModule()).build();
                                             }
                                     ).toList() : null)
                                     .build())
@@ -309,14 +302,7 @@ public class AuthServiceImpl implements IAuthService {
                                             courseID -> {
                                                 log.info("Course ID: "+courseID);
                                                 Course course = courseRepository.findById(courseID).orElseThrow();
-                                                if(course.getModule()!=null){
-                                                    moduleRepository.findById(course.getModule()).ifPresent(
-                                                            module -> {
-                                                                course.setName(module.getName());
-                                                            }
-                                                    );
-                                                }
-                                                return SimplifiedCourseResponse.builder().courseID(course.getId()).courseName(course.getName()).build();
+                                                return SimplifiedCourseResponse.builder().courseID(course.getId()).module(course.getModule()).build();
                                             }
                                     ).toList() : null)
                                     .build())
@@ -429,14 +415,7 @@ public class AuthServiceImpl implements IAuthService {
                                             courseID -> {
                                                 log.info("Course ID: "+courseID);
                                                 Course course = courseRepository.findById(courseID).orElseThrow();
-                                                if(course.getModule()!=null){
-                                                    moduleRepository.findById(course.getModule()).ifPresent(
-                                                            module -> {
-                                                                course.setName(module.getName());
-                                                            }
-                                                    );
-                                                }
-                                                return SimplifiedCourseResponse.builder().courseID(course.getId()).courseName(course.getName()).build();
+                                                return SimplifiedCourseResponse.builder().courseID(course.getId()).module(course.getModule()).build();
                                             }
                                     ).toList() : null)
                                     .build())

@@ -9,10 +9,12 @@ import { SearchModule } from './search/search.module';
 import { SharedDirectivesModule } from '../directives/shared-directives.module';
 import { PerfectScrollbarModule } from 'ngx-perfect-scrollbar';
 import { LayoutsModule } from './layouts/layouts.module';
+import {ViewStudentsComponent} from './view-students/view-students.component';
 
 const components = [
   BtnLoadingComponent,
   FeatherIconComponent,
+    ViewStudentsComponent
 ];
 
 @NgModule({

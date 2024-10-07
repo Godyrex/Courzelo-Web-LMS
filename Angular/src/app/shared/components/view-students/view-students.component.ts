@@ -1,10 +1,8 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {GroupResponse} from '../../../../shared/models/institution/GroupResponse';
-import {ModuleResponse} from '../../../../shared/models/institution/ModuleResponse';
-import {ModuleService} from '../../../../shared/services/institution/module.service';
 import {ToastrService} from 'ngx-toastr';
-import {GroupService} from '../../../../shared/services/institution/group.service';
-import {UserService} from '../../../../shared/services/user/user.service';
+import {GroupResponse} from '../../models/institution/GroupResponse';
+import {ModuleResponse} from '../../models/institution/ModuleResponse';
+import {UserService} from '../../services/user/user.service';
 
 @Component({
   selector: 'app-view-students',

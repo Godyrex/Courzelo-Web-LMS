@@ -28,6 +28,11 @@ public class CourseController {
     public ResponseEntity<HttpStatus> addCourse(@PathVariable String institutionID,@RequestBody CourseRequest courseRequest,Principal principal) {
         return iCourseService.createCourse(institutionID,courseRequest,principal);
     }
+    @PostMapping("/{institutionID}/{programID}/add")
+    @PreAuthorize("hasRole('ADMIN')&&@customAuthorization.canCreateCourse(#institutionID)")
+    public ResponseEntity<HttpStatus> addProgramCourses(@PathVariable String institutionID,@PathVariable String programID,Principal principal) {
+        return iCourseService.createProgramCourses(institutionID,programID,principal);
+    }
     @PutMapping("/{courseID}/update")
     @PreAuthorize("hasRole('ADMIN')&&@customAuthorization.canAccessCourse(#courseID)")
     public ResponseEntity<HttpStatus> updateCourse(@PathVariable String courseID,@RequestBody CourseRequest courseRequest) {

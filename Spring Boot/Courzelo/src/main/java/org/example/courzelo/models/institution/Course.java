@@ -13,9 +13,6 @@ import java.util.List;
 public class Course {
     @Id
     private String id;
-    private String name;
-    private String description;
-    private int credit;
     private String module;
     private String teacher;
     private String group;

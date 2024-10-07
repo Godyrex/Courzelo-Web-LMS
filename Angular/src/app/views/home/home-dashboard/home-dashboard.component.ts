@@ -10,8 +10,8 @@ import {DomSanitizer} from '@angular/platform-browser';
 import {ProgramResponse} from '../../../shared/models/institution/ProgramResponse';
 import {GroupService} from '../../../shared/services/institution/group.service';
 import {GroupResponse} from '../../../shared/models/institution/GroupResponse';
-import {ViewStudentsComponent} from "../../institution/class/view-students/view-students.component";
-import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
+import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import {ViewStudentsComponent} from '../../../shared/components/view-students/view-students.component';
 
 @Component({
   selector: 'app-home-dashboard',

@@ -6,6 +6,9 @@ import {ToastrService} from 'ngx-toastr';
 import {CourseService} from '../../../../shared/services/institution/course.service';
 import {CourseRequest} from '../../../../shared/models/institution/CourseRequest';
 import {GroupService} from '../../../../shared/services/institution/group.service';
+import {ViewStudentsComponent} from '../../../../shared/components/view-students/view-students.component';
+import {AssignTeacherComponent} from './assign-teacher/assign-teacher.component';
+import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-view-courses',
@@ -25,25 +28,25 @@ export class ViewCoursesComponent implements OnInit {
       private toastr: ToastrService,
       private courseService: CourseService,
       private groupService: GroupService,
+      private modalService: NgbModal,
   ) {
   }
   ngOnInit(): void {
-    console.log(this.program);
   this.fetchModules();
   }
     fetchModules() {
       this.loading = true;
         this.moduleService.getModules(0, 500, this.program, null).subscribe(
             modules => {
-                console.log(modules);
                 this.modules = modules.modules;
                 this.modules.forEach(module => {
                     module.courseCreated = false; // Initialize as false
                     for (const course of this.group.courses) {
                         if (course.module === module.id) {
-                            console.log(course);
                             module.courseCreated = true;
                             module.courseID = course.courseID;
+                            module.courseTeacher = course.teacher;
+                            console.log('modules after checking courses :' + modules);
                             break;
                         }
                     }
@@ -128,5 +131,11 @@ export class ViewCoursesComponent implements OnInit {
          }
    );
     }
-
+    openAsssignTeacherModal(module: ModuleResponse) {
+        const modalRef = this.modalService.open(AssignTeacherComponent, { size : 'sm' , backdrop: false});
+        modalRef.componentInstance.module = module;
+        modalRef.componentInstance.close.subscribe(() => {
+            modalRef.close();
+        });
+    }
 }

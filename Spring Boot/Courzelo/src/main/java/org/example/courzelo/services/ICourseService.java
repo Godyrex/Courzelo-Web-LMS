@@ -22,4 +22,6 @@ public interface ICourseService {
     ResponseEntity<byte[]> downloadFile(String courseID, String fileName);
 
     ResponseEntity<List<CourseResponse>> getMyCourses(Principal principal);
+
+    ResponseEntity<HttpStatus> createProgramCourses(String institutionID, String programID, Principal principal);
 }

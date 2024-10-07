@@ -115,13 +115,12 @@ export class UsersComponent implements OnInit {
             this.getInstitutionUsers(this.currentPageUsers, this.itemsPerPageUsers, null, null);
             this.loadingUsers = false;
           }, error => {
-              if (error.status === 409) {
-                this.toastr.error('User already accepted an invitation');
-                this.loadingUsers = false;
+                 if (error.error) {
+                  this.toastr.error(error.error);
               } else {
-                  this.handleResponse.handleError(error);
-                  this.loadingUsers = false;
+                  this.toastr.error('Failed to invite users');
               }
+              this.loadingUsers = false;
           }
       );
     } else {
@@ -152,8 +151,12 @@ export class UsersComponent implements OnInit {
           this.itemsPerPageUsers = response.itemsPerPage;
           this.loadingUsers = false;
         }, error => {
-          this.handleResponse.handleError(error);
-          this.loadingUsers = false;
+            if (error.error) {
+                this.toastr.error(error.error);
+            } else {
+                this.toastr.error('Failed to fetch users');
+            }
+            this.loadingUsers = false;
         }
     );
   }
@@ -165,8 +168,12 @@ export class UsersComponent implements OnInit {
           this.getInstitutionUsers(this.currentPageUsers, this.itemsPerPageUsers, null, null);
           this.loadingUsers = false;
         }, error => {
-          this.handleResponse.handleError(error);
-          this.loadingUsers = false;
+            if (error.error) {
+                this.toastr.error(error.error);
+            } else {
+                this.toastr.error('Failed to remove user');
+            }
+            this.loadingUsers = false;
         }
     );
   }
@@ -189,8 +196,12 @@ export class UsersComponent implements OnInit {
         user.roles.push(this.selectedRole);
         this.loadingUsers = false;
       }, error => {
-        this.handleResponse.handleError(error);
-        this.loadingUsers = false;
+          if (error.error) {
+              this.toastr.error(error.error);
+          } else {
+              this.toastr.error('Failed to update user role');
+          }
+          this.loadingUsers = false;
       });
     } else if (this.selectedRole && user.roles.includes(this.selectedRole)) {
       this.institutionService.removeInstitutionUserRole(this.institutionID, user.email, this.selectedRole.toUpperCase()).subscribe(res => {
@@ -198,7 +209,11 @@ export class UsersComponent implements OnInit {
         user.roles = user.roles.filter(role => role !== this.selectedRole);
         this.loadingUsers = false;
       }, error => {
-        this.handleResponse.handleError(error);
+        if (error.error) {
+            this.toastr.error(error.error);
+        } else {
+            this.toastr.error('Failed to update user role');
+        }
         this.loadingUsers = false;
       });
     } else {

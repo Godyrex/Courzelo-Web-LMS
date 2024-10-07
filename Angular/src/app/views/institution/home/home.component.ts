@@ -65,8 +65,11 @@ export class HomeComponent implements OnInit {
                         this.authenticationService.refreshPageInfo();
                     },
                     error => {
-                        console.error(error);
-                        this.toastr.error(error.error);
+                        if (error.status === 403) {
+                            this.toastr.error('You do not have permission');
+                        } else {
+                            this.toastr.error(error.error);
+                        }
                     }
                 );
             } else {
@@ -114,7 +117,11 @@ export class HomeComponent implements OnInit {
           console.log('groups', this.groups);
         },
         error => {
-          console.error(error);
+            if (error.error) {
+                this.toastr.error(error.error);
+            } else {
+                this.toastr.error('Error loading groups');
+            }
           this.toastr.error('Error loading groups');
         }
     );
@@ -124,8 +131,12 @@ export class HomeComponent implements OnInit {
           console.log('teachers', this.teachers);
         },
         error => {
-          console.error(error);
-          this.toastr.error('Error loading teachers');
+            if (error.error) {
+                this.toastr.error(error.error);
+            } else {
+                this.toastr.error('Error loading teachers');
+            }
+            this.toastr.error('Error loading teachers');
         }
     );
   }
@@ -141,8 +152,11 @@ export class HomeComponent implements OnInit {
                     this.authenticationService.refreshPageInfo();
                 },
                 error => {
-                    console.error(error);
-                    this.toastr.error('Error adding course');
+                    if (error.error) {
+                        this.toastr.error(error.error);
+                    } else {
+                        this.toastr.error('Failed to add course');
+                    }
                     this.loading = false;
                 }
             );
@@ -176,8 +190,11 @@ export class HomeComponent implements OnInit {
           window.URL.revokeObjectURL(url);
         },
         error => {
-          console.log('error downloading');
-          this.toastr.error('Error downloading Excel.');
+            if (error.error) {
+                this.toastr.error(error.error);
+            } else {
+                this.toastr.error('Failed to download excel');
+            }
         }
     );
   }

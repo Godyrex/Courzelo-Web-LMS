@@ -31,7 +31,7 @@ import { EditModuleComponent } from './modules/edit-module/edit-module.component
 import { AddClassComponent } from './class/add-class/add-class.component';
 import { EditClassComponent } from './class/edit-class/edit-class.component';
 import { ViewCoursesComponent } from './class/view-courses/view-courses.component';
-import { ViewStudentsComponent } from './class/view-students/view-students.component';
+import { AssignTeacherComponent } from './class/view-courses/assign-teacher/assign-teacher.component';
 
 
 @NgModule({
@@ -51,7 +51,7 @@ import { ViewStudentsComponent } from './class/view-students/view-students.compo
     AddClassComponent,
     EditClassComponent,
     ViewCoursesComponent,
-    ViewStudentsComponent
+    AssignTeacherComponent
   ],
     imports: [
         CommonModule,
