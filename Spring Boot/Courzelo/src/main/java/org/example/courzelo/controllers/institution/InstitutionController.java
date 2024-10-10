@@ -4,16 +4,14 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import org.example.courzelo.dto.requests.CalendarEventRequest;
-import org.example.courzelo.dto.requests.InstitutionMapRequest;
-import org.example.courzelo.dto.requests.InstitutionRequest;
+import org.example.courzelo.dto.requests.institution.CalendarEventRequest;
+import org.example.courzelo.dto.requests.institution.InstitutionMapRequest;
+import org.example.courzelo.dto.requests.institution.InstitutionRequest;
 import org.example.courzelo.dto.requests.UserEmailsRequest;
+import org.example.courzelo.dto.requests.institution.SemesterRequest;
 import org.example.courzelo.dto.responses.GroupResponse;
 import org.example.courzelo.dto.responses.StatusMessageResponse;
-import org.example.courzelo.dto.responses.institution.InstitutionResponse;
-import org.example.courzelo.dto.responses.institution.InvitationsResultResponse;
-import org.example.courzelo.dto.responses.institution.PaginatedInstitutionUsersResponse;
-import org.example.courzelo.dto.responses.institution.PaginatedInstitutionsResponse;
+import org.example.courzelo.dto.responses.institution.*;
 import org.example.courzelo.services.IInstitutionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,6 +34,11 @@ public class InstitutionController {
                                                                          @RequestParam(defaultValue = "10") int sizePerPage,
                                                                          @RequestParam(required = false) String keyword) {
         return iInstitutionService.getInstitutions(page, sizePerPage, keyword);
+    }
+    @GetMapping("/{institutionID}/filtered-teachers")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')&&@customAuthorization.canAccessInstitution(#institutionID)")
+    public ResponseEntity<List<TeacherResponse>> getInstitutionFilteredTeachers(@PathVariable @NotNull String institutionID, @RequestParam List<String> skills) {
+        return iInstitutionService.getInstitutionFilteredTeachers(institutionID,skills);
     }
     @GetMapping("/{institutionID}/students")
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')&&@customAuthorization.canAccessInstitution(#institutionID)")
@@ -87,8 +90,9 @@ public class InstitutionController {
     public ResponseEntity<InvitationsResultResponse> inviteUsers(@PathVariable @NotNull String institutionID,
                                                                  @RequestBody UserEmailsRequest emails,
                                                                  @RequestParam @NotNull String role,
+                                                                 @RequestParam(required = false) List<String> skills,
                                                                  Principal principal) {
-        return iInstitutionService.inviteUsers(institutionID, emails, role, principal);
+        return iInstitutionService.inviteUsers(institutionID, emails, role,skills, principal);
     }
     @PutMapping("/accept_invite/{code}")
     @PreAuthorize("isAuthenticated()&&@customAuthorization.canAcceptInstitutionInvite(#code)")
@@ -132,6 +136,19 @@ public class InstitutionController {
                                                         @RequestBody @Valid InstitutionMapRequest institutionMapRequest,
                                                         Principal principal) {
         return iInstitutionService.setInstitutionMap(institutionID, institutionMapRequest, principal);
+    }
+    @PutMapping("/{institutionID}/set-semester")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')&&@customAuthorization.canAccessInstitution(#institutionID)")
+    public ResponseEntity<HttpStatus> setInstitutionSemester(@PathVariable @NotNull String institutionID,
+                                                        @RequestBody @Valid SemesterRequest semesterRequest,
+                                                        Principal principal) {
+        return iInstitutionService.setSemester(institutionID, semesterRequest, principal);
+    }
+    @PutMapping("/{institutionID}/clear-semester")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')&&@customAuthorization.canAccessInstitution(#institutionID)")
+    public ResponseEntity<HttpStatus> clearInstitutionSemester(@PathVariable @NotNull String institutionID,
+                                                             Principal principal) {
+        return iInstitutionService.clearSemester(institutionID, principal);
     }
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')&&@customAuthorization.canAccessInstitution(#institutionID)")
     @PostMapping("/{institutionID}/generate-excel")

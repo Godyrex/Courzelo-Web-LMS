@@ -35,6 +35,7 @@
                             [columnMode]="'force'"
                             [columns]="[
         { name: 'Email' },
+        { name: 'Skills', cellTemplate: skillsTemplate, width: 250 },
         { name: 'Role', cellTemplate: roleTemplate },
         { name: 'Status', cellTemplate: statusTemplate },
         { name: 'Invitation code', cellTemplate: codeTemplate },
@@ -59,6 +60,13 @@
             'status-accepted': row.status === 'ACCEPTED',
             'status-pending': row.status === 'PENDING'
         }">{{ row.status }}</p>
+                        </div>
+                    </ng-template>
+                    <ng-template #skillsTemplate let-row="row">
+                        <div class="skill-container d-flex flex-wrap">
+    <span *ngFor="let skill of row.skills"
+          class="skill-badge badge badge-primary mb-2 mr-2"
+          [attr.title]="skill">{{ skill }}</span>
                         </div>
                     </ng-template>
                     <ng-template #roleTemplate let-row="row" let-value="value">

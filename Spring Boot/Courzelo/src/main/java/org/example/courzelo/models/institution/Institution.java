@@ -1,12 +1,12 @@
 package org.example.courzelo.models.institution;
 
 import lombok.Data;
-import org.example.courzelo.dto.requests.InstitutionRequest;
-import org.example.courzelo.models.User;
+import org.example.courzelo.dto.requests.institution.InstitutionRequest;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Document(collection = "institutions")
@@ -27,6 +27,8 @@ public class Institution {
     private byte[] excelFile;
     private double latitude;
     private double longitude;
+    private Date firstSemesterStart;
+    private Date secondSemesterStart;
     private List<String> groupsID = new ArrayList<>();
     private List<String> coursesID = new ArrayList<>();
     private List<String> programsID = new ArrayList<>();

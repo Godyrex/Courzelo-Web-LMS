@@ -7,14 +7,14 @@
 
 <div class="container mt-4">
     <!-- Breadcrumbs -->
-    <div *ngIf="currentInstitution" class="breadcrumb bg-white mb-4 p-3 shadow-sm rounded">
+    <div *ngIf="currentInstitution" class="breadcrumb bg-white mb-4 p-3 rounded">
         <h1 class="mb-0">Update {{currentInstitution.name || "Institution"}}</h1>
     </div>
 
     <!-- Institution Form -->
     <div class="row">
         <div class="col-lg-12">
-            <div class="card shadow-sm mb-4">
+            <div class="card mb-4">
                 <div class="card-body">
                     <h4 class="card-title">Institution Information</h4>
                     <form [formGroup]="updateInstitutionForm" (ngSubmit)="updateInstitution(currentInstitution.id)">
@@ -81,12 +81,11 @@
                 </div>
             </div>
         </div>
-
         <!-- Logo Upload Section -->
         <div class="col-lg-6">
-            <div class="card shadow-sm mb-4">
+            <div class="card  mb-4">
                 <div class="card-body">
-                    <h4 class="card-title">Institution Logo</h4>
+                    <h4 class="card-title">Update semester date</h4>
                     <div *ngIf="selectedFileUrl" class="mb-3">
                         <img [src]="selectedFileUrl" alt="Selected Image" class="img-thumbnail" style="width: 150px; height: 150px;">
                     </div>
@@ -97,10 +96,47 @@
                 </div>
             </div>
         </div>
+        <!-- Logo Upload Section -->
+        <div class="col-lg-6">
+            <div class="card  mb-4">
+                <div class="card-body">
+                    <h4 class="card-title">Update Semesters Date</h4>
+                    <p *ngIf="currentInstitution?.firstSemesterStart" class="card-text">
+                        <strong>First Semester:</strong> {{ currentInstitution?.firstSemesterStart | date: 'mediumDate' }}
+                    </p>
+                    <p *ngIf="currentInstitution?.secondSemesterStart" class="card-text">
+                        <strong>Second Semester:</strong> {{ currentInstitution?.secondSemesterStart | date: 'mediumDate' }}
+                    </p>
+                    <button *ngIf="currentInstitution?.firstSemesterStart || currentInstitution?.secondSemesterStart" class="btn btn-primary mb-2" (click)="clearSemester()">Clear</button>
+                    <form (ngSubmit)="setSemester()" [formGroup]="SetSemesterForm">
+                    <div class="form-group mb-3">
+                        <label for="startDatePicker" class="form-label">First Semester Start Date</label>
+                        <div class="input-group">
+                            <input type="text" formControlName="firstSemesterStart" id="firstSemester" class="form-control" placeholder="yyyy-mm-dd" ngbDatepicker #dp2="ngbDatepicker">
+                            <button class="btn btn-secondary" type="button" (click)="dp2.toggle()"><i class="i-Calendar-4"></i></button>
+                        </div>
+                        <small *ngIf="SetSemesterForm.controls['firstSemesterStart']?.invalid && generateForm.controls['firstSemesterStart']?.touched" class="text-danger">First Semester is required.</small>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="finishDatePicker" class="form-label">Second Semester Start Date</label>
+                        <div class="input-group">
+                            <input type="text" formControlName="secondSemesterStart" id="secondSemester" class="form-control" placeholder="yyyy-mm-dd" ngbDatepicker #dp="ngbDatepicker">
+                            <button class="btn btn-secondary" type="button" (click)="dp.toggle()"><i class="i-Calendar-4"></i></button>
+                        </div>
+                        <small *ngIf="SetSemesterForm.controls['secondSemesterStart']?.invalid && generateForm.controls['secondSemesterStart']?.touched" class="text-danger">Second Semester is required.</small>
+                    </div>
+                        <div class="d-flex justify-content-between">
+                            <button type="submit" class="btn btn-primary">Set Semester Dates</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
 
         <!-- Calendar Section -->
         <div class="col-lg-6">
-            <div class="card shadow-sm mb-4">
+            <div class="card mb-4">
                 <div class="card-body">
                     <h4 class="card-title">Generate Annual Calendar</h4>
                     <form (ngSubmit)="generateExcel()" [formGroup]="generateForm">

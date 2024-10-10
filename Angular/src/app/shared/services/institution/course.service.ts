@@ -16,8 +16,8 @@ export class CourseService {
   addCourse(institutionID: string, courseRequest: CourseRequest): Observable<void> {
     return this.http.post<void>(`${this.baseUrl}/${institutionID}/add`, courseRequest);
   }
-  addProgramCourses(institutionID: string, programID: string): Observable<void> {
-    return this.http.post<void>(`${this.baseUrl}/${institutionID}/${programID}/add`, null);
+  addProgramCourses(institutionID: string, semester: string, programID: string): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/${institutionID}/${programID}/add`, null, { params: { semester } });
   }
 
   updateCourse(courseID: string, courseRequest: CourseRequest): Observable<void> {

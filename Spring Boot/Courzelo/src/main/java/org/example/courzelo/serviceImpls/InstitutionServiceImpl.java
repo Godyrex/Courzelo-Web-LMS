@@ -4,10 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.example.courzelo.dto.requests.CalendarEventRequest;
-import org.example.courzelo.dto.requests.InstitutionMapRequest;
-import org.example.courzelo.dto.requests.InstitutionRequest;
+import org.example.courzelo.dto.requests.institution.CalendarEventRequest;
+import org.example.courzelo.dto.requests.institution.InstitutionMapRequest;
+import org.example.courzelo.dto.requests.institution.InstitutionRequest;
 import org.example.courzelo.dto.requests.UserEmailsRequest;
+import org.example.courzelo.dto.requests.institution.SemesterRequest;
 import org.example.courzelo.dto.responses.*;
 import org.example.courzelo.dto.responses.institution.*;
 import org.example.courzelo.dto.responses.institution.InvitationsResultResponse;
@@ -434,7 +435,7 @@ public class InstitutionServiceImpl implements IInstitutionService {
         }
     }
 
-    public ResponseEntity<InvitationsResultResponse> inviteUsers(String institutionID, UserEmailsRequest emails, String role, Principal principal) {
+    public ResponseEntity<InvitationsResultResponse> inviteUsers(String institutionID, UserEmailsRequest emails, String role,List<String> skills, Principal principal) {
         log.info("Inviting user to institution {} with emails: {} and role : {} ", institutionID, emails , role);
         Institution institution = institutionRepository.findById(institutionID).orElseThrow(()-> new InstitutionNotFoundException(INSTITUTION_NOT_FOUND));
         InvitationsResultResponse invitationsResultResponse = InvitationsResultResponse.builder()
@@ -443,7 +444,7 @@ public class InstitutionServiceImpl implements IInstitutionService {
                 .build();
         emails.getEmails().forEach(
                 email -> {
-                   InvitationsResultResponse emailResponse = inviteUser(institutionID, email, role, institution);
+                   InvitationsResultResponse emailResponse = inviteUser(institutionID, email, role,skills, institution);
                    if(emailResponse != null){
                        if(!emailResponse.getEmailsNotFound().isEmpty()){
                            invitationsResultResponse.getEmailsNotFound().addAll(emailResponse.getEmailsNotFound());
@@ -458,7 +459,7 @@ public class InstitutionServiceImpl implements IInstitutionService {
         return ResponseEntity.ok(invitationsResultResponse);
     }
 
-    private InvitationsResultResponse inviteUser(String institutionID, String email, String role, Institution institution) {
+    private InvitationsResultResponse inviteUser(String institutionID, String email, String role,List<String> skills, Institution institution) {
         User user = userRepository.findUserByEmail(email);
         InvitationsResultResponse invitationsResultResponse = InvitationsResultResponse.builder()
                 .emailsAlreadyAccepted(new ArrayList<>())
@@ -473,7 +474,7 @@ public class InstitutionServiceImpl implements IInstitutionService {
                     codeVerification = new CodeVerification(CodeType.INSTITUTION_INVITATION, UUID.randomUUID().toString(), email, Role.valueOf(role), institutionID, Instant.now().plusSeconds(86400));
                     codeVerificationRepository.save(codeVerification);
                 }
-                iInvitationService.createInvitation(institutionID, email, Role.valueOf(role), codeVerification.getId(), LocalDateTime.ofInstant(codeVerification.getExpiryDate(), ZoneId.systemDefault() )
+                iInvitationService.createInvitation(institutionID, email, Role.valueOf(role),skills, codeVerification.getId(), LocalDateTime.ofInstant(codeVerification.getExpiryDate(), ZoneId.systemDefault() )
                         );
                     mailService.sendInstituionInvitationEmail(email, institution,codeVerification);
                 return invitationsResultResponse;
@@ -506,6 +507,7 @@ public class InstitutionServiceImpl implements IInstitutionService {
         addInstitutionToUser(user, institution, codeVerification.getRole());
         addUserToInstitution(user, institution, codeVerification.getRole());
         iInvitationService.updateInvitationStatus(codeVerification.getEmail(),institution.getId(), InvitationStatus.ACCEPTED);
+        iInvitationService.setUserSkills(codeVerification.getEmail(),institution.getId());
         log.info("Deleting code");
         codeVerificationService.deleteCode(codeVerification.getEmail(), CodeType.INSTITUTION_INVITATION);
         return ResponseEntity.ok().build();
@@ -550,6 +552,60 @@ public class InstitutionServiceImpl implements IInstitutionService {
                                 ).toList()
                         )
                         .build()).toList());
+    }
+
+    @Override
+    public ResponseEntity<HttpStatus> setSemester(String institutionID, SemesterRequest semesterRequest, Principal principal) {
+        log.info("Setting semester : {} for institution: {}",semesterRequest, institutionID);
+        Institution institution = institutionRepository.findById(institutionID).orElseThrow(()-> new InstitutionNotFoundException(INSTITUTION_NOT_FOUND));
+        if (semesterRequest.getFirstSemesterStart() != null && semesterRequest.getSecondSemesterStart() != null && semesterRequest.getFirstSemesterStart().before(semesterRequest.getSecondSemesterStart())) {
+            institution.setFirstSemesterStart(semesterRequest.getFirstSemesterStart());
+            institution.setSecondSemesterStart(semesterRequest.getSecondSemesterStart());
+            institutionRepository.save(institution);
+            return ResponseEntity.ok().build();
+        }
+        throw new SemesterMustBeInOrderException("First semester must be before second semester");
+    }
+
+    @Override
+    public ResponseEntity<HttpStatus> clearSemester(String institutionID, Principal principal) {
+        log.info("Clearing semester for institution: {}", institutionID);
+        Institution institution = institutionRepository.findById(institutionID).orElseThrow(()-> new InstitutionNotFoundException(INSTITUTION_NOT_FOUND));
+        institution.setFirstSemesterStart(null);
+        institution.setSecondSemesterStart(null);
+        institutionRepository.save(institution);
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<List<TeacherResponse>> getInstitutionFilteredTeachers(String institutionID, List<String> skills) {
+        Institution institution = institutionRepository.findById(institutionID)
+                .orElseThrow(() -> new InstitutionNotFoundException(INSTITUTION_NOT_FOUND));
+
+        List<TeacherResponse> filteredTeachers = institution.getTeachers().stream()
+                .map(email -> userRepository.findByEmail(email).orElse(null))
+                .filter(Objects::nonNull)
+                .filter(teacher -> hasRequiredSkills(teacher, skills))
+                .map(teacher -> TeacherResponse.builder().skills(teacher.getEducation().getSkill())
+                        .email(teacher.getEmail())
+                        .name(teacher.getProfile().getName())
+                        .lastname(teacher.getProfile().getLastname())
+                        .build())
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(filteredTeachers);
+    }
+
+    private boolean hasRequiredSkills(User teacher, List<String> requiredSkills) {
+        List<String> teacherSkills = teacher.getEducation().getSkill();
+        for (String requiredSkill : requiredSkills) {
+            for (String teacherSkill : teacherSkills) {
+                if (teacherSkill.equalsIgnoreCase(requiredSkill) || teacherSkill.toLowerCase().contains(requiredSkill.toLowerCase())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Override

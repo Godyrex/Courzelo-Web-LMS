@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 
 @Data
 @Builder
@@ -14,6 +16,8 @@ public class ModuleRequest {
     private String name;
     private String description;
     private String duration;
+    private String semester;
+    private List<String> skills;
     private int credit;
     private String program;
 

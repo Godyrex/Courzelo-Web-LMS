@@ -28,8 +28,8 @@ export class AddClassComponent implements OnInit {
   ) {
     this.addClassForm = this.fb.group({
       name: ['', Validators.required],
-      students: [''],
-      program: ['']
+      students: [[]],
+      program: ['', Validators.required]
     });
   }
 

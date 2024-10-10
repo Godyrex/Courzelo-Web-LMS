@@ -44,7 +44,7 @@
         { name: 'Credits'},
         { name: 'Duration'},
         { name: 'Modules', cellTemplate: modulesTemplate },
-        { name: 'Actions', prop: 'id', cellTemplate: deleteBtnTemplate, width: 250 }
+        { name: 'Actions', prop: 'id', cellTemplate: deleteBtnTemplate, width: 310 }
     ]"
                             [headerHeight]="50"
                             [footerHeight]="0"
@@ -61,7 +61,7 @@
                         <button class="btn btn-link" (click)="viewModules(row)">View Modules</button>
                     </ng-template>
                     <ng-template #deleteBtnTemplate let-row="row" let-value="value">
-                        <button class="btn btn-primary btn-rounded m-1 mr-2" (click)="createCourses(row)">
+                        <button class="btn btn-primary btn-rounded m-1 mr-2" (click)="modalCreateCoursesFunction(modalCreateCourses,row)">
                             <i class="fa fa-add"></i> Create Courses
                         </button>
                         <button class="btn btn-warning btn-rounded m-1 mr-2" (click)="openEditProgramModal(row)">
@@ -92,6 +92,31 @@
         <div class="modal-footer">
             <button type="button" class="btn btn-outline-secondary btn-rounded" (click)="modal.dismiss('cancel')">Cancel</button>
             <button type="button" ngbAutofocus class="btn btn-danger btn-rounded" (click)="modal.close('Ok')">Ok</button>
+        </div>
+    </ng-template>
+    <ng-template #modalCreateCourses let-modal>
+        <div class="modal-header">
+            <h4 class="modal-title" id="modal-title-create-courses">Create Program Courses</h4>
+            <button type="button" class="close" aria-label="Close button" aria-describedby="modal-title" (click)="modal.dismiss('Cross click')">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div *ngIf="currentInstitution.secondSemesterStart &&currentInstitution.firstSemesterStart" class="modal-body">
+            <p><strong>Select the semester for which you want to create courses for the program <span class="text-primary">{{ currentProgram.name }}</span>:</strong></p>
+            <div class="form-group">
+                <button type="button" class="btn btn-primary btn-rounded m-1" (click)="createCourses('FIRST_SEMESTER'); modal.close('Ok')">First Semester</button>
+                <button type="button" class="btn btn-primary btn-rounded m-1" (click)="createCourses('SECOND_SEMESTER'); modal.close('Ok')">Second Semester</button>
+                <button type="button" class="btn btn-primary btn-rounded m-1" (click)="createCourses('BOTH'); modal.close('Ok')">Both Semesters</button>
+            </div>
+        </div>
+        <div *ngIf="!currentInstitution.secondSemesterStart && !currentInstitution.firstSemesterStart" class="modal-body">
+            <p><strong>Create courses for the program <span class="text-primary">{{ currentProgram.name }}</span>:</strong></p>
+            <div class="form-group">
+                <button type="button" class="btn btn-primary btn-rounded m-1" (click)="createCourses('BOTH'); modal.close('Ok')">Create Courses</button>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary btn-rounded" (click)="modal.dismiss('cancel')">Cancel</button>
         </div>
     </ng-template>
 </div>

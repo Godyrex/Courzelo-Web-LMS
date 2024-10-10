@@ -1,9 +1,10 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {ResponseHandlerService} from '../../../../shared/services/user/response-handler.service';
 import {ToastrService} from 'ngx-toastr';
 import {ModuleService} from '../../../../shared/services/institution/module.service';
 import {ModuleRequest} from '../../../../shared/models/institution/ModuleRequest';
+import {InstitutionResponse} from '../../../../shared/models/institution/InstitutionResponse';
 
 @Component({
   selector: 'app-add-module',
@@ -13,8 +14,10 @@ import {ModuleRequest} from '../../../../shared/models/institution/ModuleRequest
 export class AddModuleComponent {
   @Output() moduleAdded = new EventEmitter<void>();
   @Input() programID: string;
+  @Input() institution: InstitutionResponse;
   addModuleForm: FormGroup;
   moduleRequest: ModuleRequest;
+  currentInstitution: InstitutionResponse;
 
   constructor(
       private fb: FormBuilder,
@@ -25,8 +28,10 @@ export class AddModuleComponent {
     this.addModuleForm = this.fb.group({
       name: ['', Validators.required],
       description: ['', Validators.required],
+      skills: [[]],
       duration: ['', Validators.required],
       credit: [0, Validators.required],
+      semester: [null],
     });
   }
 
@@ -37,11 +42,15 @@ export class AddModuleComponent {
         console.log(this.moduleRequest);
       this.moduleService.createModule(this.moduleRequest).subscribe(
           () => {
-            this.toastr.success('Program added successfully');
+            this.toastr.success('Module added successfully');
             this.moduleAdded.emit();
           },
           error => {
-            this.handleResponse.handleError(error);
+            if (error.error) {
+                this.toastr.error(error.error);
+            } else {
+                this.toastr.error('Failed to add module');
+            }
           }
       );
     }

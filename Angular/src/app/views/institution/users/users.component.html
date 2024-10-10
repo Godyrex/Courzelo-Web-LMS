@@ -129,6 +129,18 @@
                             Role is required.
                         </div>
                     </div>
+                    <div *ngIf="addUserForm.controls.role.value=='Teacher'" class="col-md-6 form-group mb-3">
+                        <label for="skills" class="form-label">Skills</label>
+                        <tag-input id="skills"
+                                   formControlName="skills"
+                                   [modelAsStrings]="true"
+                                   secondaryPlaceholder="Enter skills"
+                                   placeholder="Add skill"
+                                   [separatorKeyCodes]="[188]"
+                                   [onlyFromAutocomplete]="false">
+                        </tag-input>
+                        <div class="invalid-feedback" *ngIf="shouldShowError('studentsEmails', 'required')">Students Emails are required</div>
+                    </div>
                     <div class="col-md-12">
                         <btn-loading btnClass="btn-primary btn-rounded" [loading]="loadingUsers">Invite</btn-loading>
                     </div>

@@ -13,6 +13,7 @@ import org.example.courzelo.models.institution.Course;
 import org.example.courzelo.models.institution.Group;
 import org.example.courzelo.models.institution.Institution;
 import org.example.courzelo.repositories.*;
+import org.example.courzelo.services.ICourseService;
 import org.example.courzelo.services.IGroupService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -34,6 +35,7 @@ public class GroupServiceImpl implements IGroupService {
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
+    private final ICourseService courseService;
     private final InstitutionRepository institutionRepository;
     private final ProgramRepository programRepository;
     @Override
@@ -107,7 +109,7 @@ public class GroupServiceImpl implements IGroupService {
     @Override
     public ResponseEntity<HttpStatus> createGroup(GroupRequest groupRequest) {
         log.info("Creating group {}", groupRequest);
-        if (groupRequest.getStudents() != null) {
+        if (groupRequest.getStudents() != null && !groupRequest.getStudents().isEmpty()) {
             List<String> students = new ArrayList<>(groupRequest.getStudents());
             students.forEach(
                     studentEmail -> {
@@ -122,13 +124,13 @@ public class GroupServiceImpl implements IGroupService {
         Group group = Group.builder()
                     .name(groupRequest.getName())
                     .institutionID(groupRequest.getInstitutionID())
-                    .students(groupRequest.getStudents()!=null ? groupRequest.getStudents() : new ArrayList<>())
+                    .students(groupRequest.getStudents()!=null && !groupRequest.getStudents().isEmpty() ? groupRequest.getStudents() : new ArrayList<>())
                     .courses(new ArrayList<>())
                     .program(groupRequest.getProgram()!=null ? groupRequest.getProgram() : null)
                     .build();
             groupRepository.save(group);
             log.info("Group created");
-            if (groupRequest.getStudents() != null) {
+            if (groupRequest.getStudents() != null && !groupRequest.getStudents().isEmpty()) {
                 groupRequest.getStudents().forEach(
                         studentEmail -> addGroupToUser(group.getId(), studentEmail)
                 );
@@ -240,6 +242,29 @@ public class GroupServiceImpl implements IGroupService {
                     studentEmail -> removeStudentFromGroup(groupID, studentEmail)
             );
         }
+        if(!Objects.equals(group.getProgram(), groupRequest.getProgram())){
+            if(group.getProgram()!=null){
+                programRepository.findById(group.getProgram()).ifPresent(program -> {
+                    if (program.getGroups() != null && program.getGroups().contains(groupID)) {
+                        program.getGroups().remove(groupID);
+                        programRepository.save(program);
+                    }
+                });
+            }
+            group.getCourses().forEach(
+                    this::removeGroupFromCourse
+            );
+            group.setProgram(groupRequest.getProgram());
+                programRepository.findById(groupRequest.getProgram()).ifPresent(program -> {
+                    if(program.getGroups()==null){
+                        program.setGroups(new ArrayList<>());
+                    }
+                    program.getGroups().add(groupID);
+                    programRepository.save(program);
+                });
+                groupRepository.save(group);
+
+        }
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
@@ -283,10 +308,7 @@ public class GroupServiceImpl implements IGroupService {
         });
     }
     private void removeGroupFromCourse(String courseID) {
-        courseRepository.findById(courseID).ifPresent(course -> {
-            course.setGroup(null);
-            courseRepository.save(course);
-        });
+            courseService.deleteCourse(courseID);
     }
 
     @Override

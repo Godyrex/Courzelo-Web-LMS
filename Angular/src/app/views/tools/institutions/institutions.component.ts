@@ -80,6 +80,7 @@ export class InstitutionsComponent implements OnInit {
     addUserForm = this.formBuilder.group({
         studentsEmails: [[], Validators.required],
             role: ['', [Validators.required]],
+            skills: [[]]
         }
     );
     emailRequest: UserEmailsRequest;
@@ -151,7 +152,7 @@ export class InstitutionsComponent implements OnInit {
             console.log(this.emailRequest);
             this.institutionService.inviteUsers(this.currentInstitution.id,
                 this.emailRequest,
-                this.addUserForm.controls.role.value.toUpperCase()).subscribe(
+                this.addUserForm.controls.role.value.toUpperCase(), this.addUserForm.controls.skills.value).subscribe(
                 response => {
                     console.log(response);
                     console.log('lengths',

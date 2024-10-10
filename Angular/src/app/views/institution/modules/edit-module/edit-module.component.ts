@@ -4,6 +4,7 @@ import {ResponseHandlerService} from '../../../../shared/services/user/response-
 import {ToastrService} from 'ngx-toastr';
 import {ModuleResponse} from '../../../../shared/models/institution/ModuleResponse';
 import {ModuleService} from '../../../../shared/services/institution/module.service';
+import {InstitutionResponse} from '../../../../shared/models/institution/InstitutionResponse';
 
 @Component({
   selector: 'app-edit-module',
@@ -12,6 +13,7 @@ import {ModuleService} from '../../../../shared/services/institution/module.serv
 })
 export class EditModuleComponent implements OnInit {
   @Input() module: ModuleResponse;
+  @Input() institution: InstitutionResponse;
   @Output() moduleUpdated = new EventEmitter<void>();
   editModuleForm: FormGroup;
 
@@ -26,8 +28,16 @@ export class EditModuleComponent implements OnInit {
     this.editModuleForm = this.fb.group({
       name: [this.module.name, Validators.required],
       description: [this.module.description, Validators.required],
+      skills: [this.module.skills],
       duration: [this.module.duration, Validators.required],
-      credit: [this.module.credit, Validators.required]
+      credit: [this.module.credit, Validators.required],
+      semester: [
+        this.module.semester === 'FIRST_SEMESTER'
+            ? 'FIRST_SEMESTER'
+            : this.module.semester === 'SECOND_SEMESTER'
+                ? 'SECOND_SEMESTER'
+                : null
+      ],
     });
   }
 
@@ -36,11 +46,16 @@ export class EditModuleComponent implements OnInit {
       console.log(this.editModuleForm.value);
       this.moduleService.updateModule(this.module.id, this.editModuleForm.value).subscribe(
           () => {
-            this.toastr.success('Program updated successfully');
+            this.toastr.success('Module updated successfully');
             this.moduleUpdated.emit({ ...this.module, ...this.editModuleForm.value });
           },
           error => {
-            this.handleResponse.handleError(error);
+              if (error.error) {
+                this.toastr.error(error.error);
+              } else {
+                this.toastr.error('Failed to update module');
+              }
+
           }
       );
     }

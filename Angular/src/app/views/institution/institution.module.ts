@@ -32,6 +32,8 @@ import { AddClassComponent } from './class/add-class/add-class.component';
 import { EditClassComponent } from './class/edit-class/edit-class.component';
 import { ViewCoursesComponent } from './class/view-courses/view-courses.component';
 import { AssignTeacherComponent } from './class/view-courses/assign-teacher/assign-teacher.component';
+import {MatAutocompleteModule} from '@angular/material/autocomplete';
+import { ManageAssessmentComponent } from './modules/manage-assessment/manage-assessment.component';
 
 
 @NgModule({
@@ -51,7 +53,8 @@ import { AssignTeacherComponent } from './class/view-courses/assign-teacher/assi
     AddClassComponent,
     EditClassComponent,
     ViewCoursesComponent,
-    AssignTeacherComponent
+    AssignTeacherComponent,
+    ManageAssessmentComponent
   ],
     imports: [
         CommonModule,
@@ -69,7 +72,8 @@ import { AssignTeacherComponent } from './class/view-courses/assign-teacher/assi
         NgbNavItem,
         NgbNavLink,
         NgbNavContent,
-        NgbNav
+        NgbNav,
+        MatAutocompleteModule
     ]
 })
 export class InstitutionModule { }

@@ -2,12 +2,15 @@ package org.example.courzelo.serviceImpls;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.courzelo.dto.requests.module.AssessmentRequest;
 import org.example.courzelo.dto.requests.module.ModuleRequest;
 import org.example.courzelo.dto.responses.module.ModuleResponse;
 import org.example.courzelo.dto.responses.module.PaginatedModulesResponse;
 import org.example.courzelo.exceptions.*;
+import org.example.courzelo.models.institution.Assessment;
 import org.example.courzelo.models.institution.Module;
 import org.example.courzelo.models.institution.Program;
+import org.example.courzelo.models.institution.Semester;
 import org.example.courzelo.repositories.CourseRepository;
 import org.example.courzelo.repositories.ModuleRepository;
 import org.example.courzelo.repositories.ProgramRepository;
@@ -41,6 +44,8 @@ public class ModuleServiceImpl implements IModuleService {
                 .name(moduleRequest.getName())
                 .description(moduleRequest.getDescription())
                 .program(moduleRequest.getProgram())
+                .semester(moduleRequest.getSemester() != null  ? Semester.valueOf(moduleRequest.getSemester()) : null)
+                .skills(moduleRequest.getSkills())
                 .duration(moduleRequest.getDuration())
                 .credit(moduleRequest.getCredit())
                 .institutionID(program.getInstitutionID())
@@ -61,6 +66,8 @@ public class ModuleServiceImpl implements IModuleService {
         }
         Module module = moduleRepository.findById(id).orElseThrow(() -> new ModuleNotFoundException("Module not found"));
         module.setName(moduleRequest.getName());
+        module.setSemester(moduleRequest.getSemester() != null ? Semester.valueOf(moduleRequest.getSemester()) : null);
+        module.setSkills(moduleRequest.getSkills());
         module.setDuration(moduleRequest.getDuration());
         module.setDescription(moduleRequest.getDescription());
         module.setCredit(moduleRequest.getCredit());
@@ -100,6 +107,9 @@ public class ModuleServiceImpl implements IModuleService {
                                 .id(module.getId())
                                 .name(module.getName())
                                 .description(module.getDescription())
+                                .semester(module.getSemester()!=null?module.getSemester().name():null)
+                                .assessments(module.getAssessments())
+                                .skills(module.getSkills())
                                 .duration(module.getDuration())
                                 .credit(module.getCredit())
                                 .program(module.getProgram())
@@ -119,6 +129,9 @@ public class ModuleServiceImpl implements IModuleService {
                 .id(module.getId())
                 .name(module.getName())
                 .description(module.getDescription())
+                .semester(module.getSemester()!=null?module.getSemester().name():null)
+                .skills(module.getSkills())
+                .assessments(module.getAssessments())
                 .duration(module.getDuration())
                 .credit(module.getCredit())
                 .program(module.getProgram())
@@ -155,5 +168,64 @@ public class ModuleServiceImpl implements IModuleService {
             program.getModules().remove(moduleID);
             programRepository.save(program);
         }
+    }
+
+    @Override
+    public ResponseEntity<HttpStatus> createAssessment(String id,AssessmentRequest assessmentRequest) {
+        log.info("Creating assessment");
+        Module module = moduleRepository.findById(id).orElseThrow(() -> new ModuleNotFoundException("Module not found"));
+        if(module.getAssessments() == null) {
+            module.setAssessments(new ArrayList<>());
+        }
+        if(module.getAssessments().stream().anyMatch(assessment -> assessment.getName().equals(assessmentRequest.getName()))) {
+            log.info("Assessment already exists");
+            throw new AssessmentAlreadyExistsException("Assessment with name " + assessmentRequest.getName() + " already exists");
+        }
+//        if(module.getAssessments().stream().mapToDouble(Assessment::getWeight).sum() + assessmentRequest.getWeight() > 1) {
+//            log.info("Sum of assessment weights exceeds 100%");
+//            throw new AssessmentSumExceedsOneException("Sum of assessment weights exceeds 100%");
+//        }
+        module.getAssessments().add(Assessment.builder()
+                .name(assessmentRequest.getName())
+                .weight(assessmentRequest.getWeight()/100)
+                .build());
+        moduleRepository.save(module);
+        log.info("Assessment created");
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @Override
+    public ResponseEntity<HttpStatus> deleteAssessment(String id, String assessmentName) {
+        Module module = moduleRepository.findById(id).orElseThrow(() -> new ModuleNotFoundException("Module not found"));
+        if(module.getAssessments() == null || module.getAssessments().stream().noneMatch(assessment -> assessment.getName().equals(assessmentName))) {
+            throw new AssessmentNotFoundException("Assessment not found");
+        }
+        module.getAssessments().removeIf(assessment -> assessment.getName().equals(assessmentName));
+        moduleRepository.save(module);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<HttpStatus> updateAssessment(String id, AssessmentRequest assessmentRequest) {
+        Module module = moduleRepository.findById(id).orElseThrow(() -> new ModuleNotFoundException("Module not found"));
+        if(module.getAssessments() == null || module.getAssessments().stream().noneMatch(assessment -> assessment.getName().equals(assessmentRequest.getOldName()))) {
+            throw new AssessmentNotFoundException("Assessment not found");
+        }
+//        double currentTotalWeight = module.getAssessments().stream().mapToDouble(Assessment::getWeight).sum();
+//        double oldWeight = module.getAssessments().stream()
+//                .filter(assessment -> assessment.getName().equals(assessmentRequest.getOldName()))
+//                .mapToDouble(Assessment::getWeight)
+//                .findFirst()
+//                .orElse(0.0);
+//        if(currentTotalWeight - oldWeight + assessmentRequest.getWeight() > 1) {
+//            throw new AssessmentSumExceedsOneException("Sum of assessment weights exceeds 100%");
+//        }
+        module.getAssessments().removeIf(assessment -> assessment.getName().equals(assessmentRequest.getOldName()));
+        module.getAssessments().add(Assessment.builder()
+                .name(assessmentRequest.getName())
+                .weight(assessmentRequest.getWeight()/100)
+                .build());
+        moduleRepository.save(module);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

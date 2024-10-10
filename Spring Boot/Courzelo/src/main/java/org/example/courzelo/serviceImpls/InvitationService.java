@@ -9,12 +9,14 @@ import org.example.courzelo.exceptions.InvitationNotFoundException;
 import org.example.courzelo.models.CodeType;
 import org.example.courzelo.models.CodeVerification;
 import org.example.courzelo.models.Role;
+import org.example.courzelo.models.User;
 import org.example.courzelo.models.institution.Institution;
 import org.example.courzelo.models.institution.Invitation;
 import org.example.courzelo.models.institution.InvitationStatus;
 import org.example.courzelo.repositories.CodeVerificationRepository;
 import org.example.courzelo.repositories.InstitutionRepository;
 import org.example.courzelo.repositories.InvitationRepository;
+import org.example.courzelo.repositories.UserRepository;
 import org.example.courzelo.services.IInvitationService;
 import org.example.courzelo.services.IMailService;
 import org.springframework.data.domain.Page;
@@ -28,6 +30,8 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
@@ -42,13 +46,16 @@ public class InvitationService implements IInvitationService {
     private final InstitutionRepository institutionRepository;
     private final static String INSTITUTION_NOT_FOUND = "Institution not found";
     private final static String INVITATION_NOT_FOUND = "Invitation not found";
+    private final UserRepository userRepository;
+
     @Override
-    public void createInvitation(String institutionID, String email, Role role, String code, LocalDateTime expiryDate) {
+    public void createInvitation(String institutionID, String email, Role role, List<String> skills, String code, LocalDateTime expiryDate) {
         Invitation invitation = null;
         if (invitationRepository.existsByEmailAndInstitutionID(email, institutionID)) {
             invitation = invitationRepository.findByEmailAndInstitutionID(email,institutionID).orElseThrow(() -> new InstitutionNotFoundException(INSTITUTION_NOT_FOUND));
             invitation.setRole(role);
             invitation.setCode(code);
+            invitation.setSkills(skills != null ? skills : new ArrayList<>());
             invitation.setStatus(InvitationStatus.PENDING);
             invitation.setExpiryDate(expiryDate);
         }else{
@@ -56,6 +63,7 @@ public class InvitationService implements IInvitationService {
                     .institutionID(institutionID)
                     .email(email)
                     .role(role)
+                    .skills(skills != null ? skills : new ArrayList<>())
                     .code(code)
                     .status(InvitationStatus.PENDING)
                     .expiryDate(expiryDate)
@@ -73,6 +81,16 @@ public class InvitationService implements IInvitationService {
                 invitation.setExpiryDate(null);
             }
             invitationRepository.save(invitation);
+        }
+    }
+
+    @Override
+    public void setUserSkills(String email, String institutionID) {
+        Invitation invitation = invitationRepository.findByEmailAndInstitutionID(email,institutionID).orElseThrow(() -> new InvitationNotFoundException(INVITATION_NOT_FOUND));
+        if (invitation.getSkills() != null) {
+            User user = userRepository.findByEmail(email).orElseThrow(() -> new NoSuchElementException("User not found"));
+            user.getEducation().setSkill(invitation.getSkills());
+            userRepository.save(user);
         }
     }
 
@@ -155,6 +173,7 @@ public class InvitationService implements IInvitationService {
                                     .id(invitation.getId())
                                     .email(invitation.getEmail())
                                     .code(codeVerification != null ? codeVerification.getCode() : null)
+                                    .skills(invitation.getSkills()!= null ? invitation.getSkills() : new ArrayList<>())
                                     .status(invitation.getStatus().name())
                                     .role(invitation.getRole().name())
                                     .expiryDate(invitation.getExpiryDate())

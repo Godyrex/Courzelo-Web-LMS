@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import {ModuleRequest} from '../../models/institution/ModuleRequest';
 import {PaginatedModulesResponse} from '../../models/institution/PaginatedModulesResponse';
 import {ModuleResponse} from '../../models/institution/ModuleResponse';
+import {AssessmentRequest} from '../../models/institution/AssessmentRequest';
 
 @Injectable({
   providedIn: 'root'
@@ -38,5 +39,14 @@ export class ModuleService {
 
   getModule(id: string): Observable<ModuleResponse> {
     return this.http.get<ModuleResponse>(`${this.baseUrl}/${id}`);
+  }
+  createAssessment(id: string, assessmentRequest: AssessmentRequest): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/${id}/create-assessment`, assessmentRequest);
+  }
+  deleteAssessment(id: string, assessmentName: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${id}/assessment/${assessmentName}`);
+  }
+  updateAssessment(id: string, assessmentRequest: AssessmentRequest): Observable<void> {
+    return this.http.put<void>(`${this.baseUrl}/${id}/update-assessment`, assessmentRequest);
   }
 }

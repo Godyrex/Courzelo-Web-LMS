@@ -1,6 +1,7 @@
 package org.example.courzelo.controllers.institution;
 
 import lombok.AllArgsConstructor;
+import org.example.courzelo.dto.requests.module.AssessmentRequest;
 import org.example.courzelo.dto.requests.module.ModuleRequest;
 import org.example.courzelo.dto.responses.module.ModuleResponse;
 import org.example.courzelo.dto.responses.module.PaginatedModulesResponse;
@@ -42,5 +43,20 @@ public class ModuleController {
     @PreAuthorize("@customAuthorization.canAccessModule(#id)")
     public ResponseEntity<ModuleResponse> getModule(@PathVariable String id){
         return moduleService.getModuleById(id);
+    }
+    @PostMapping("/{id}/create-assessment")
+    @PreAuthorize("hasAnyRole('ADMIN')&&@customAuthorization.isAdminInInstitution()")
+    public ResponseEntity<HttpStatus> createAssessment(@PathVariable String id,@RequestBody AssessmentRequest assessmentRequest){
+        return moduleService.createAssessment(id,assessmentRequest);
+    }
+    @DeleteMapping("/{id}/assessment/{assessmentName}")
+    @PreAuthorize("hasAnyRole('ADMIN')&&@customAuthorization.isAdminInInstitution()")
+    public ResponseEntity<HttpStatus> deleteAssessment(@PathVariable String id, @PathVariable String assessmentName){
+        return moduleService.deleteAssessment(id,assessmentName);
+    }
+    @PutMapping("/{id}/update-assessment")
+    @PreAuthorize("hasAnyRole('ADMIN')&&@customAuthorization.isAdminInInstitution()")
+    public ResponseEntity<HttpStatus> updateAssessment(@PathVariable String id,@RequestBody AssessmentRequest assessmentRequest){
+        return moduleService.updateAssessment(id, assessmentRequest);
     }
 }

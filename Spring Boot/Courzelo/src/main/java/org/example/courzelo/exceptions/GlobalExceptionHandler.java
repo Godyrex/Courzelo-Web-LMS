@@ -86,4 +86,28 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleUserNotInGroupException(UserNotInGroupException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
+    @ExceptionHandler(SemesterMustBeInOrderException.class)
+    public ResponseEntity<String> handleSemesterMustBeInOrderException(SemesterMustBeInOrderException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+    @ExceptionHandler(CourseAlreadyCreatedException.class)
+    public ResponseEntity<String> handleCourseAlreadyCreatedException(CourseAlreadyCreatedException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+    @ExceptionHandler(ModuleSemesterNotSetException.class)
+    public ResponseEntity<String> handleModuleSemesterNotSetException(ModuleSemesterNotSetException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+    @ExceptionHandler(AssessmentAlreadyExistsException.class)
+    public ResponseEntity<String> handleAssessmentAlreadyExistsException(AssessmentAlreadyExistsException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+    @ExceptionHandler(AssessmentSumExceedsOneException.class)
+    public ResponseEntity<String> handleAssessmentSumExceedsOneException(AssessmentSumExceedsOneException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+    @ExceptionHandler(AssessmentNotFoundException.class)
+    public ResponseEntity<String> handleAssessmentNotFoundException(AssessmentNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
 }

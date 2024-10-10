@@ -12,6 +12,8 @@ import {map} from 'rxjs/operators';
 import {GroupResponse} from '../../models/institution/GroupResponse';
 import {UserEmailsRequest} from '../../models/institution/UserEmailsRequest';
 import {InvitationsResultResponse} from '../../models/institution/InvitationsResultResponse';
+import {SemesterRequest} from '../../models/institution/SemesterRequest';
+import {TeacherResponse} from '../../models/institution/TeacherResponse';
 
 @Injectable({
   providedIn: 'root'
@@ -43,6 +45,11 @@ export class InstitutionService {
   getInstitutionTeachers(institutionID: string) {
     return this.http.get(`${this.baseUrl}/${institutionID}/teachers`);
   }
+  getInstitutionFilteredTeachers(institutionID: string, skills: string[]) {
+    const params = new HttpParams()
+        .set('skills', skills.join(','));
+    return this.http.get<TeacherResponse[]>(`${this.baseUrl}/${institutionID}/filtered-teachers`, {params});
+  }
   getInstitutionGroups(institutionID: string) {
     return this.http.get<GroupResponse[]>(`${this.baseUrl}/${institutionID}/groups`);
   }
@@ -54,9 +61,10 @@ export class InstitutionService {
   deleteInstitution(institutionID: string): Observable<StatusMessageResponse> {
     return this.http.delete<StatusMessageResponse>(`${this.baseUrl}/delete/${institutionID}`);
   }
-  inviteUsers(institutionID: string, emails: UserEmailsRequest, role: string): Observable<InvitationsResultResponse> {
+  inviteUsers(institutionID: string, emails: UserEmailsRequest, role: string, skills: string[]): Observable<InvitationsResultResponse> {
     const params = new HttpParams()
-        .set('role', role);
+        .set('role', role)
+        .set('skills', skills.join(','));
     return this.http.put<InvitationsResultResponse>(`${this.baseUrl}/${institutionID}/invite_users`, emails, { params });
   }
   removeInstitutionUserRole(institutionID: string, email: string, role: string) {
@@ -99,6 +107,12 @@ export class InstitutionService {
   }
   setInstitutionMap(institutionID: string, institutionMapRequest: InstitutionMapRequest) {
     return this.http.put(`${this.baseUrl}/${institutionID}/set-map`, institutionMapRequest);
+  }
+  setSemester(institutionID: string, semesterRequest: SemesterRequest) {
+    return this.http.put(`${this.baseUrl}/${institutionID}/set-semester`, semesterRequest);
+  }
+  clearSemester(institutionID: string) {
+    return this.http.put(`${this.baseUrl}/${institutionID}/clear-semester`, null);
   }
   generateExcel(institutionID: string, generation: CalendarEventRequest[]) {
     return this.http.post(`${this.baseUrl}/${institutionID}/generate-excel`, generation);

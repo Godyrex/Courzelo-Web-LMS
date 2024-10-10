@@ -3,6 +3,7 @@ package org.example.courzelo.services;
 import org.example.courzelo.dto.requests.CoursePostRequest;
 import org.example.courzelo.dto.requests.CourseRequest;
 import org.example.courzelo.dto.responses.CourseResponse;
+import org.example.courzelo.models.institution.Semester;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,5 +24,5 @@ public interface ICourseService {
 
     ResponseEntity<List<CourseResponse>> getMyCourses(Principal principal);
 
-    ResponseEntity<HttpStatus> createProgramCourses(String institutionID, String programID, Principal principal);
+    ResponseEntity<HttpStatus> createProgramCourses(String institutionID, String programID, Semester semester, Principal principal);
 }

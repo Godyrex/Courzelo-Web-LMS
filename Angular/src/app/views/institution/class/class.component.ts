@@ -13,7 +13,7 @@ import {EditClassComponent} from './edit-class/edit-class.component';
 import {debounceTime} from 'rxjs/operators';
 import {ProgramService} from '../../../shared/services/institution/program.service';
 import {ViewCoursesComponent} from './view-courses/view-courses.component';
-import {ViewStudentsComponent} from "../../../shared/components/view-students/view-students.component";
+import {ViewStudentsComponent} from '../../../shared/components/view-students/view-students.component';
 
 @Component({
   selector: 'app-class',

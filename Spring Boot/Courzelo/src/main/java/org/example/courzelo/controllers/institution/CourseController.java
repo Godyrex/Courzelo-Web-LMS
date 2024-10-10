@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import org.example.courzelo.dto.requests.CoursePostRequest;
 import org.example.courzelo.dto.requests.CourseRequest;
 import org.example.courzelo.dto.responses.CourseResponse;
+import org.example.courzelo.models.institution.Semester;
 import org.example.courzelo.security.CustomAuthorization;
 import org.example.courzelo.services.ICourseService;
 import org.springframework.http.HttpStatus;
@@ -30,8 +31,8 @@ public class CourseController {
     }
     @PostMapping("/{institutionID}/{programID}/add")
     @PreAuthorize("hasRole('ADMIN')&&@customAuthorization.canCreateCourse(#institutionID)")
-    public ResponseEntity<HttpStatus> addProgramCourses(@PathVariable String institutionID,@PathVariable String programID,Principal principal) {
-        return iCourseService.createProgramCourses(institutionID,programID,principal);
+    public ResponseEntity<HttpStatus> addProgramCourses(@PathVariable String institutionID, @PathVariable String programID, @RequestParam(required = false) Semester semester, Principal principal) {
+        return iCourseService.createProgramCourses(institutionID,programID,semester,principal);
     }
     @PutMapping("/{courseID}/update")
     @PreAuthorize("hasRole('ADMIN')&&@customAuthorization.canAccessCourse(#courseID)")

@@ -1,6 +1,6 @@
 package org.example.courzelo.institution;
 
-import org.example.courzelo.dto.requests.InstitutionRequest;
+import org.example.courzelo.dto.requests.institution.InstitutionRequest;
 import org.example.courzelo.dto.responses.StatusMessageResponse;
 import org.example.courzelo.dto.responses.institution.InstitutionResponse;
 import org.example.courzelo.models.institution.Institution;

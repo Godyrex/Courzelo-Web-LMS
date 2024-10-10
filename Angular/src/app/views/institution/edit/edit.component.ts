@@ -10,6 +10,8 @@ import * as L from 'leaflet';
 import {InstitutionMapRequest} from '../../../shared/models/institution/InstitutionMapRequest';
 import {CalendarEventRequest} from '../../../shared/models/institution/CalendarEventRequest';
 import {environment} from '../../../../environments/environment';
+import {SemesterRequest} from '../../../shared/models/institution/SemesterRequest';
+import {InstitutionResponse} from '../../../shared/models/institution/InstitutionResponse';
 
 @Component({
   selector: 'app-edit',
@@ -50,7 +52,7 @@ export class EditComponent implements OnInit, AfterViewInit {
         day: 1
     };
     institutionID: string;
-    currentInstitution;
+    currentInstitution: InstitutionResponse;
     institutionMapRequest: InstitutionMapRequest = {};
     loading = false;
     countries = [];
@@ -74,6 +76,20 @@ export class EditComponent implements OnInit, AfterViewInit {
         name: ['', [Validators.required, Validators.maxLength(15)]],
         color: ['#FFFF00', [Validators.required]],
     }, { validators: [this.sameMonth, this.dateOrder] });
+    firstSemesterBSValue = {
+        year: this.today.getFullYear(),
+        month: 1,
+        day: 1
+    };
+    secondSemesterBSValue = {
+        year: this.today.getFullYear(),
+        month: 6,
+        day: 1
+    };
+    SetSemesterForm = this.formBuilder.group({
+        firstSemesterStart: [this.firstSemesterBSValue, [Validators.required]],
+        secondSemesterStart: [this.secondSemesterBSValue, [Validators.required]],
+    });
   ngOnInit() {
       this.generationEvent.startDate = new Date();
       this.institutionID = this.route.snapshot.paramMap.get('institutionID');
@@ -114,6 +130,47 @@ if (this.pageTemplate)  {
             this.setLocation();
         } else {
             console.error('Map container not found');
+        }
+    }
+    clearSemester() {
+        this.institutionService.clearSemester(this.institutionID).subscribe(
+            response => {
+                this.toastr.success('Semester cleared successfully.');
+                this.currentInstitution.firstSemesterStart = null;
+                this.currentInstitution.secondSemesterStart = null;
+            }, error => {
+                if (error.error) {
+                    this.toastr.error(error.error);
+                } else {
+                    this.toastr.error('Error clearing semester.');
+                }
+            });
+    }
+    setSemester() {
+        if (this.SetSemesterForm.valid) {
+            const semester: SemesterRequest = {
+                firstSemesterStart: new Date(this.SetSemesterForm.controls['firstSemesterStart'].value.year,
+                    this.SetSemesterForm.controls['firstSemesterStart'].value.month - 1,
+                    this.SetSemesterForm.controls['firstSemesterStart'].value.day),
+                secondSemesterStart: new Date(this.SetSemesterForm.controls['secondSemesterStart'].value.year,
+                    this.SetSemesterForm.controls['secondSemesterStart'].value.month - 1,
+                    this.SetSemesterForm.controls['secondSemesterStart'].value.day)
+            };
+            this.institutionService.setSemester(this.institutionID, semester).subscribe(
+                response => {
+                    this.toastr.success('Semester set successfully.');
+                    this.currentInstitution.firstSemesterStart = semester.firstSemesterStart;
+                    this.currentInstitution.secondSemesterStart = semester.secondSemesterStart;
+                }, error => {
+                    if (error.error) {
+                        this.toastr.error(error.error);
+                    } else {
+                        this.toastr.error('Error setting semester.');
+                    }
+                }
+            );
+        } else {
+            this.toastr.error('Please fill all fields');
         }
     }
     downloadExcel() {

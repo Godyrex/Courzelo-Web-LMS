@@ -11,6 +11,7 @@ import org.example.courzelo.exceptions.*;
 import org.example.courzelo.models.Role;
 import org.example.courzelo.models.User;
 import org.example.courzelo.models.institution.*;
+import org.example.courzelo.models.institution.Module;
 import org.example.courzelo.repositories.*;
 import org.example.courzelo.services.ICourseService;
 import org.example.courzelo.services.QuizService;
@@ -26,6 +27,7 @@ import java.nio.file.Files;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 @Service
@@ -38,6 +40,7 @@ public class CourseServiceImpl implements ICourseService {
     private final GroupRepository groupRepository;
     private final QuizService quizService;
     private final ProgramRepository programRepository;
+    private final ModuleRepository moduleRepository;
     @Override
     public ResponseEntity<HttpStatus> createCourse(String institutionID, CourseRequest courseRequest,Principal principal) {
         log.info("Creating course");
@@ -289,32 +292,87 @@ public class CourseServiceImpl implements ICourseService {
     }
 
     @Override
-    public ResponseEntity<HttpStatus> createProgramCourses(String institutionID, String programID, Principal principal) {
-        Institution institution = institutionRepository.findById(institutionID).orElseThrow(() -> new InstitutionNotFoundException("Institution not found"));
-        Program program = programRepository.findById(programID).orElseThrow(() -> new ProgramNotFoundException("Program not found"));
-         groupRepository.findByProgram(programID).ifPresentOrElse(groups -> {
-             groups.forEach(group -> {
-                 program.getModules().forEach( module -> {
-                     if (!courseRepository.existsByModuleAndGroup(module, group.getId())) {
-                         Course course = Course.builder()
-                                 .module(module)
-                                 .institutionID(institution.getId())
-                                 .teacher(null)
-                                 .group(group.getId())
-                                 .posts(new ArrayList<>())
-                                 .build();
-                         courseRepository.save(course);
-                         institution.getCoursesID().add(course.getId());
-                         institutionRepository.save(institution);
-                         group.getCourses().add(course.getId());
-                         groupRepository.save(group);
-                     }
-                 });
-             });
-         }, () -> {
-             throw new GroupNotFoundException("No groups found for program");
-         });
-         return ResponseEntity.ok(HttpStatus.OK);
+    public ResponseEntity<HttpStatus> createProgramCourses(String institutionID, String programID, Semester semester, Principal principal) {
+        log.info("Creating program courses");
+        Institution institution = institutionRepository.findById(institutionID)
+                .orElseThrow(() -> new InstitutionNotFoundException("Institution not found"));
+        Program program = programRepository.findById(programID)
+                .orElseThrow(() -> new ProgramNotFoundException("Program not found"));
+
+        List<Group> groups = groupRepository.findByProgram(programID)
+                .orElseThrow(() -> new GroupNotFoundException("No groups found for program"));
+
+        if (groups.isEmpty()) {
+            throw new GroupNotFoundException("No groups found for program");
+        }
+
+        AtomicInteger courseAlreadyCreated = new AtomicInteger();
+        List<String> modules = program.getModules();
+
+        if (modules == null || modules.isEmpty()) {
+            throw new ModuleNotFoundException("No modules found for program");
+        }
+        log.info("groups size: "+groups.size());
+        log.info("modules size: "+modules.size());
+        for (Group group : groups) {
+            for (String moduleID : modules) {
+                if (!courseRepository.existsByModuleAndGroup(moduleID, group.getId())) {
+                    log.info("Creating course for module: " + moduleID + " and group: " + group.getId());
+                    Module module = moduleRepository.findById(moduleID)
+                            .orElseThrow(() -> new ModuleNotFoundException("Module not found"));
+                    if(semester!=null && module.getSemester() == null){
+                        throw new ModuleSemesterNotSetException(module.getName()+" semester not set");
+                    }
+                    log.info("module semester: "+module.getSemester());
+                    log.info("semester: "+semester);
+                    if (semester == null || module.getSemester().equals(semester)) {
+                        log.info(String.valueOf(module.getSemester()));
+                        Course course = Course.builder()
+                                .module(moduleID)
+                                .institutionID(institution.getId())
+                                .teacher(null)
+                                .group(group.getId())
+                                .posts(new ArrayList<>())
+                                .build();
+                        courseRepository.save(course);
+                        institution.getCoursesID().add(course.getId());
+                        institutionRepository.save(institution);
+                        group.getCourses().add(course.getId());
+                        groupRepository.save(group);
+                    }
+                } else {
+                    Module module = moduleRepository.findById(moduleID)
+                            .orElseThrow(() -> new ModuleNotFoundException("Module not found"));
+                    if (semester == null || ( module.getSemester() != null &&module.getSemester().equals(semester))) {
+                        courseAlreadyCreated.getAndIncrement();
+                    }
+                }
+            }
+        }
+
+        if (semester != null) {
+            modules = modules.stream()
+                    .filter(moduleID -> {
+                        Module module = moduleRepository.findById(moduleID)
+                                .orElseThrow(() -> new ModuleNotFoundException("Module not found"));
+                        if (module.getSemester() != null) {
+                            return module.getSemester().equals(semester);
+                        }else{
+                            throw new ModuleSemesterNotSetException("you must set semester for all modules");
+                        }
+                    })
+                    .toList();
+        }
+
+        log.info("Courses already created: " + courseAlreadyCreated);
+        log.info("Program modules size: " + modules.size());
+        log.info("Groups size: " + groups.size());
+
+        if (courseAlreadyCreated.get() == (modules.size() * groups.size())) {
+            throw new CourseAlreadyCreatedException("Courses already created for all groups and modules");
+        }
+
+        return ResponseEntity.ok(HttpStatus.OK);
     }
 
     private List<byte[]> getBytesFromFiles(List<String> files) {

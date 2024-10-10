@@ -30,6 +30,7 @@ export class ProgramsComponent implements OnInit {
   currentInstitution: InstitutionResponse;
   currentProgram: ProgramResponse;
   paginatedPrograms: PaginatedProgramsResponse;
+  selectedSemester: string;
   constructor(
       private institutionService: InstitutionService,
       private programService: ProgramService,
@@ -65,8 +66,11 @@ export class ProgramsComponent implements OnInit {
       this.getPrograms(this._currentPage, this.itemsPerPage, this.searchControl.value);
     }
   }
-  createCourses(programResponse: ProgramResponse) {
-  this.courseService.addProgramCourses(this.institutionID, programResponse.id).subscribe(
+  createCourses(semester: string): void {
+    if (semester === 'BOTH') {
+      semester = '';
+    }
+  this.courseService.addProgramCourses(this.institutionID, semester, this.currentProgram.id).subscribe(
     response => {
       this.toastr.success('Courses created successfully');
     },
@@ -145,6 +149,17 @@ export class ProgramsComponent implements OnInit {
         .result.then((result) => {
       if (result === 'Ok') {
         this.deleteProgram(this.currentProgram.id);
+        this.currentProgram = null;
+      }
+    }, (reason) => {
+      console.log('Err!', reason);
+    });
+  }
+  modalCreateCoursesFunction(content: any, program: ProgramResponse) {
+    this.currentProgram = program;
+    this.modalService.open(content, { ariaLabelledBy: 'confirm Program', backdrop: false })
+        .result.then((result) => {
+      if (result === 'Ok') {
         this.currentProgram = null;
       }
     }, (reason) => {

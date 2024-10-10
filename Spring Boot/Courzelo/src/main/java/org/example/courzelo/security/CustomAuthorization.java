@@ -123,18 +123,26 @@ public class CustomAuthorization {
             return true;
         }
         Institution institution = institutionRepository.findById(institutionID).orElseThrow(() -> new InstitutionNotFoundException("Institution not found"));
-        return institution.getTeachers().stream().anyMatch(teacher -> teacher.equals(userEmail));
+        return institution.getAdmins().stream().anyMatch(admin -> admin.equals(userEmail));
     }
     public boolean canAccessCourse(String courseID) {
         log.info("Checking if user can access course");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
-        User user = userRepository.findUserByEmail(userEmail);
-        if(user != null && user.getRoles().contains(Role.SUPERADMIN)){
+        User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new UserNotFoundException("User not found"));
+        if(user.getEducation()==null){
+            log.info("User has no education");
+            return false;
+        }
+        if( user.getRoles().contains(Role.SUPERADMIN)){
             log.info("User is superadmin");
             return true;
         }
         Course course= courseRepository.findById(courseID).orElseThrow(() -> new CourseNotFoundException("Course not found"));
+        if(course.getInstitutionID().equals(user.getEducation().getInstitutionID())){
+            log.info("User is in institution");
+            return true;
+        }
         if(course.getGroup()!=null) {
             log.info("Course has group");
             Group group = groupRepository.findById(course.getGroup()).orElseThrow(() -> new GroupNotFoundException("Group not found"));

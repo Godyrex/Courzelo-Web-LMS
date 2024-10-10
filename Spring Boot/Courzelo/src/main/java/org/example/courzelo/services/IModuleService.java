@@ -1,5 +1,6 @@
 package org.example.courzelo.services;
 
+import org.example.courzelo.dto.requests.module.AssessmentRequest;
 import org.example.courzelo.dto.requests.module.ModuleRequest;
 import org.example.courzelo.dto.responses.module.ModuleResponse;
 import org.example.courzelo.dto.responses.module.PaginatedModulesResponse;
@@ -17,5 +18,11 @@ public interface IModuleService {
     void deleteAllProgramModules(String programID);
     void addModuleToProgram(Program program, String moduleID);
     void removeModuleFromProgram(Program program, String moduleID);
+
+    ResponseEntity<HttpStatus> createAssessment(String id,AssessmentRequest assessmentRequest);
+
+    ResponseEntity<HttpStatus> deleteAssessment(String id, String assessmentName);
+
+    ResponseEntity<HttpStatus> updateAssessment(String id, AssessmentRequest assessmentRequest);
 }
 

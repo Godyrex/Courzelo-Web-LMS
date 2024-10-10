@@ -1,4 +1,4 @@
-package org.example.courzelo.dto.requests;
+package org.example.courzelo.dto.requests.institution;
 
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;

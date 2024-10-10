@@ -17,6 +17,15 @@
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title text-primary">{{ module.name }}</h5>
                             <p class="card-text text-muted">{{ module.description }}</p>
+                            <p *ngIf="module.skills && module.skills.length>0" class="card-text">
+                                <strong>Skills:</strong> {{module.skills.join(' | ')}}
+                            </p>
+                            <p *ngIf="module.semester === 'FIRST_SEMESTER' " class="card-text">
+                                <strong>Semester:</strong> First Semester
+                            </p>
+                            <p *ngIf="module.semester === 'SECOND_SEMESTER' " class="card-text">
+                                <strong>Semester:</strong> Second Semester
+                            </p>
                             <p class="card-text"><strong>Teacher:</strong><span [ngClass]="{'text-danger': !module.courseTeacher}">
                                 {{ module.courseTeacher || "Not assigned" }}</span></p>
                             <p class="card-text">
@@ -52,6 +61,7 @@
                                 <!-- Set Teacher Button -->
                                 <button
                                         class="btn btn-warning mr-2"
+                                        *ngIf="module.courseCreated"
                                         (click)="openAsssignTeacherModal(module)"
                                 >
                                     Set Teacher

@@ -14,6 +14,17 @@
             <label for="description">Description</label>
             <textarea id="description" formControlName="description" class="form-control"></textarea>
         </div>
+        <div class=" form-group ">
+            <label for="skills" class="form-label">Skills</label>
+            <tag-input id="skills"
+                       formControlName="skills"
+                       [modelAsStrings]="true"
+                       secondaryPlaceholder="Enter skills"
+                       placeholder="Add skill"
+                       [separatorKeyCodes]="[188]"
+                       [onlyFromAutocomplete]="false">
+            </tag-input>
+        </div>
         <div class="form-group">
             <label for="duration">Duration</label>
             <input id="duration" formControlName="duration"  class="form-control" />
@@ -21,6 +32,13 @@
         <div class="form-group">
             <label for="credit">Credit</label>
             <input id="credit" formControlName="credit" type="number" class="form-control" />
+        </div>
+        <div *ngIf="institution.secondSemesterStart&&institution.secondSemesterStart" class="form-group">
+            <label for="semester">Semester</label>
+            <select id="semester" formControlName="semester" class="form-control">
+                <option value="FIRST_SEMESTER">First Semester</option>
+                <option value="SECOND_SEMESTER">Second Semester</option>
+            </select>
         </div>
         <button type="submit" class="btn btn-primary" [disabled]="addModuleForm.invalid">Add Module</button>
     </form>

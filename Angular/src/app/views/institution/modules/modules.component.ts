@@ -11,6 +11,9 @@ import {ModuleService} from '../../../shared/services/institution/module.service
 import {AddModuleComponent} from './add-module/add-module.component';
 import {EditModuleComponent} from './edit-module/edit-module.component';
 import {ActivatedRoute} from '@angular/router';
+import {InstitutionResponse} from '../../../shared/models/institution/InstitutionResponse';
+import {InstitutionService} from '../../../shared/services/institution/institution.service';
+import {ManageAssessmentComponent} from './manage-assessment/manage-assessment.component';
 
 @Component({
   selector: 'app-modules',
@@ -19,7 +22,6 @@ import {ActivatedRoute} from '@angular/router';
 })
 export class ModulesComponent implements OnInit {
   loadingModules = false;
-  institutionID: string;
   _currentPage = 1;
   totalPages = 0;
   totalItems = 0;
@@ -28,8 +30,10 @@ export class ModulesComponent implements OnInit {
   @Input() currentProgram: ProgramResponse;
   currentModule: ModuleResponse;
   paginatedModules: PaginatedModulesResponse;
+  currentInstitution: InstitutionResponse;
   constructor(
       private moduleService: ModuleService,
+      private institutionService: InstitutionService,
       private handleResponse: ResponseHandlerService,
       private toastr: ToastrService,
       private modalService: NgbModal,
@@ -40,6 +44,7 @@ export class ModulesComponent implements OnInit {
     this.route.paramMap.subscribe(params => {
       this.currentProgram = history.state.program;
       this.getModules(this.currentPage, this.itemsPerPage, this.currentProgram.id, null);
+      this.getInstitution(this.currentProgram.institutionID);
     });
     this.searchControl.valueChanges
         .pipe(debounceTime(200))
@@ -73,6 +78,13 @@ export class ModulesComponent implements OnInit {
         }
     );
   }
+  getInstitution(institutionID: string): void {
+    this.institutionService.getInstitutionByID(institutionID).subscribe(
+        response => {
+          this.currentInstitution = response;
+        }
+    );
+  }
   deleteModule(id: string): void {
     this.loadingModules = true;
     this.moduleService.deleteModule(id).subscribe(
@@ -90,14 +102,28 @@ export class ModulesComponent implements OnInit {
   openAddModuleModal() {
     const modalRef = this.modalService.open(AddModuleComponent, {backdrop: false});
     modalRef.componentInstance.programID = this.currentProgram.id;
+    modalRef.componentInstance.institution = this.currentInstitution;
     modalRef.componentInstance.moduleAdded.subscribe(() => {
       this.getModules(this.currentPage, this.itemsPerPage, this.currentProgram.id, null);
+      modalRef.close();
+    });
+  }
+  openManageAssessmentModal(module: ModuleResponse) {
+    const modalRef = this.modalService.open(ManageAssessmentComponent, {size : 'lg', backdrop: false});
+    modalRef.componentInstance.moduleResponse = module;
+ //   modalRef.componentInstance.institutionID = this.institutionID;
+ /*   modalRef.componentInstance.classAdded.subscribe(() => {
+      this.loadGroups(this.currentPageClasses, this.itemsPerPageClasses);
+      modalRef.close();
+    });*/
+    modalRef.componentInstance.close.subscribe(() => {
       modalRef.close();
     });
   }
   openEditModuleModal(module: ModuleResponse) {
     const modalRef = this.modalService.open(EditModuleComponent, {backdrop: false});
     modalRef.componentInstance.module = module;
+    modalRef.componentInstance.institution = this.currentInstitution;
     modalRef.componentInstance.moduleUpdated.subscribe((updatedModule: ModuleResponse) => {
           if (updatedModule != null) {
             const index = this.paginatedModules.modules.findIndex(p => p.id === updatedModule.id);

@@ -42,6 +42,9 @@
                             [columns]="[
         { name: 'Name' },
         { name: 'Description'},
+        { name: 'Skills',cellTemplate: skillsTemplate,width: 250},
+        { name: 'Semester',cellTemplate: semesterTemplate},
+        { name: 'Assessment',cellTemplate: assessments,width: 250},
         { name: 'Duration'},
         { name: 'Credit' },
         { name: 'Actions', prop: 'id', cellTemplate: deleteBtnTemplate, width: 250 }
@@ -56,6 +59,24 @@
                             [limit]="itemsPerPage"
                             [rows]="paginatedModules.modules | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }">
                     </ngx-datatable>
+                    <ng-template #skillsTemplate let-row="row">
+                        <div class="skill-container d-flex flex-wrap">
+    <span *ngFor="let skill of row.skills"
+          class="skill-badge badge badge-primary mb-2 mr-2"
+          [attr.title]="skill">{{ skill }}</span>
+                        </div>
+                    </ng-template>
+
+                    <ng-template #semesterTemplate let-row="row" let-value="value">
+                        <span *ngIf="value === 'FIRST_SEMESTER'" class="badge badge-primary">First Semester</span>
+                        <span *ngIf="value === 'SECOND_SEMESTER'" class="badge badge-secondary">Second Semester</span>
+                        <span *ngIf="value === null || value === ''" class="badge badge-danger">No Semester set</span>
+                    </ng-template>
+                    <ng-template #assessments let-row="row" let-value="value">
+                        <button class="btn btn-link" (click)="openManageAssessmentModal(row)">
+                            <i class="fa fa-eye"></i> Show Assessment
+                        </button>
+                    </ng-template>
                     <ng-template #deleteBtnTemplate let-row="row" let-value="value">
                         <div class=" m-16">
                         <button class="btn btn-warning btn-rounded  mr-2" (click)="openEditModuleModal(row)">
