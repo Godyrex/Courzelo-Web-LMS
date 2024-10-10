@@ -9,6 +9,7 @@ import {GroupService} from '../../../../shared/services/institution/group.servic
 import {ViewStudentsComponent} from '../../../../shared/components/view-students/view-students.component';
 import {AssignTeacherComponent} from './assign-teacher/assign-teacher.component';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import {StudentGradesComponent} from './student-grades/student-grades.component';
 
 @Component({
   selector: 'app-view-courses',
@@ -19,6 +20,7 @@ export class ViewCoursesComponent implements OnInit {
 
   @Input() program: string;
   @Input() group: GroupResponse;
+  @Input() module: ModuleResponse;
   @Output() close = new EventEmitter<void>();
   loading = false;
     showFullDescription: { [key: string]: boolean } = {};
@@ -130,6 +132,14 @@ export class ViewCoursesComponent implements OnInit {
              this.loading = false;
          }
    );
+    }
+    openStudentsGradesModal(moduleResponse: ModuleResponse) {
+        const modalRef = this.modalService.open(StudentGradesComponent, {size : 'lg', backdrop: false});
+        modalRef.componentInstance.groupResponse = this.group;
+        modalRef.componentInstance.moduleResponse = moduleResponse;
+        modalRef.componentInstance.close.subscribe(() => {
+            modalRef.close();
+        });
     }
     openAsssignTeacherModal(module: ModuleResponse) {
         const modalRef = this.modalService.open(AssignTeacherComponent, { size : 'sm' , backdrop: false});

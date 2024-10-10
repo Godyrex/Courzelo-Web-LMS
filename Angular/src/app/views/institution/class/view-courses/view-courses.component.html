@@ -57,6 +57,12 @@
                                         (click)="deleteCourse(module.courseID)">
                                     Delete Course
                                 </button>
+                                <button
+                                        class="btn btn-danger mr-2"
+                                        *ngIf="module.courseCreated"
+                                        (click)="openStudentsGradesModal(module)">
+                                    Students Grades
+                                </button>
 
                                 <!-- Set Teacher Button -->
                                 <button

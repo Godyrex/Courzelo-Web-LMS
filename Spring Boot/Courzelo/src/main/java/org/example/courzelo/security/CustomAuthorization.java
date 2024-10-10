@@ -27,6 +27,7 @@ public class CustomAuthorization {
     private final InvitationRepository invitationRepository;
     private final ProgramRepository programRepository;
     private final ModuleRepository moduleRepository;
+    private final GradeRepository gradeRepository;
     public boolean isAdminInInstitution(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
@@ -77,6 +78,13 @@ public class CustomAuthorization {
         User user = userRepository.findUserByEmail(userEmail);
         Group group = groupRepository.findById(groupID).orElseThrow(() -> new GroupNotFoundException("Group not found"));
         return user.getEducation().getInstitutionID().equals(group.getInstitutionID());
+    }
+    public boolean canAccessGrade(String gradeID) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+        User user = userRepository.findUserByEmail(userEmail);
+        Grade grade = gradeRepository.findById(gradeID).orElseThrow(() -> new GradeNotFoundException("Grade not found"));
+        return user.getEducation().getInstitutionID().equals(grade.getInstitutionID()) || grade.getStudentEmail().equals(userEmail);
     }
     public boolean canAccessInvitation(String invitationID) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

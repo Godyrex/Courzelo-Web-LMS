@@ -110,4 +110,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleAssessmentNotFoundException(AssessmentNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
+    @ExceptionHandler(GradeNotFoundException.class)
+    public ResponseEntity<String> handleGradeNotFoundException(GradeNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
 }

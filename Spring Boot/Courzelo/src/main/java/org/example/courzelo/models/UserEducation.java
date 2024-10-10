@@ -12,5 +12,6 @@ public class UserEducation {
     private List<String> coursesID = new ArrayList<>();
     private String groupID;
     private List<String> skill = new ArrayList<>();
+    private List<String> grades = new ArrayList<>();
     private List<ElementModule>elementModules = new ArrayList<>();
 }

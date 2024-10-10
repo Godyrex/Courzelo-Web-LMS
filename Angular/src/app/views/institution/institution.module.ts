@@ -34,6 +34,7 @@ import { ViewCoursesComponent } from './class/view-courses/view-courses.componen
 import { AssignTeacherComponent } from './class/view-courses/assign-teacher/assign-teacher.component';
 import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import { ManageAssessmentComponent } from './modules/manage-assessment/manage-assessment.component';
+import { StudentGradesComponent } from './class/view-courses/student-grades/student-grades.component';
 
 
 @NgModule({
@@ -54,7 +55,8 @@ import { ManageAssessmentComponent } from './modules/manage-assessment/manage-as
     EditClassComponent,
     ViewCoursesComponent,
     AssignTeacherComponent,
-    ManageAssessmentComponent
+    ManageAssessmentComponent,
+    StudentGradesComponent
   ],
     imports: [
         CommonModule,
