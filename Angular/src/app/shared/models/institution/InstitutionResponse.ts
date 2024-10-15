@@ -10,5 +10,4 @@ export interface InstitutionResponse {
     longitude?: number;
     firstSemesterStart?: Date;
     secondSemesterStart?: Date;
-    hasCalendar?: boolean;
 }

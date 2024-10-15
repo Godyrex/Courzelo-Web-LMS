@@ -11,6 +11,7 @@ import java.util.Optional;
 public interface CourseRepository extends MongoRepository<Course,String> {
     Optional<List<Course>> findAllByTeacher(String teacher);
     Optional<List<Course>> findAllByGroup(String group);
+    Optional<List<Course>> findAllByInstitutionID(String institutionID);
     void deleteAllByModule(String module);
     Boolean existsByModuleAndGroup(String module, String group);
 }

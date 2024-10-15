@@ -16,4 +16,6 @@ public class ProgramResponse {
     private Integer credits;
     private String duration;
     private String institutionID;
+    private boolean hasCalendar;
+
 }

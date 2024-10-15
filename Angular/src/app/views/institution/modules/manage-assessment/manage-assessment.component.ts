@@ -3,6 +3,7 @@ import {ModuleResponse} from '../../../../shared/models/institution/ModuleRespon
 import {AssessmentRequest} from '../../../../shared/models/institution/AssessmentRequest';
 import {ToastrService} from 'ngx-toastr';
 import {ModuleService} from '../../../../shared/services/institution/module.service';
+import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-manage-assessment',
@@ -18,7 +19,8 @@ export class ManageAssessmentComponent implements OnInit {
   currentAssessment: AssessmentRequest;
   constructor(
       private toastr: ToastrService,
-      private moduleService: ModuleService
+      private moduleService: ModuleService,
+      private modalService: NgbModal
   ) {
   }
 
@@ -33,7 +35,7 @@ export class ManageAssessmentComponent implements OnInit {
     }
   }
   onClose(): void {
-    if(this.moduleResponse.assessments != null && this.moduleResponse.assessments.length > 0) {
+    if (this.moduleResponse.assessments != null && this.moduleResponse.assessments.length > 0) {
         this.moduleResponse.assessments = this.moduleResponse.assessments.map(assessment => {
             return {
             ...assessment,
@@ -43,7 +45,15 @@ export class ManageAssessmentComponent implements OnInit {
     }
     this.close.emit();
   }
-
+  calculateAssessmentWeight(): number {
+    let total = 0;
+    if (this.moduleResponse.assessments) {
+        this.moduleResponse.assessments.forEach(assessment => {
+            total += assessment.weight;
+        });
+    }
+    return total;
+  }
   addNewAssessment(): void {
     this.isAddMode = true;
     this.currentAssessment = {oldName: '', name: '', weight: null };
@@ -60,7 +70,18 @@ export class ManageAssessmentComponent implements OnInit {
     this.isAddMode = false;
     this.currentAssessment = {oldName: '', name: '', weight: null };
   }
-
+    modalConfirmFunction(content: any, assessment: AssessmentRequest) {
+        this.currentAssessment = assessment;
+        this.modalService.open(content, { ariaLabelledBy: 'confirm Module', backdrop: false })
+            .result.then((result) => {
+            if (result === 'Ok') {
+                this.deleteAssessment(assessment.name);
+                this.currentAssessment = {oldName: '', name: '', weight: null };
+            }
+        }, (reason) => {
+            console.log('Err!', reason);
+        });
+    }
   onSubmitAssessment(): void {
     if (this.isEditMode) {
       console.log('Edit mode');

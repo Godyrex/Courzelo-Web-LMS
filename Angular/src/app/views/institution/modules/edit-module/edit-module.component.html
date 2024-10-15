@@ -33,6 +33,10 @@
             <label for="credit">Credit</label>
             <input id="credit" formControlName="credit" type="number" class="form-control" />
         </div>
+        <div class="form-group">
+            <label for="score">Score to pass</label>
+            <input id="score" formControlName="scoreToPass" type="number" class="form-control" />
+        </div>
         <div *ngIf="institution.firstSemesterStart && institution.secondSemesterStart" class="form-group">
             <label for="semester">Semester</label>
             <select id="semester" formControlName="semester" class="form-control">

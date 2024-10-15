@@ -13,16 +13,17 @@ import {ToastrService} from 'ngx-toastr';
 export class EditProgramComponent implements OnInit {
   @Input() program: ProgramResponse;
   @Output() programUpdated = new EventEmitter<void>();
+  creditSum: number;
   editProgramForm: FormGroup;
 
   constructor(
       private fb: FormBuilder,
       private programService: ProgramService,
-      private handleResponse: ResponseHandlerService,
       private toastr: ToastrService
   ) {}
 
   ngOnInit(): void {
+    this.getProgramModulesCreditsSum();
     this.editProgramForm = this.fb.group({
       name: [this.program.name, Validators.required],
       description: [this.program.description, Validators.required],
@@ -30,7 +31,13 @@ export class EditProgramComponent implements OnInit {
       duration: [this.program.duration]
     });
   }
-
+  getProgramModulesCreditsSum() {
+    this.programService.getProgramModuleCreditsSum(this.program.id).subscribe(
+        response => {
+            this.creditSum = response;
+        }
+    );
+  }
   onSubmit() {
     if (this.editProgramForm.valid) {
       this.programService.updateProgram(this.program.id, this.editProgramForm.value).subscribe(

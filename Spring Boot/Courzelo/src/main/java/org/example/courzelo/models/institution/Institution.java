@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Document(collection = "institutions")
 @Data
@@ -24,11 +25,12 @@ public class Institution {
     private List<String> admins = new ArrayList<>();
     private List<String> teachers = new ArrayList<>();
     private List<String> students = new ArrayList<>();
-    private byte[] excelFile;
     private double latitude;
     private double longitude;
     private Date firstSemesterStart;
     private Date secondSemesterStart;
+    private Map<String, List<Timeslot>> groupTimetables;
+    private Map<String, List<Timeslot>> teacherTimetables;
     private List<String> groupsID = new ArrayList<>();
     private List<String> coursesID = new ArrayList<>();
     private List<String> programsID = new ArrayList<>();

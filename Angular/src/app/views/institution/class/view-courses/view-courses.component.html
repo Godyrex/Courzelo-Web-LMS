@@ -35,7 +35,7 @@
                             <div class="mt-auto d-grid gap-2">
                                 <!-- View Course Button -->
                                 <button
-                                        class="btn btn-primary mr-2"
+                                        class="btn btn-primary mr-2 mb-2"
                                         *ngIf="module.courseCreated"
                                         (click)="onClose()"
                                         routerLink="institution/course/{{ module.courseID }}">
@@ -44,7 +44,7 @@
 
                                 <!-- Create Course Button -->
                                 <button
-                                        class="btn btn-success mr-2"
+                                        class="btn btn-success mr-2 mb-2"
                                         *ngIf="!module.courseCreated"
                                         (click)="createCourse(module)">
                                     Create Course
@@ -52,13 +52,7 @@
 
                                 <!-- Delete Course Button -->
                                 <button
-                                        class="btn btn-danger mr-2"
-                                        *ngIf="module.courseCreated"
-                                        (click)="deleteCourse(module.courseID)">
-                                    Delete Course
-                                </button>
-                                <button
-                                        class="btn btn-danger mr-2"
+                                        class="btn btn-success mr-2 mb-2"
                                         *ngIf="module.courseCreated"
                                         (click)="openStudentsGradesModal(module)">
                                     Students Grades
@@ -66,11 +60,17 @@
 
                                 <!-- Set Teacher Button -->
                                 <button
-                                        class="btn btn-warning mr-2"
+                                        class="btn btn-warning mr-2 mb-2"
                                         *ngIf="module.courseCreated"
                                         (click)="openAsssignTeacherModal(module)"
                                 >
                                     Set Teacher
+                                </button>
+                                <button
+                                        class="btn btn-danger mr-2 mb-2"
+                                        *ngIf="module.courseCreated"
+                                        (click)="deleteCourse(module.courseID)">
+                                    Delete Course
                                 </button>
                             </div>
                         </div>

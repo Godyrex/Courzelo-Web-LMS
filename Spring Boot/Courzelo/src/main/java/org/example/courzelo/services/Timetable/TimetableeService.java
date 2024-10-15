@@ -19,7 +19,7 @@ import java.util.*;
 import java.util.logging.Logger;
 
 @Service
-public class TimetableService {
+public class TimetableeService {
     private final DataFromDB dataFromDb;
     private final ElementModuleRepo elementModuleRepo;
     private final TimetableRepo timetableRepo;
@@ -28,7 +28,7 @@ public class TimetableService {
 
     private Map<DayOfWeek, Map<Period, String>> schedule;
 
-    public TimetableService(DataFromDB dataFromDb, ElementModuleRepo elementModuleRepo, TimetableRepo timetableRepo, ElementModuleService elementModuleService, UserServiceImpl userService, Map<DayOfWeek, Map<Period, String>> schedule) {
+    public TimetableeService(DataFromDB dataFromDb, ElementModuleRepo elementModuleRepo, TimetableRepo timetableRepo, ElementModuleService elementModuleService, UserServiceImpl userService, Map<DayOfWeek, Map<Period, String>> schedule) {
         this.dataFromDb = dataFromDb;
         this.elementModuleRepo = elementModuleRepo;
         this.timetableRepo = timetableRepo;
@@ -68,7 +68,7 @@ public class TimetableService {
     }
 
     public List<Map<String, List<ElementModule>>> generateEmplois() {
-        Logger logger = Logger.getLogger(TimetableService.class.getName());
+        Logger logger = Logger.getLogger(TimetableeService.class.getName());
         List<Map<String, List<ElementModule>>> emplois = new ArrayList<>();
         dataFromDb.loadDataFromDatabase();
         GAlgorithm algorithm = new GAlgorithm();

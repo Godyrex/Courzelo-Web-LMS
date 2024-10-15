@@ -13,6 +13,7 @@ import {AddProgramComponent} from './add-program/add-program.component';
 import {debounceTime} from 'rxjs/operators';
 import {EditProgramComponent} from './edit-program/edit-program.component';
 import {CourseService} from '../../../shared/services/institution/course.service';
+import {GenerateCalendarComponent} from "./generate-calendar/generate-calendar.component";
 
 @Component({
   selector: 'app-programs',
@@ -164,6 +165,13 @@ export class ProgramsComponent implements OnInit {
       }
     }, (reason) => {
       console.log('Err!', reason);
+    });
+  }
+  openGenerateCalendarModal(program: ProgramResponse) {
+    const modalRef = this.modalService.open(GenerateCalendarComponent, {backdrop: false});
+    modalRef.componentInstance.programResponse = program;
+    modalRef.componentInstance.close.subscribe(() => {
+        modalRef.close();
     });
   }
   viewModules(program: ProgramResponse): void {

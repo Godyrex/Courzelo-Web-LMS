@@ -341,36 +341,6 @@ public class InstitutionServiceImpl implements IInstitutionService {
     }
 
     @Override
-    public ResponseEntity<HttpStatus> generateExcel(String institutionID, List<CalendarEventRequest> events, Principal principal) {
-            Institution institution = institutionRepository.findById(institutionID).orElseThrow(()-> new InstitutionNotFoundException(INSTITUTION_NOT_FOUND));
-            try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-                calendarService.createCalendarSheet(workbook, events);
-                workbook.write(outputStream);
-                institution.setExcelFile(outputStream.toByteArray());
-                institutionRepository.save(institution);
-                return ResponseEntity.ok().build();
-            } catch (IOException e) {
-                e.printStackTrace();
-                throw new CalendarGenerationException("Error generating calendar");
-            }
-    }
-
-    @Override
-    public ResponseEntity<byte[]> downloadExcel(String institutionID, Principal principal) {
-            Institution institution = institutionRepository.findById(institutionID).orElseThrow(()-> new InstitutionNotFoundException(INSTITUTION_NOT_FOUND));
-            byte[] excelFile = institution.getExcelFile();
-            if (excelFile != null) {
-                HttpHeaders headers = new HttpHeaders();
-                headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=school-year-calendar.xlsx");
-                return ResponseEntity.ok()
-                        .headers(headers)
-                        .body(excelFile);
-            }else{
-                throw new InstitutionHasNoCalendarException("Institution has no calendar");
-            }
-    }
-
-    @Override
     public ResponseEntity<HttpStatus> uploadInstitutionImage(String institutionID, MultipartFile file, Principal principal) {
         try {
             Institution institution= institutionRepository.findById(institutionID).orElseThrow(()-> new InstitutionNotFoundException(INSTITUTION_NOT_FOUND));

@@ -140,64 +140,6 @@ export class HomeComponent implements OnInit {
         }
     );
   }
-    addCourse() {
-        this.loading = true;
-        if (this.createCourseForm.valid) {
-            this.course = this.createCourseForm.getRawValue();
-            this.courseService.addCourse(this.institutionID, this.course).subscribe(
-                response => {
-                    this.toastr.success('Course added successfully');
-                    this.createCourseForm.reset();
-                    this.loading = false;
-                    this.authenticationService.refreshPageInfo();
-                },
-                error => {
-                    if (error.error) {
-                        this.toastr.error(error.error);
-                    } else {
-                        this.toastr.error('Failed to add course');
-                    }
-                    this.loading = false;
-                }
-            );
-        } else {
-            console.log(this.createCourseForm.errors);
-            this.toastr.error('Please fill all fields correctly');
-            this.loading = false;
-        }
-    }
-    shouldShowError(controlName: string, errorName: string): boolean {
-        const control = this.createCourseForm.get(controlName);
-        return control && control.errors && control.errors[errorName] && (control.dirty || control.touched);
-    }
-    addCourseModel(content) {
-        this.modalService.open( content, { ariaLabelledBy: 'Create Course', backdrop: false })
-            .result.then((result) => {
-            console.log(result);
-        }, (reason) => {
-            console.log('Err!', reason);
-        });
-    }
-  downloadExcel() {
-    this.institutionService.downloadExcel(this.institutionID).subscribe(
-        response => {
-          const blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-          const url = window.URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = 'file.xlsx';
-          link.click();
-          window.URL.revokeObjectURL(url);
-        },
-        error => {
-            if (error.error) {
-                this.toastr.error(error.error);
-            } else {
-                this.toastr.error('Failed to download excel');
-            }
-        }
-    );
-  }
   initializeMap() {
       if (this.currentInstitution.latitude === 0 || this.currentInstitution.longitude === 0 ||
         this.currentInstitution.latitude === undefined || this.currentInstitution.longitude === undefined) {

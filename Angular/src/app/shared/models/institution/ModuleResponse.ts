@@ -8,6 +8,7 @@ export interface ModuleResponse {
     skills?: string[];
     semester?: string;
     duration?: string;
+    scoreToPass?: number;
     credit?: number;
     assessments?: AssessmentRequest[];
     institutionID?: string;

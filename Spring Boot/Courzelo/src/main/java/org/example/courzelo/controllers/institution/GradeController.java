@@ -3,12 +3,14 @@ package org.example.courzelo.controllers.institution;
 import lombok.AllArgsConstructor;
 import org.example.courzelo.dto.requests.GradeRequest;
 import org.example.courzelo.dto.responses.GradeResponse;
+import org.example.courzelo.dto.responses.MyGradesResponse;
 import org.example.courzelo.services.IGradeService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -18,14 +20,19 @@ import java.util.List;
 public class GradeController {
     private final IGradeService iGradeService;
     @GetMapping("/{groupID}")
-    @PreAuthorize("hasRole('ADMIN')&&@customAuthorization.canAccessGroup(#groupID)")
+    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')&&@customAuthorization.canAccessGroup(#groupID)")
     public ResponseEntity<List<GradeResponse>> getGrades(@PathVariable String groupID) {
         return iGradeService.getGradesByGroup(groupID);
     }
     @GetMapping("/{groupID}/{moduleID}")
-    @PreAuthorize("hasRole('ADMIN')&&@customAuthorization.canAccessGroup(#groupID)")
+    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')&&@customAuthorization.canAccessGroup(#groupID)")
     public ResponseEntity<List<GradeResponse>> getGrades(@PathVariable String groupID,@PathVariable String moduleID) {
         return iGradeService.getGradesByGroupAndModule(groupID,moduleID);
+    }
+    @GetMapping("/my")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<MyGradesResponse> getMyGradesByGroup(Principal principal) {
+        return iGradeService.getMyGradesByGroup(principal);
     }
     @PostMapping("/add")
     @PreAuthorize("hasRole('ADMIN')&&@customAuthorization.isAdminInInstitution()")
@@ -46,5 +53,10 @@ public class GradeController {
     @PreAuthorize("hasRole('ADMIN')&&@customAuthorization.canAccessGrade(#gradeID)")
     public ResponseEntity<HttpStatus> deleteGrade(@PathVariable String gradeID) {
         return iGradeService.deleteGrade(gradeID);
+    }
+    @PutMapping("/{gradeID}/update-validity")
+    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')&&@customAuthorization.canAccessGrade(#gradeID)")
+    public ResponseEntity<HttpStatus> updateGradeValidity(@PathVariable String gradeID) {
+        return iGradeService.updateGradeValidity(gradeID);
     }
 }

@@ -5,4 +5,5 @@ export interface ProgramResponse {
     credits?: number;
     duration?: string;
     institutionID?: string;
+    hasCalendar?: boolean;
 }

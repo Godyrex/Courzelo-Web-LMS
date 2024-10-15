@@ -2,6 +2,9 @@ package org.example.courzelo.serviceImpls;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.example.courzelo.dto.requests.institution.CalendarEventRequest;
 import org.example.courzelo.dto.requests.program.ProgramRequest;
 import org.example.courzelo.dto.responses.program.PaginatedProgramsResponse;
 import org.example.courzelo.dto.responses.program.ProgramResponse;
@@ -10,20 +13,21 @@ import org.example.courzelo.exceptions.*;
 import org.example.courzelo.models.User;
 import org.example.courzelo.models.institution.Group;
 import org.example.courzelo.models.institution.Institution;
+import org.example.courzelo.models.institution.Module;
 import org.example.courzelo.models.institution.Program;
-import org.example.courzelo.repositories.GroupRepository;
-import org.example.courzelo.repositories.InstitutionRepository;
-import org.example.courzelo.repositories.ProgramRepository;
-import org.example.courzelo.repositories.UserRepository;
+import org.example.courzelo.repositories.*;
 import org.example.courzelo.services.IModuleService;
 import org.example.courzelo.services.IProgramService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +42,9 @@ public class ProgramService implements IProgramService {
     private final InstitutionRepository institutionRepository;
     private final GroupServiceImpl groupService;
     private final GroupRepository groupRepository;
+    private final CalendarService calendarService;
+    private final ModuleRepository moduleRepository;
+
     @Override
     public ResponseEntity<HttpStatus> createProgram(ProgramRequest programRequest, Principal principal) {
         if(programRequest.getName() == null || programRequest.getDescription() == null) {
@@ -111,6 +118,7 @@ public class ProgramService implements IProgramService {
                                 .institutionID(program.getInstitutionID())
                                 .credits(program.getCredits())
                                 .duration(program.getDuration())
+                                .hasCalendar(program.getExcelFile() != null)
                                 .build()
                 ).toList()
                 )
@@ -131,6 +139,7 @@ public class ProgramService implements IProgramService {
                 .institutionID(program.getInstitutionID())
                 .credits(program.getCredits())
                 .duration(program.getDuration())
+                .hasCalendar(program.getExcelFile() != null)
                 .build();
         return new ResponseEntity<>(programResponse, HttpStatus.OK);
     }
@@ -209,7 +218,46 @@ public class ProgramService implements IProgramService {
                 .institutionID(program.getInstitutionID())
                 .credits(program.getCredits())
                 .duration(program.getDuration())
+                .hasCalendar(program.getExcelFile() != null)
                 .build();
         return new ResponseEntity<>(programResponse, HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<HttpStatus> generateExcel(String programID, List<CalendarEventRequest> events, Principal principal) {
+        Program program = programRepository.findById(programID).orElseThrow(() -> new ProgramNotFoundException("Program not found"));
+        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            calendarService.createCalendarSheet(workbook, events);
+            workbook.write(outputStream);
+            program.setExcelFile(outputStream.toByteArray());
+            programRepository.save(program);
+            return ResponseEntity.ok().build();
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new CalendarGenerationException("Error generating calendar");
+        }
+    }
+
+    @Override
+    public ResponseEntity<byte[]> downloadExcel(String programID, Principal principal) {
+        Program program = programRepository.findById(programID).orElseThrow(() -> new ProgramNotFoundException("Program not found"));
+        byte[] excelFile = program.getExcelFile();
+        if (excelFile != null) {
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="+program.getName() +"-calendar.xlsx");
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(excelFile);
+        }else{
+            throw new ProgramHasNoCalendarException("Program has no calendar");
+        }
+    }
+
+    @Override
+    public ResponseEntity<Integer> getProgramModuleCreditsSum(String id) {
+        List<Module> modules = moduleRepository.findCreditsByProgram(id).orElseThrow(() -> new ModuleNotFoundException("No modules found"));
+        int sum = modules.stream().mapToInt(Module::getCredit).sum();
+        log.info("Sum: " + sum);
+        return new ResponseEntity<>(sum, HttpStatus.OK);
     }
 }

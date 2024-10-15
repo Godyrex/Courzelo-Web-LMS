@@ -15,5 +15,6 @@ import java.util.Optional;
 public interface GroupRepository extends MongoRepository<Group,String> {
     Page<Group> findByInstitutionID(String institutionID, Pageable pageable);
     Page<Group> findByInstitutionIDAndNameContainingIgnoreCase(String institutionID, String keyword, Pageable pageable);
+    Optional<List<Group>> findByInstitutionID(String institutionID);
     Optional<List<Group>> findByProgram(String program);
 }

@@ -33,9 +33,6 @@ public interface IInstitutionService {
 
     ResponseEntity<HttpStatus> setInstitutionMap(String institutionID, InstitutionMapRequest institutionMapRequest, Principal principal);
 
-    ResponseEntity<HttpStatus> generateExcel(String institutionID, List<CalendarEventRequest> events, Principal principal);
-
-    ResponseEntity<byte[]> downloadExcel(String institutionID, Principal principal);
 
     ResponseEntity<HttpStatus> uploadInstitutionImage(String institutionID, MultipartFile file, Principal principal);
 

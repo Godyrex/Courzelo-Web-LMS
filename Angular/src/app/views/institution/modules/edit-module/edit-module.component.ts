@@ -31,6 +31,7 @@ export class EditModuleComponent implements OnInit {
       skills: [this.module.skills],
       duration: [this.module.duration, Validators.required],
       credit: [this.module.credit, Validators.required],
+      scoreToPass: [this.module.scoreToPass, Validators.required],
       semester: [
         this.module.semester === 'FIRST_SEMESTER'
             ? 'FIRST_SEMESTER'

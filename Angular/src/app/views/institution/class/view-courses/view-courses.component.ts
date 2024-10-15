@@ -9,7 +9,7 @@ import {GroupService} from '../../../../shared/services/institution/group.servic
 import {ViewStudentsComponent} from '../../../../shared/components/view-students/view-students.component';
 import {AssignTeacherComponent} from './assign-teacher/assign-teacher.component';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
-import {StudentGradesComponent} from './student-grades/student-grades.component';
+import {StudentGradesComponent} from '../../../../shared/components/student-grades/student-grades.component';
 
 @Component({
   selector: 'app-view-courses',
@@ -137,6 +137,7 @@ export class ViewCoursesComponent implements OnInit {
         const modalRef = this.modalService.open(StudentGradesComponent, {size : 'lg', backdrop: false});
         modalRef.componentInstance.groupResponse = this.group;
         modalRef.componentInstance.moduleResponse = moduleResponse;
+        modalRef.componentInstance.mode = 'admin';
         modalRef.componentInstance.close.subscribe(() => {
             modalRef.close();
         });

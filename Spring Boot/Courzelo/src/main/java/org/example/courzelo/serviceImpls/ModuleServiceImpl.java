@@ -46,6 +46,7 @@ public class ModuleServiceImpl implements IModuleService {
                 .program(moduleRequest.getProgram())
                 .semester(moduleRequest.getSemester() != null  ? Semester.valueOf(moduleRequest.getSemester()) : null)
                 .skills(moduleRequest.getSkills())
+                .ScoreToPass(moduleRequest.getScoreToPass())
                 .duration(moduleRequest.getDuration())
                 .credit(moduleRequest.getCredit())
                 .institutionID(program.getInstitutionID())
@@ -68,6 +69,7 @@ public class ModuleServiceImpl implements IModuleService {
         module.setName(moduleRequest.getName());
         module.setSemester(moduleRequest.getSemester() != null ? Semester.valueOf(moduleRequest.getSemester()) : null);
         module.setSkills(moduleRequest.getSkills());
+        module.setScoreToPass(moduleRequest.getScoreToPass() != null ? moduleRequest.getScoreToPass() : 0.0);
         module.setDuration(moduleRequest.getDuration());
         module.setDescription(moduleRequest.getDescription());
         module.setCredit(moduleRequest.getCredit());
@@ -109,6 +111,7 @@ public class ModuleServiceImpl implements IModuleService {
                                 .description(module.getDescription())
                                 .semester(module.getSemester()!=null?module.getSemester().name():null)
                                 .assessments(module.getAssessments())
+                                .scoreToPass(module.getScoreToPass())
                                 .skills(module.getSkills())
                                 .duration(module.getDuration())
                                 .credit(module.getCredit())
@@ -132,6 +135,7 @@ public class ModuleServiceImpl implements IModuleService {
                 .semester(module.getSemester()!=null?module.getSemester().name():null)
                 .skills(module.getSkills())
                 .assessments(module.getAssessments())
+                .scoreToPass(module.getScoreToPass())
                 .duration(module.getDuration())
                 .credit(module.getCredit())
                 .program(module.getProgram())

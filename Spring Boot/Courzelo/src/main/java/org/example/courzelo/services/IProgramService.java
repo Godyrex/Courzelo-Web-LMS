@@ -1,5 +1,6 @@
 package org.example.courzelo.services;
 
+import org.example.courzelo.dto.requests.institution.CalendarEventRequest;
 import org.example.courzelo.dto.requests.program.ProgramRequest;
 import org.example.courzelo.dto.responses.program.PaginatedProgramsResponse;
 import org.example.courzelo.dto.responses.program.ProgramResponse;
@@ -25,4 +26,9 @@ public interface IProgramService {
     ResponseEntity<List<SimplifiedProgramResponse>> getSimplifiedProgramsByInstitution(String institutionID);
 
     ResponseEntity<ProgramResponse> getMyProgram(Principal principal);
+    ResponseEntity<HttpStatus> generateExcel(String programID, List<CalendarEventRequest> events, Principal principal);
+
+    ResponseEntity<byte[]> downloadExcel(String programID, Principal principal);
+
+    ResponseEntity<Integer> getProgramModuleCreditsSum(String id);
 }

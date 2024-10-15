@@ -1,6 +1,8 @@
 package org.example.courzelo.controllers.institution;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import org.example.courzelo.dto.requests.institution.CalendarEventRequest;
 import org.example.courzelo.dto.requests.program.ProgramRequest;
 import org.example.courzelo.dto.responses.program.PaginatedProgramsResponse;
 import org.example.courzelo.dto.responses.program.ProgramResponse;
@@ -43,7 +45,7 @@ public class ProgramController {
         return programService.getProgramsByInstitution(page, sizePerPage, institutionID, keyword);
     }
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN')&&@customAuthorization.canAccessProgram(#id)")
+    @PreAuthorize("hasAnyRole('ADMIN','TEACHER','STUDENT')&&@customAuthorization.canAccessProgram(#id)")
     public ResponseEntity<ProgramResponse> getProgram(@PathVariable String id){
         return programService.getProgramById(id);
     }
@@ -60,5 +62,20 @@ public class ProgramController {
     @PreAuthorize("hasAnyRole('ADMIN')&&@customAuthorization.isAdminInInstitution()")
     public ResponseEntity<List<SimplifiedProgramResponse>> getSimplifiedPrograms(@RequestParam String institutionID){
         return programService.getSimplifiedProgramsByInstitution(institutionID);
+    }
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')&&@customAuthorization.canAccessProgram(#programID)")
+    @PostMapping("/{programID}/generate-excel")
+    public ResponseEntity<HttpStatus> generateExcel(@PathVariable @NotNull String programID, @RequestBody List<CalendarEventRequest> events, Principal principal) {
+        return programService.generateExcel(programID,events,principal);
+    }
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/{programID}/download-excel")
+    public ResponseEntity<byte[]> downloadExcel(@PathVariable @NotNull String programID,Principal principal) {
+        return programService.downloadExcel(programID,principal);
+    }
+    @GetMapping("/{id}/module-credits-sum")
+    @PreAuthorize("hasAnyRole('ADMIN')&&@customAuthorization.canAccessProgram(#id)")
+    public ResponseEntity<Integer> getProgramModuleCreditsSum(@PathVariable String id){
+        return programService.getProgramModuleCreditsSum(id);
     }
 }

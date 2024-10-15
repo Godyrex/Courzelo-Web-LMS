@@ -114,12 +114,6 @@ export class InstitutionService {
   clearSemester(institutionID: string) {
     return this.http.put(`${this.baseUrl}/${institutionID}/clear-semester`, null);
   }
-  generateExcel(institutionID: string, generation: CalendarEventRequest[]) {
-    return this.http.post(`${this.baseUrl}/${institutionID}/generate-excel`, generation);
-  }
-  downloadExcel(institutionID: string) {
-    return this.http.get(`${this.baseUrl}/${institutionID}/download-excel`, { responseType: 'blob' });
-  }
   uploadImage(institutionID: string, image: File) {
     const formData = new FormData();
     formData.append('file', image);
@@ -139,4 +133,7 @@ export class InstitutionService {
     acceptInvite(code: string) {
         return this.http.put(`${this.baseUrl}/accept_invite/${code}`, null);
     }
+  generateTimetable(institutionID: string) {
+    return this.http.post(`${this.baseUrl}/${institutionID}/generate-timetable`, null);
+  }
 }

@@ -10,8 +10,7 @@ import org.example.courzelo.dto.Timetable.TimetableDTO;
 import org.example.courzelo.models.Timetable.ElementModule;
 import org.example.courzelo.repositories.Timetable.ElementModuleRepo;
 import org.example.courzelo.services.Timetable.PdfExportService;
-import org.example.courzelo.services.Timetable.TimetableService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.example.courzelo.services.Timetable.TimetableeService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +26,7 @@ import java.util.Map;
 @RequestMapping(value = "/api/TimeTable", produces = MediaType.APPLICATION_JSON_VALUE)
 @AllArgsConstructor
 public class TimetableController {
-    private final TimetableService timeTableService;
+    private final TimetableeService timeTableService;
     private final ElementModuleRepo elementModuleRepo;
     private final PdfExportService pdfExportService;
 

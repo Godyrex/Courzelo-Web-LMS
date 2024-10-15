@@ -31,6 +31,7 @@ export class AddModuleComponent {
       skills: [[]],
       duration: ['', Validators.required],
       credit: [0, Validators.required],
+      scoreToPass: [0, Validators.required],
       semester: [null],
     });
   }

@@ -3,6 +3,7 @@ import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {GradeResponse} from '../../models/institution/GradeResponse';
 import {GradeRequest} from '../../models/institution/GradeRequest';
+import {MyGradesResponse} from "../../models/institution/MyGradesResponse";
 
 @Injectable({
   providedIn: 'root'
@@ -14,6 +15,12 @@ export class GradeService {
 
   getGradesByGroup(groupID: string): Observable<GradeResponse[]> {
     return this.http.get<GradeResponse[]>(`${this.baseUrl}/${groupID}`);
+  }
+  getMyGradesByGroup(): Observable<MyGradesResponse> {
+    return this.http.get<MyGradesResponse>(`${this.baseUrl}/my`);
+  }
+  updateGradeValidity(groupID: string)  {
+    return this.http.put(`${this.baseUrl}/${groupID}/update-validity`, null);
   }
   getGradesByGroupAndModule(groupID: string, moduleID: string): Observable<GradeResponse[]> {
     return this.http.get<GradeResponse[]>(`${this.baseUrl}/${groupID}/${moduleID}`);

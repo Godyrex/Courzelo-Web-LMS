@@ -17,6 +17,7 @@ public class ModuleRequest {
     private String description;
     private String duration;
     private String semester;
+    private Double scoreToPass;
     private List<String> skills;
     private int credit;
     private String program;

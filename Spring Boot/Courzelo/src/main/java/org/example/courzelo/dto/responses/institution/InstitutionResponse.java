@@ -32,6 +32,5 @@ public class InstitutionResponse {
         this.longitude = institution.getLongitude();
         this.firstSemesterStart = institution.getFirstSemesterStart();
         this.secondSemesterStart = institution.getSecondSemesterStart();
-        this.hasCalendar = institution.getExcelFile() != null;
     }
 }

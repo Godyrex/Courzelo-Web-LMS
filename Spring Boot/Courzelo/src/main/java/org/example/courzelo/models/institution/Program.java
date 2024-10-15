@@ -18,6 +18,7 @@ public class Program {
     private Integer credits;
     private String duration;
     private String institutionID;
+    private byte[] excelFile;
     private List<String> modules;
     private List<String> groups;
 }

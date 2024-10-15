@@ -2,9 +2,11 @@ package org.example.courzelo.services;
 
 import org.example.courzelo.dto.requests.GradeRequest;
 import org.example.courzelo.dto.responses.GradeResponse;
+import org.example.courzelo.dto.responses.MyGradesResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.security.Principal;
 import java.util.List;
 
 public interface IGradeService {
@@ -16,4 +18,8 @@ public interface IGradeService {
     ResponseEntity<List<GradeResponse>> getGradesByGroupAndModule(String groupID, String moduleID);
 
     ResponseEntity<HttpStatus> createGrades(List<GradeRequest> gradeRequests);
+
+    ResponseEntity<HttpStatus> updateGradeValidity(String gradeID);
+
+    ResponseEntity<MyGradesResponse> getMyGradesByGroup(Principal principal);
 }

@@ -10,11 +10,14 @@ import { SharedDirectivesModule } from '../directives/shared-directives.module';
 import { PerfectScrollbarModule } from 'ngx-perfect-scrollbar';
 import { LayoutsModule } from './layouts/layouts.module';
 import {ViewStudentsComponent} from './view-students/view-students.component';
+import {StudentGradesComponent} from './student-grades/student-grades.component';
+import {FormsModule} from '@angular/forms';
 
 const components = [
   BtnLoadingComponent,
   FeatherIconComponent,
-    ViewStudentsComponent
+    ViewStudentsComponent,
+    StudentGradesComponent
 ];
 
 @NgModule({
@@ -26,6 +29,7 @@ const components = [
     SharedDirectivesModule,
     SearchModule,
     PerfectScrollbarModule,
+    FormsModule,
     NgbModule
   ],
   declarations: components,

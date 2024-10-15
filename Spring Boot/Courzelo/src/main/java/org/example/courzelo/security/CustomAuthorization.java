@@ -77,7 +77,7 @@ public class CustomAuthorization {
         String userEmail = authentication.getName();
         User user = userRepository.findUserByEmail(userEmail);
         Group group = groupRepository.findById(groupID).orElseThrow(() -> new GroupNotFoundException("Group not found"));
-        return user.getEducation().getInstitutionID().equals(group.getInstitutionID());
+        return user.getEducation().getInstitutionID().equals(group.getInstitutionID()) || group.getStudents().contains(userEmail);
     }
     public boolean canAccessGrade(String gradeID) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

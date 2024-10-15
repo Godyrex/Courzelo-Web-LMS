@@ -16,5 +16,6 @@ public class Grade {
     private String institutionID;
     private String groupID;
     private String studentEmail;
-    private double grade;
+    private Double grade;
+    private boolean valid;
 }

@@ -12,6 +12,7 @@ import org.example.courzelo.dto.requests.institution.SemesterRequest;
 import org.example.courzelo.dto.responses.GroupResponse;
 import org.example.courzelo.dto.responses.StatusMessageResponse;
 import org.example.courzelo.dto.responses.institution.*;
+import org.example.courzelo.serviceImpls.TimetableGenerationService;
 import org.example.courzelo.services.IInstitutionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +30,7 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600, allowedHeaders = "*", allowCredentials = "true")
 public class InstitutionController {
     private final IInstitutionService iInstitutionService;
+    private final TimetableGenerationService timetableGenerationService;
     @GetMapping("/all")
     public ResponseEntity<PaginatedInstitutionsResponse> getInstitutions(@RequestParam(defaultValue = "0") int page,
                                                                          @RequestParam(defaultValue = "10") int sizePerPage,
@@ -150,16 +152,6 @@ public class InstitutionController {
                                                              Principal principal) {
         return iInstitutionService.clearSemester(institutionID, principal);
     }
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')&&@customAuthorization.canAccessInstitution(#institutionID)")
-    @PostMapping("/{institutionID}/generate-excel")
-    public ResponseEntity<HttpStatus> generateExcel(@PathVariable @NotNull String institutionID, @RequestBody List<CalendarEventRequest> events, Principal principal) {
-        return iInstitutionService.generateExcel(institutionID,events,principal);
-    }
-    @PreAuthorize("isAuthenticated()")
-    @GetMapping("/{institutionID}/download-excel")
-    public ResponseEntity<byte[]> downloadExcel(@PathVariable @NotNull String institutionID,Principal principal) {
-        return iInstitutionService.downloadExcel(institutionID,principal);
-    }
     @PostMapping("/{institutionID}/image")
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')&&@customAuthorization.canAccessInstitution(#institutionID)")
     public ResponseEntity<HttpStatus> uploadInstitutionImage(@PathVariable @NotNull String institutionID,
@@ -170,5 +162,10 @@ public class InstitutionController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<byte[]> getProfileImage(@PathVariable @NotNull String institutionID,Principal principal) {
         return iInstitutionService.getInstitutionImage(institutionID,principal);
+    }
+    @PostMapping("/{institutionID}/generate-timetable")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')&&@customAuthorization.canAccessInstitution(#institutionID)")
+    public ResponseEntity<HttpStatus> generateTimetable(@PathVariable @NotNull String institutionID) {
+        return timetableGenerationService.generateWeeklyTimetable(institutionID);
     }
 }

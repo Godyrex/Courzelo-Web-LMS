@@ -6,12 +6,16 @@ import {ToastrService} from 'ngx-toastr';
 import {CourseResponse} from '../../../shared/models/institution/CourseResponse';
 import {ModuleService} from '../../../shared/services/institution/module.service';
 import { UserService } from 'src/app/shared/services/user/user.service';
-import {DomSanitizer} from '@angular/platform-browser';
+import {DomSanitizer, SafeUrl} from '@angular/platform-browser';
 import {ProgramResponse} from '../../../shared/models/institution/ProgramResponse';
 import {GroupService} from '../../../shared/services/institution/group.service';
 import {GroupResponse} from '../../../shared/models/institution/GroupResponse';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {ViewStudentsComponent} from '../../../shared/components/view-students/view-students.component';
+import {StudentGradesComponent} from '../../../shared/components/student-grades/student-grades.component';
+import {MyGradesComponent} from './my-grades/my-grades.component';
+import {InstitutionService} from '../../../shared/services/institution/institution.service';
+import {InstitutionResponse} from '../../../shared/models/institution/InstitutionResponse';
 
 @Component({
   selector: 'app-home-dashboard',
@@ -24,6 +28,7 @@ export class HomeDashboardComponent implements OnInit {
       private courseService: CourseService,
       private programService: ProgramService,
       private groupService: GroupService,
+      private institutionService: InstitutionService,
       private moduleService: ModuleService,
       private toastr: ToastrService,
       private userService: UserService,
@@ -34,6 +39,8 @@ export class HomeDashboardComponent implements OnInit {
   currentUser = this.sessionstorage.getUserFromSession();
   myProgram: ProgramResponse;
   myGroup: GroupResponse;
+  myInstitution: InstitutionResponse;
+  sanitizedWebsiteUrl: SafeUrl;
   loading = false;
   courses: CourseResponse[] = [];
   student = { program: 'Bachelor in Computer Science', group: 'Group A', advisor: 'Dr. Emily White' };
@@ -43,6 +50,22 @@ export class HomeDashboardComponent implements OnInit {
       this.fetchCourses();
       this.fetchProgram();
       this.fetchGroup();
+      this.fetchInstitution();
+  }
+  openStudentsGradesModal(groupID: string, moduleID: string) {
+    const modalRef = this.modalService.open(StudentGradesComponent, {size : 'lg', backdrop: false});
+    modalRef.componentInstance.groupID = groupID;
+    modalRef.componentInstance.moduleID = moduleID;
+    modalRef.componentInstance.mode = 'teacher';
+    modalRef.componentInstance.close.subscribe(() => {
+      modalRef.close();
+    });
+  }
+  openMyGradesModal() {
+    const modalRef = this.modalService.open(MyGradesComponent, {size : 'lg', backdrop: false});
+    modalRef.componentInstance.close.subscribe(() => {
+      modalRef.close();
+    });
   }
   fetchCourses(): void {
     this.loading = true;
@@ -78,10 +101,36 @@ export class HomeDashboardComponent implements OnInit {
         this.myProgram = program;
     });
   }
+  fetchInstitution(): void {
+    this.institutionService.getInstitutionByID(this.currentUser?.education?.institutionID).subscribe((institution) => {
+      this.myInstitution = institution;
+      this.sanitizedWebsiteUrl = this.sanitizer.bypassSecurityTrustUrl(institution.website);
+    });
+  }
   fetchGroup(): void {
     this.groupService.getMyGroup().subscribe((group) => {
         this.myGroup = group;
     });
+  }
+  downloadExcel() {
+    this.programService.downloadExcel(this.myProgram.id).subscribe(
+        response => {
+          const blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = this.myProgram.name + '.xlsx';
+          link.click();
+          window.URL.revokeObjectURL(url);
+        },
+        error => {
+          if (error.error) {
+            this.toastr.error(error.error, 'Error');
+          } else {
+            this.toastr.error('An error occurred', 'Error');
+          }
+        }
+    );
   }
   openViewStudentsModal(group: GroupResponse) {
     const modalRef = this.modalService.open(ViewStudentsComponent, { size : 'lg' , backdrop: false});

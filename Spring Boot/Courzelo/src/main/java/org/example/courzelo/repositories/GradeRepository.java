@@ -12,4 +12,6 @@ public interface GradeRepository extends MongoRepository<Grade, String> {
     Optional<List<Grade>> findAllByGroupID(String groupID);
     Optional<List<Grade>> findAllByGroupIDAndModuleID(String groupID, String moduleID);
     Optional<Grade> findByNameAndModuleIDAndStudentEmail(String name, String moduleID, String studentEmail);
+    Optional<List<Grade>> findByModuleIDAndStudentEmail( String moduleID, String studentEmail);
+    Optional<List<Grade>> findByStudentEmailAndGroupID(String email,String groupID);
 }

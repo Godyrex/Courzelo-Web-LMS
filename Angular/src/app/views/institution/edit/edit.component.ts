@@ -132,6 +132,19 @@ if (this.pageTemplate)  {
             console.error('Map container not found');
         }
     }
+    generateTimetable() {
+      this.institutionService.generateTimetable(this.institutionID).subscribe(
+            response => {
+                this.toastr.success('Timetable generated successfully.');
+            }, error => {
+                if (error.error) {
+                    this.toastr.error(error.error);
+                } else {
+                    this.toastr.error('Error generating timetable.');
+                }
+            }
+        );
+    }
     clearSemester() {
         this.institutionService.clearSemester(this.institutionID).subscribe(
             response => {
@@ -173,23 +186,6 @@ if (this.pageTemplate)  {
             this.toastr.error('Please fill all fields');
         }
     }
-    downloadExcel() {
-        this.institutionService.downloadExcel(this.institutionID).subscribe(
-            response => {
-                const blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-                const url = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = 'file.xlsx';
-                link.click();
-                window.URL.revokeObjectURL(url);
-            },
-            error => {
-                console.log('error downloading');
-                this.toastr.error('Error downloading Excel.');
-            }
-        );
-    }
     returnEvent(form: FormGroup): CalendarEventRequest {
         return Object.assign(this.generationEvent, form.value, {color: form.controls['color'].value});
     }
@@ -216,47 +212,6 @@ if (this.pageTemplate)  {
         }
 
         return null;
-    }
-    deleteEvent(index: number) {
-        this.generationEventList.splice(index, 1);
-        this.toastr.success('Event deleted successfully.');
-    }
-    addEvent() {
-        if (this.generateForm.valid) {
-            const newEvent = this.returnEvent(this.generateForm);
-            newEvent.startDate = new Date(this.generateForm.controls['startDate'].value.year,
-                this.generateForm.controls['startDate'].value.month - 1,
-                this.generateForm.controls['startDate'].value.day);
-            newEvent.finishDate = new Date(this.generateForm.controls['finishDate'].value.year,
-                this.generateForm.controls['finishDate'].value.month - 1,
-                this.generateForm.controls['finishDate'].value.day);
-            console.log('New Event', newEvent);
-            for (const event of this.generationEventList) {
-                console.log('Event', event);
-                if (this.isOverlapping(newEvent, event)) {
-                    console.log('Event overlaps with an existing event.');
-                    this.toastr.error('Event overlaps with an existing event.');
-                    return;
-                }
-            }
-            const clonedEvent = JSON.parse(JSON.stringify(newEvent));
-            this.generationEventList.push(clonedEvent);
-            this.toastr.success('Event added successfully.');
-        } else {
-            this.toastr.error('Form is not valid.');
-        }
-    }
-    generateExcel() {
-        console.log('Events being generated : ' + this.generationEventList);
-        this.institutionService.generateExcel(this.institutionID, this.generationEventList).subscribe(
-            response => {
-                console.log('success generating');
-                this.toastr.success('Excel generated successfully.');
-            }, error => {
-                console.log('error generating');
-                this.toastr.error('Error generating Excel.');
-            }
-        );
     }
   updateInstitution(id: string) {
     if (this.updateInstitutionForm.valid) {

@@ -16,6 +16,7 @@ public class Module {
     private String name;
     private String description;
     private String duration;
+    private Double ScoreToPass;
     private List<String> skills;
     private Semester semester;
     private int credit;

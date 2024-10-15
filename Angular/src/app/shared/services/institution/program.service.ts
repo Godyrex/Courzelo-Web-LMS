@@ -5,6 +5,7 @@ import {ProgramRequest} from '../../models/institution/ProgramRequest';
 import {PaginatedProgramsResponse} from '../../models/institution/PaginatedProgramsResponse';
 import {ProgramResponse} from '../../models/institution/ProgramResponse';
 import {SimplifiedProgramResponse} from '../../models/institution/SimplifiedProgramResponse';
+import {CalendarEventRequest} from "../../models/institution/CalendarEventRequest";
 
 
 @Injectable({
@@ -45,10 +46,19 @@ export class ProgramService {
   getProgram(id: string): Observable<ProgramResponse> {
     return this.http.get<ProgramResponse>(`${this.baseUrl}/${id}`);
   }
+  getProgramModuleCreditsSum(id: string): Observable<number> {
+    return this.http.get<number>(`${this.baseUrl}/${id}/module-credits-sum`);
+  }
   getMyProgram(): Observable<ProgramResponse> {
     return this.http.get<ProgramResponse>(`${this.baseUrl}/myProgram`);
   }
   getSimplifiedProgram(id: string): Observable<SimplifiedProgramResponse> {
     return this.http.get<SimplifiedProgramResponse>(`${this.baseUrl}/simplified/${id}`);
+  }
+  generateExcel(programID: string, generation: CalendarEventRequest[]) {
+    return this.http.post(`${this.baseUrl}/${programID}/generate-excel`, generation);
+  }
+  downloadExcel(programID: string) {
+    return this.http.get(`${this.baseUrl}/${programID}/download-excel`, { responseType: 'blob' });
   }
 }

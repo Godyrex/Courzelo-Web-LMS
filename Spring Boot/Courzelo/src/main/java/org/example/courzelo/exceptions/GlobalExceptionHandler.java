@@ -34,8 +34,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleUserNotFoundException(UserNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
-    @ExceptionHandler(InstitutionHasNoCalendarException.class)
-    public ResponseEntity<String> handleInstitutionHasNoCalendarException(InstitutionHasNoCalendarException ex) {
+    @ExceptionHandler(ProgramHasNoCalendarException.class)
+    public ResponseEntity<String> handleProgramHasNoCalendarException(ProgramHasNoCalendarException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
     @ExceptionHandler(UserNotPartOfInstitutionException.class)
