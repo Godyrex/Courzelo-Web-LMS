@@ -5,6 +5,7 @@ export interface ModuleRequest {
     semester: string;
     scoreToPass: number;
     duration: string;
+    isFinished: boolean;
     credit: number;
     program: string;
 }

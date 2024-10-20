@@ -7,13 +7,15 @@ import {StatusMessageResponse} from '../../models/user/StatusMessageResponse';
 import {InstitutionResponse} from '../../models/institution/InstitutionResponse';
 import {PaginatedInstitutionUsersResponse} from '../../models/institution/PaginatedInstitutionUsersResponse';
 import {InstitutionMapRequest} from '../../models/institution/InstitutionMapRequest';
-import {CalendarEventRequest} from '../../models/institution/CalendarEventRequest';
 import {map} from 'rxjs/operators';
 import {GroupResponse} from '../../models/institution/GroupResponse';
 import {UserEmailsRequest} from '../../models/institution/UserEmailsRequest';
 import {InvitationsResultResponse} from '../../models/institution/InvitationsResultResponse';
 import {SemesterRequest} from '../../models/institution/SemesterRequest';
 import {TeacherResponse} from '../../models/institution/TeacherResponse';
+import {Timeslot, TimetableResponse} from '../../models/institution/TimetableResponse';
+import {InstitutionTimeSlot} from "../../models/institution/InstitutionTimeSlot";
+import {InstitutionTimeSlotConfiguration} from "../../models/institution/InstitutionTimeSlotConfiguration";
 
 @Injectable({
   providedIn: 'root'
@@ -135,5 +137,17 @@ export class InstitutionService {
     }
   generateTimetable(institutionID: string) {
     return this.http.post(`${this.baseUrl}/${institutionID}/generate-timetable`, null);
+  }
+  getTimetable(institutionID: string) {
+    return this.http.get<TimetableResponse>(`${this.baseUrl}/${institutionID}/timetable`);
+  }
+  updateTeacherDisponibility( teacherEmail: string, disponibilitySlots: InstitutionTimeSlot[]) {
+    return this.http.put(`${this.baseUrl}/${teacherEmail}/update-teacher-disponibility`, disponibilitySlots);
+  }
+  updateInstitutionTimeSlots(institutionID: string, timeSlots: InstitutionTimeSlotConfiguration) {
+    return this.http.put(`${this.baseUrl}/${institutionID}/update-timeslots`, timeSlots);
+  }
+  getInstitutionTimeSlots(institutionID: string): Observable<InstitutionTimeSlotConfiguration> {
+    return this.http.get<InstitutionTimeSlotConfiguration>(`${this.baseUrl}/${institutionID}/timeslots`);
   }
 }

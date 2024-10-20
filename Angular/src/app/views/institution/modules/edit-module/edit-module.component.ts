@@ -5,6 +5,7 @@ import {ToastrService} from 'ngx-toastr';
 import {ModuleResponse} from '../../../../shared/models/institution/ModuleResponse';
 import {ModuleService} from '../../../../shared/services/institution/module.service';
 import {InstitutionResponse} from '../../../../shared/models/institution/InstitutionResponse';
+import {ModuleRequest} from "../../../../shared/models/institution/ModuleRequest";
 
 @Component({
   selector: 'app-edit-module',
@@ -39,13 +40,16 @@ export class EditModuleComponent implements OnInit {
                 ? 'SECOND_SEMESTER'
                 : null
       ],
+      isFinished: [this.module.isFinished || false]
     });
   }
 
   onSubmit() {
     if (this.editModuleForm.valid) {
       console.log(this.editModuleForm.value);
-      this.moduleService.updateModule(this.module.id, this.editModuleForm.value).subscribe(
+      const moduleRequest: ModuleRequest = this.editModuleForm.value;
+      console.log(moduleRequest);
+      this.moduleService.updateModule(this.module.id, moduleRequest).subscribe(
           () => {
             this.toastr.success('Module updated successfully');
             this.moduleUpdated.emit({ ...this.module, ...this.editModuleForm.value });

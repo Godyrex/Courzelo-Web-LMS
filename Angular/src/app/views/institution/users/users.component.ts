@@ -10,6 +10,7 @@ import {ToastrService} from 'ngx-toastr';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {ActivatedRoute} from '@angular/router';
 import {UserEmailsRequest} from '../../../shared/models/institution/UserEmailsRequest';
+import {TeacherTimeslotsComponent} from './teacher-timeslots/teacher-timeslots.component';
 
 @Component({
   selector: 'app-users',
@@ -160,6 +161,23 @@ export class UsersComponent implements OnInit {
         }
     );
   }
+    openTeacherTimeslotsModal(teacher: InstitutionUserResponse) {
+        const modalRef = this.modalService.open(TeacherTimeslotsComponent, { backdrop: false });
+        modalRef.componentInstance.teacher = teacher;
+        modalRef.componentInstance.institutionID = this.institutionID;
+        modalRef.componentInstance.slotsUpdated.subscribe((slots) => {
+            teacher.disponibilitySlots = slots;
+            modalRef.close();
+        }, error => {
+                if (error.error) {
+                    this.toastr.error(error.error);
+                } else {
+                    this.toastr.error('An error occurred while updating teacher disponibility');
+                }
+                modalRef.close();
+            }
+        );
+    }
   removeInstitutionUser(user: InstitutionUserResponse) {
     this.loadingUsers = true;
     this.institutionService.removeInstitutionUser(this.institutionID, user.email).subscribe(

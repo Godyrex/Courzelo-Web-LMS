@@ -12,12 +12,14 @@ import { LayoutsModule } from './layouts/layouts.module';
 import {ViewStudentsComponent} from './view-students/view-students.component';
 import {StudentGradesComponent} from './student-grades/student-grades.component';
 import {FormsModule} from '@angular/forms';
+import {ViewTimetableComponent} from './view-timetable/view-timetable.component';
 
 const components = [
   BtnLoadingComponent,
   FeatherIconComponent,
     ViewStudentsComponent,
-    StudentGradesComponent
+    StudentGradesComponent,
+    ViewTimetableComponent
 ];
 
 @NgModule({

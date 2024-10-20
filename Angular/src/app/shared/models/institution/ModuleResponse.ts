@@ -11,6 +11,7 @@ export interface ModuleResponse {
     scoreToPass?: number;
     credit?: number;
     assessments?: AssessmentRequest[];
+    isFinished?: boolean;
     institutionID?: string;
     program?: string;
     courseCreated?: boolean;

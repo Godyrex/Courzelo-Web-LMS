@@ -114,4 +114,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleGradeNotFoundException(GradeNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
+    @ExceptionHandler(NoTimeslotAvailableException.class)
+    public ResponseEntity<String> handleNoTimeslotAvailableException(NoTimeslotAvailableException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
 }

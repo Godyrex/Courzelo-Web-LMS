@@ -234,12 +234,16 @@ public class GroupServiceImpl implements IGroupService {
                     studentEmail -> {
                         if (checkIfUserCanBeAddedToGroup(studentEmail, group.getInstitutionID())) {
                             addStudentToGroup(groupID, studentEmail);
+                            group.getStudents().add(studentEmail);
                         }
                     }
             );
         }else if(group.getStudents()!=null){
             group.getStudents().forEach(
-                    studentEmail -> removeStudentFromGroup(groupID, studentEmail)
+                    studentEmail -> {
+                        removeStudentFromGroup(groupID, studentEmail);
+                        group.getStudents().remove(studentEmail);
+                    }
             );
         }
         if(!Objects.equals(group.getProgram(), groupRequest.getProgram())){
@@ -265,6 +269,7 @@ public class GroupServiceImpl implements IGroupService {
                 groupRepository.save(group);
 
         }
+        groupRepository.save(group);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 

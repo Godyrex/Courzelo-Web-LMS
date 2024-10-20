@@ -48,6 +48,7 @@
         { name: 'Score to pass'},
         { name: 'Duration'},
         { name: 'Credit' },
+        { name: 'Finished',cellTemplate: finished },
         { name: 'Actions', prop: 'id', cellTemplate: deleteBtnTemplate, width: 250 }
     ]"
                             [headerHeight]="50"
@@ -77,6 +78,10 @@
                         <button class="btn btn-link" (click)="openManageAssessmentModal(row)">
                             <i class="fa fa-eye"></i> Show Assessment
                         </button>
+                    </ng-template>
+                    <ng-template #finished let-row="row" let-value="value">
+                        <p *ngIf="row?.isFinished"> Yes</p>
+                        <p *ngIf="!row?.isFinished"> No</p>
                     </ng-template>
                     <ng-template #deleteBtnTemplate let-row="row" let-value="value">
                         <div class=" m-16">

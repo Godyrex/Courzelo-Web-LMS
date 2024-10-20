@@ -16,6 +16,8 @@ import {StudentGradesComponent} from '../../../shared/components/student-grades/
 import {MyGradesComponent} from './my-grades/my-grades.component';
 import {InstitutionService} from '../../../shared/services/institution/institution.service';
 import {InstitutionResponse} from '../../../shared/models/institution/InstitutionResponse';
+import {Timeslot, TimetableResponse} from '../../../shared/models/institution/TimetableResponse';
+import {InstitutionTimeSlot} from '../../../shared/models/institution/InstitutionTimeSlot';
 
 @Component({
   selector: 'app-home-dashboard',
@@ -39,10 +41,14 @@ export class HomeDashboardComponent implements OnInit {
   currentUser = this.sessionstorage.getUserFromSession();
   myProgram: ProgramResponse;
   myGroup: GroupResponse;
+  loadingTimetable = false;
   myInstitution: InstitutionResponse;
+  timetable: TimetableResponse;
+  timeTableSlots: InstitutionTimeSlot[];
   sanitizedWebsiteUrl: SafeUrl;
   loading = false;
   courses: CourseResponse[] = [];
+  objectKeys = Object.keys;
   student = { program: 'Bachelor in Computer Science', group: 'Group A', advisor: 'Dr. Emily White' };
   announcements = ['New Semester Registration Open', 'Library Hours Updated'];
 
@@ -66,6 +72,12 @@ export class HomeDashboardComponent implements OnInit {
     modalRef.componentInstance.close.subscribe(() => {
       modalRef.close();
     });
+  }
+  getGroupObject(groupKey: string): { [key: string]: Timeslot[] } {
+    return { [groupKey]: this.timetable.groupTimetables[groupKey] };
+  }
+  getTeacherObject(teacherKey: string): { [key: string]: Timeslot[] } {
+    return { [teacherKey]: this.timetable.teacherTimetables[teacherKey] };
   }
   fetchCourses(): void {
     this.loading = true;
@@ -105,11 +117,34 @@ export class HomeDashboardComponent implements OnInit {
     this.institutionService.getInstitutionByID(this.currentUser?.education?.institutionID).subscribe((institution) => {
       this.myInstitution = institution;
       this.sanitizedWebsiteUrl = this.sanitizer.bypassSecurityTrustUrl(institution.website);
+        this.fetchTimetable();
     });
   }
   fetchGroup(): void {
     this.groupService.getMyGroup().subscribe((group) => {
         this.myGroup = group;
+    });
+  }
+  fetchTimetable(): void {
+    this.loadingTimetable = true;
+    this.institutionService.getTimetable(this.myInstitution.id).subscribe((timetable) => {
+        console.log(timetable);
+        this.timetable = timetable;
+      this.institutionService.getInstitutionTimeSlots(this.myInstitution.id).subscribe((timeSlots) => {
+        this.timeTableSlots = timeSlots.timeSlots.sort((a, b) => {
+          const timeA = new Date(`1970-01-01T${a.startTime}:00`).getTime();
+          const timeB = new Date(`1970-01-01T${b.startTime}:00`).getTime();
+          return timeA - timeB;
+        });
+      });
+        this.loadingTimetable = false;
+    }, (error) => {
+      if (error.error) {
+        this.toastr.error(error.error, 'Error');
+      } else {
+        this.toastr.error('An error occurred', 'Error');
+      }
+      this.loadingTimetable = false;
     });
   }
   downloadExcel() {

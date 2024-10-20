@@ -49,6 +49,7 @@ public class ModuleServiceImpl implements IModuleService {
                 .ScoreToPass(moduleRequest.getScoreToPass())
                 .duration(moduleRequest.getDuration())
                 .credit(moduleRequest.getCredit())
+                .isFinished(false)
                 .institutionID(program.getInstitutionID())
                 .build();
         moduleRepository.save(module);
@@ -72,6 +73,7 @@ public class ModuleServiceImpl implements IModuleService {
         module.setScoreToPass(moduleRequest.getScoreToPass() != null ? moduleRequest.getScoreToPass() : 0.0);
         module.setDuration(moduleRequest.getDuration());
         module.setDescription(moduleRequest.getDescription());
+        module.setIsFinished(moduleRequest.getIsFinished());
         module.setCredit(moduleRequest.getCredit());
         moduleRepository.save(module);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -115,6 +117,7 @@ public class ModuleServiceImpl implements IModuleService {
                                 .skills(module.getSkills())
                                 .duration(module.getDuration())
                                 .credit(module.getCredit())
+                                .isFinished(module.getIsFinished())
                                 .program(module.getProgram())
                                 .institutionID(module.getInstitutionID())
                                 .build()
@@ -138,6 +141,7 @@ public class ModuleServiceImpl implements IModuleService {
                 .scoreToPass(module.getScoreToPass())
                 .duration(module.getDuration())
                 .credit(module.getCredit())
+                .isFinished(module.getIsFinished())
                 .program(module.getProgram())
                 .institutionID(module.getInstitutionID())
                 .build(), HttpStatus.OK);

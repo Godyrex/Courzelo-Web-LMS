@@ -88,4 +88,31 @@
                 </div>
             </div>
         </div>
+        <div class="col-lg-12 mb-4">
+            <div class="card bg-primary rounded">
+
+                <div *ngIf="loadingTimetable" class="loadscreen mt-5">
+                    <img src="assets/images/logo.png" class="logo mb-3" style="display: none" alt="">
+                    <div class="loader-bubble loader-bubble-primary d-block"></div>
+                </div>
+                <div *ngIf="!loadingTimetable" >
+                    <!-- Message for no timetable -->
+                    <div *ngIf="!timetable || timetable.groupTimetables === 0" class="alert alert-info text-center">
+                        No timetable available.
+                    </div>
+
+                    <!-- Timetable Display -->
+                    <div *ngIf="timetable && timetable.groupTimetables" class="timetable-container">
+                        <ng-container *ngFor="let groupKey of objectKeys(timetable.groupTimetables)">
+                            <app-view-timetable [timeTableSlots]="timeTableSlots" [group]="getGroupObject(groupKey)"  [timetableWeek]="timetable.timetableWeek"></app-view-timetable>
+                        </ng-container>
+                    </div>
+                    <div *ngIf="timetable && timetable.teacherTimetables" class="timetable-container">
+                        <ng-container *ngFor="let teacherKey of objectKeys(timetable.teacherTimetables)">
+                            <app-view-timetable [timeTableSlots]="timeTableSlots" [teacher]="getTeacherObject(teacherKey)" [timetableWeek]="timetable.timetableWeek"></app-view-timetable>
+                        </ng-container>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>

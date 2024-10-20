@@ -2,7 +2,7 @@ import {AfterViewInit, Component, OnInit, TemplateRef, ViewChild} from '@angular
 import {InstitutionRequest} from '../../../shared/models/institution/InstitutionRequest';
 import {InstitutionService} from '../../../shared/services/institution/institution.service';
 import {ResponseHandlerService} from '../../../shared/services/user/response-handler.service';
-import {FormBuilder, FormGroup, Validators} from '@angular/forms';
+import {AbstractControl, FormBuilder, FormGroup, ValidationErrors, ValidatorFn, Validators} from '@angular/forms';
 import {ToastrService} from 'ngx-toastr';
 import {ActivatedRoute} from '@angular/router';
 import {UserService} from '../../../shared/services/user/user.service';
@@ -12,7 +12,8 @@ import {CalendarEventRequest} from '../../../shared/models/institution/CalendarE
 import {environment} from '../../../../environments/environment';
 import {SemesterRequest} from '../../../shared/models/institution/SemesterRequest';
 import {InstitutionResponse} from '../../../shared/models/institution/InstitutionResponse';
-
+import {InstitutionTimeSlot} from '../../../shared/models/institution/InstitutionTimeSlot';
+import {InstitutionTimeSlotConfiguration} from '../../../shared/models/institution/InstitutionTimeSlotConfiguration';
 @Component({
   selector: 'app-edit',
   templateUrl: './edit.component.html',
@@ -26,13 +27,26 @@ export class EditComponent implements OnInit, AfterViewInit {
       private toastr: ToastrService,
       private route: ActivatedRoute,
         private userService: UserService
-  ) { }
-
+  ) {
+        this.timeslotForm = this.formBuilder.group({
+            startTime: ['', Validators.required],
+            endTime: ['', Validators.required]
+        }, { validators: [this.timeOrderValidator, this.overlappingTimesValidator.bind(this)] });
+        this.daysForm = this.formBuilder.group({
+            selectedDays: [[]]
+        });
+    }
+    daysForm: FormGroup;
+    daysSelected = false;
+    days: string[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    selectedDays: string[] = [];
+    timeslotForm: FormGroup;
+    timeslots: InstitutionTimeSlot[] = [];
     selectedFileName: string;
     selectedFileUrl: string | ArrayBuffer;
     file: any;
     generationEvent: CalendarEventRequest = {};
-    generationEventList: CalendarEventRequest[] = [];
+    institutionTimeSlotsConfiguration: InstitutionTimeSlotConfiguration;
     year: number = new Date().getFullYear(); // Set current year as default
     events: Event[] = []; // User-defined events
     today = new Date();
@@ -90,9 +104,11 @@ export class EditComponent implements OnInit, AfterViewInit {
         firstSemesterStart: [this.firstSemesterBSValue, [Validators.required]],
         secondSemesterStart: [this.secondSemesterBSValue, [Validators.required]],
     });
+
   ngOnInit() {
       this.generationEvent.startDate = new Date();
       this.institutionID = this.route.snapshot.paramMap.get('institutionID');
+      this.loadTimeslots();
       this.userService.getCountries().subscribe(
           countries => {
               this.countries = countries;
@@ -124,7 +140,51 @@ if (this.pageTemplate)  {
     this.initializeMap();
 }
   }
+    onDayChange(event: any) {
+        const day = event.target.value;
+        if (event.target.checked) {
+            this.selectedDays.push(day);
+        } else {
+            this.selectedDays = this.selectedDays.filter(d => d !== day);
+        }
+    }
+    selectDays() {
+        this.selectedDays = this.daysForm.value.selectedDays;
+        if (this.selectedDays.length > 0) {
+            this.daysSelected = true;
+        }
+    }
+    setEligibleTimes() {
+        this.timeslots.push(this.timeslotForm.value);
+        this.timeslotForm.reset(); // Reset the form after adding a time slot
+    }
+    timeOrderValidator(control: FormGroup): ValidationErrors | null {
+        const startTime = control.get('startTime')?.value;
+        const endTime = control.get('endTime')?.value;
 
+        if (startTime && endTime && startTime >= endTime) {
+            return { timeOrder: true };
+        }
+        return null;
+    }
+
+    overlappingTimesValidator(control: FormGroup): ValidationErrors | null {
+        const startTime = control.get('startTime')?.value;
+        const endTime = control.get('endTime')?.value;
+
+        if (startTime && endTime) {
+            for (const slot of this.timeslots) {
+                if (
+                    (startTime >= slot.startTime && startTime < slot.endTime) ||
+                    (endTime > slot.startTime && endTime <= slot.endTime) ||
+                    (startTime <= slot.startTime && endTime >= slot.endTime)
+                ) {
+                    return { overlappingTimes: true };
+                }
+            }
+        }
+        return null;
+    }
     initializeMap() {
         if (document.getElementById('map')) {
             this.setLocation();
@@ -133,10 +193,15 @@ if (this.pageTemplate)  {
         }
     }
     generateTimetable() {
-      this.institutionService.generateTimetable(this.institutionID).subscribe(
+        const loadingToastr = this.toastr.info('Generating timetable... This could take a few minutes.',
+            'Please wait', { disableTimeOut: true });
+        this.institutionService.generateTimetable(this.institutionID).subscribe(
             response => {
+                this.toastr.clear(loadingToastr.toastId);
                 this.toastr.success('Timetable generated successfully.');
-            }, error => {
+            },
+            error => {
+                this.toastr.clear(loadingToastr.toastId);
                 if (error.error) {
                     this.toastr.error(error.error);
                 } else {
@@ -144,6 +209,41 @@ if (this.pageTemplate)  {
                 }
             }
         );
+    }
+    loadTimeslots() {
+      console.log('Loading timeslots');
+        this.institutionService.getInstitutionTimeSlots(this.institutionID).subscribe(timeslots => {
+            this.institutionTimeSlotsConfiguration = timeslots;
+            this.timeslots = timeslots.timeSlots;
+            this.selectedDays = timeslots.days;
+        });
+    }
+    addTimeslot() {
+        if (this.timeslotForm.valid) {
+            this.timeslots.push(this.timeslotForm.value);
+            this.timeslotForm.reset();
+        }
+    }
+
+    removeTimeslot(index: number) {
+        this.timeslots.splice(index, 1);
+    }
+
+    updateInstitutionTimeSlots(institutionID: string) {
+      const institutionTimeSlotsConfiguration: InstitutionTimeSlotConfiguration = {
+            days: this.selectedDays,
+            timeSlots: this.timeslots
+        };
+        this.institutionService.updateInstitutionTimeSlots(institutionID, institutionTimeSlotsConfiguration).subscribe(response => {
+            this.toastr.success('Timeslots updated successfully.');
+        }, error => {
+            if (error.error) {
+                this.toastr.error(error.error);
+            } else {
+                this.toastr.error('Error updating timeslots.');
+            }
+            }
+            );
     }
     clearSemester() {
         this.institutionService.clearSemester(this.institutionID).subscribe(

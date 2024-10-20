@@ -1,15 +1,18 @@
 package org.example.courzelo.serviceImpls;
 
 import lombok.Getter;
-import org.example.courzelo.exceptions.InstitutionNotFoundException;
-import org.example.courzelo.exceptions.ModuleNotFoundException;
-import org.example.courzelo.exceptions.UserNotFoundException;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
+import org.example.courzelo.dto.responses.institution.InstitutionTimeSlot;
+import org.example.courzelo.dto.responses.institution.InstitutionTimeSlotsConfiguration;
+import org.example.courzelo.exceptions.*;
 import org.example.courzelo.models.User;
 import org.example.courzelo.models.institution.Course;
 import org.example.courzelo.models.institution.Group;
+import org.example.courzelo.models.institution.Module;
 import org.example.courzelo.models.institution.Timeslot;
 import org.example.courzelo.repositories.GroupRepository;
-import org.example.courzelo.repositories.InstitutionRepository;
 import org.example.courzelo.repositories.ModuleRepository;
 import org.example.courzelo.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 @Service
+@Slf4j
 public class TimetableService {
     @Autowired
     private UserRepository userRepository;
@@ -29,19 +33,28 @@ public class TimetableService {
     @Getter
     private Map<String, List<Timeslot>> groupTimetables; // groupId -> List of timeslots assigned
     @Getter
-    private Map<String, List<Timeslot>> teacherTimetables; // teacherId -> List of timeslots assigned
-
+    private Map<String, List<Timeslot>> teacherTimetables;
+    @Setter// teacherId -> List of timeslots assigned
+    private InstitutionTimeSlotsConfiguration institutionTimeSlotsConfiguration;
     public TimetableService() {
-        initializeTimeslots();
         groupTimetables = new HashMap<>();
         teacherTimetables = new HashMap<>();
     }
 
     // Initialize available timeslots for the week (example times)
-    private void initializeTimeslots() {
+    public void initializeTimeslots() {
+        log.info("Initializing available timeslots");
         availableTimeslots = new ArrayList<>();
         String[] daysOfWeek = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday"};
+        if (this.institutionTimeSlotsConfiguration != null) {
+            log.info("Using institution time slots configuration");
+            daysOfWeek = this.institutionTimeSlotsConfiguration.getDays().toArray(new String[0]);
+        }
         String[] timeSlots = {"09:00-11:00", "11:00-13:00", "13:00-15:00", "15:00-17:00"};
+        if (this.institutionTimeSlotsConfiguration != null) {
+            log.info("Using institution time slots configuration");
+            timeSlots = this.institutionTimeSlotsConfiguration.getTimeSlotsAsArray();
+        }
 
         for (String day : daysOfWeek) {
             for (String slot : timeSlots) {
@@ -49,6 +62,7 @@ public class TimetableService {
                 availableTimeslots.add(new Timeslot(day, times[0], times[1]));
             }
         }
+        log.info("Available timeslots: " + availableTimeslots);
     }
     // Fetch all groups by institution and initialize groupTimetables
     public void initializeGroupTimetables(String institutionId) {
@@ -58,59 +72,123 @@ public class TimetableService {
         }
     }
     // Generate the timetable for all groups and teachers
-    public void generateTimetable(List<Course> courses,String institutionID) {
-        // Sort courses based on teacherId (or email), but place courses with null teachers first
-        courses.sort(Comparator.comparing(Course::getTeacher, Comparator.nullsFirst(Comparator.naturalOrder())));
+// Assign a timeslot for each course, prioritizing teacher availability if provided
+    public void generateTimetable(List<Course> courses, String institutionID) {
         initializeGroupTimetables(institutionID);
-        // Iterate through each course and assign to a timeslot
+
+        // Sort courses based on teacher availability, group, etc.
+        courses.sort(Comparator.comparing(Course::getTeacher).thenComparing(Course::getGroup));
+
+        // Iterate over each course and try to assign a suitable timeslot
         for (Course course : courses) {
-
-            String groupName = groupRepository.findById(course.getGroup()).orElseThrow(()-> new UserNotFoundException("Group doesn't exist")).getName();
-            String teacherFullName = null; // May be null
-            if (course.getTeacher() != null) {
-                User user = userRepository.findByEmail(course.getTeacher()).orElseThrow(()-> new UserNotFoundException("Teacher doesn't exist"));
-                teacherFullName = user.getProfile().getName()+' '+user.getProfile().getLastname();
-            }
-
-            // Assign a timeslot for this course (groupId and teacherId)
-            Timeslot assignedSlot = assignTimeslot(groupName, teacherFullName);
+            Timeslot assignedSlot = assignGreedyTimeslot(course);
 
             if (assignedSlot != null) {
-                // Save the assigned timeslot in the group's timetable
-                assignedSlot.setTeacher(teacherFullName != null ? teacherFullName : "Teacher not assigned");
-                assignedSlot.setModule(moduleRepository.findById(course.getModule()).orElseThrow(()-> new ModuleNotFoundException("Module Not Found")).getName());
-                groupTimetables.computeIfAbsent(groupName, k -> new ArrayList<>()).add(assignedSlot);
-
-                // Only update teacher timetable if a teacher is assigned
-                if (teacherFullName != null && !teacherFullName.equals("Teacher not assigned")) {
-                    assignedSlot.setGroup(groupName);
-                    teacherTimetables.computeIfAbsent(teacherFullName, k -> new ArrayList<>()).add(assignedSlot);
-                }
+                // Add the assigned timeslot to the group's and teacher's timetable
+                log.info("Assigning timeslot: " + assignedSlot);
+                addTimeslotToGroupAndTeacher(course, assignedSlot);
             } else {
-                System.out.println("Could not assign timeslot for course: " + course.getModule());
+                log.info("No available timeslot for course: " + course.getId());
+                throw new NoTimeslotAvailableException("No available timeslot , please add more timeslots");
             }
         }
+        log.info("Timetable generation complete");
     }
 
+    // Assign a free timeslot using a greedy approach, respecting teacher availability
+    private Timeslot assignGreedyTimeslot(Course course) {
+        Timeslot bestSlot = null;
+        int bestScore = Integer.MIN_VALUE;
 
-    // Assign a free timeslot for a course considering both group and teacher availability
-    private Timeslot assignTimeslot(String groupName, String teacherFullName) {
         for (Timeslot slot : availableTimeslots) {
-            if (isAvailableForGroup(groupName, slot) && isAvailableForTeacher(teacherFullName, slot)) {
-                return slot; // First available slot found
+            Group group = groupRepository.findById(course.getGroup()).orElseThrow(() -> new GroupNotFoundException("Group not found"));
+            User teacher = null;
+            if(course.getTeacher()!=null){
+                teacher = userRepository.findByEmail(course.getTeacher()).orElseThrow(() -> new UserNotFoundException("Teacher not found"));
+            }
+            String teacherFullName = teacher != null ? teacher.getProfile().getName()+" "+teacher.getProfile().getLastname() : "Teacher not assigned";
+            if (isAvailableForGroup(group.getName(), slot) && isAvailableForTeacher(teacherFullName, slot)) {
+                log.info("Found available timeslot: " + slot);
+                log.info("teacher timetable: " + teacherTimetables);
+                // Calculate the score for this timeslot
+                int score = scoreTimeslot(course, slot,teacher);
+
+                // Pick the timeslot with the highest score
+                if (score > bestScore) {
+                    log.info("Found better timeslot: " + slot + " with score: " + score);
+                    bestScore = score;
+                    bestSlot = new Timeslot(slot.getDayOfWeek(), slot.getStartTime(), slot.getEndTime());
+                }
             }
         }
-        return null; // No available timeslot
+        return bestSlot;
     }
 
+
+    // Add assigned timeslot to group and teacher timetables
+    private void addTimeslotToGroupAndTeacher(Course course, Timeslot assignedSlot) {
+       Group group =  groupRepository.findById(course.getGroup()).orElseThrow(() -> new GroupNotFoundException("Group not found"));
+        String teacherFullName = null;
+        if (course.getTeacher() != null) {
+            log.info("Teacher assigned: " + course.getTeacher());
+            User teacher = userRepository.findByEmail(course.getTeacher()).orElseThrow(() -> new UserNotFoundException("Teacher not found"));
+            teacherFullName = teacher.getProfile().getName()+" "+teacher.getProfile().getLastname();
+        }
+
+        assignedSlot.setGroup(group.getName());
+        assignedSlot.setModule(moduleRepository.findById(course.getModule()).orElseThrow(() -> new ModuleNotFoundException("Module not found")).getName());
+        assignedSlot.setTeacher(teacherFullName != null ? teacherFullName : "Teacher not assigned");
+
+        groupTimetables.computeIfAbsent(group.getName(), k -> new ArrayList<>()).add(assignedSlot);
+
+        if (teacherFullName != null) {
+            teacherTimetables.computeIfAbsent(teacherFullName, k -> new ArrayList<>()).add(assignedSlot);
+        }
+    }
+
+    // Simple heuristic to prioritize teacher availability (you could make this more sophisticated)
+
+    private int scoreTimeslot(Course course, Timeslot slot,User teacher) {
+        int score = 0;
+        // Example heuristic: prioritize teacher's preferred timeslots (disponibilitySlots)
+        if (teacher != null && isSlotInTeacherDisponibility(teacher, slot)) {
+            score += 10; // Prefer timeslots that fit teacher's availability
+        } else {
+            score -= 10; // Penalize timeslots outside the teacher's availability
+        }
+
+        // Add more rules here as needed
+        return score;
+    }
     // Check if the group is available for the timeslot
     private boolean isAvailableForGroup(String groupName, Timeslot slot) {
-        return !groupTimetables.containsKey(groupName) || !groupTimetables.get(groupName).contains(slot);
+        log.info("Checking if group: " + groupName + " is available for timeslot: " + slot);
+        return groupTimetables.get(groupName).stream()
+                .noneMatch(existingSlot -> existingSlot.getDayOfWeek().equals(slot.getDayOfWeek()) &&
+                        existingSlot.getStartTime().equals(slot.getStartTime()) &&
+                        existingSlot.getEndTime().equals(slot.getEndTime()));
     }
 
     // Check if the teacher is available for the timeslot
-    private boolean isAvailableForTeacher(String teacherFullName, Timeslot slot) {
-        return !teacherTimetables.containsKey(teacherFullName) || !teacherTimetables.get(teacherFullName).contains(slot);
+    private boolean isAvailableForTeacher(String teacherEmail, Timeslot slot) {
+        log.info("Checking if teacher: " + teacherEmail + " is available for timeslot: " + slot);
+        return teacherEmail == null || teacherEmail.equals("Teacher not assigned") ||
+                !teacherTimetables.containsKey(teacherEmail) ||
+                teacherTimetables.get(teacherEmail).stream()
+                        .noneMatch(existingSlot -> existingSlot.getDayOfWeek().equals(slot.getDayOfWeek()) &&
+                                existingSlot.getStartTime().equals(slot.getStartTime()) &&
+                                existingSlot.getEndTime().equals(slot.getEndTime()));
+    }
+    private boolean isSlotInTeacherDisponibility(User teacher, Timeslot slot) {
+        if (teacher.getEducation() != null && teacher.getEducation().getDisponibilitySlots() != null) {
+            List<InstitutionTimeSlot> disponibilitySlots = teacher.getEducation().getDisponibilitySlots();
+            return disponibilitySlots.stream().anyMatch(availableSlot ->
+                    availableSlot.getDayOfWeek().equals(slot.getDayOfWeek()) &&
+                            availableSlot.getStartTime().equals(slot.getStartTime()) &&
+                            availableSlot.getEndTime().equals(slot.getEndTime()));
+        }else {
+            return true;
+        }
     }
 
 }

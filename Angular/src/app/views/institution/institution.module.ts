@@ -36,6 +36,7 @@ import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import { ManageAssessmentComponent } from './modules/manage-assessment/manage-assessment.component';
 import { StudentGradesComponent } from '../../shared/components/student-grades/student-grades.component';
 import { GenerateCalendarComponent } from './programs/generate-calendar/generate-calendar.component';
+import { TeacherTimeslotsComponent } from './users/teacher-timeslots/teacher-timeslots.component';
 
 
 @NgModule({
@@ -58,6 +59,7 @@ import { GenerateCalendarComponent } from './programs/generate-calendar/generate
     AssignTeacherComponent,
     ManageAssessmentComponent,
     GenerateCalendarComponent,
+    TeacherTimeslotsComponent,
   ],
     imports: [
         CommonModule,

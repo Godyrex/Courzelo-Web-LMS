@@ -2,6 +2,7 @@ package org.example.courzelo.models.institution;
 
 import lombok.Data;
 import org.example.courzelo.dto.requests.institution.InstitutionRequest;
+import org.example.courzelo.dto.responses.institution.InstitutionTimeSlot;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -31,6 +32,9 @@ public class Institution {
     private Date secondSemesterStart;
     private Map<String, List<Timeslot>> groupTimetables;
     private Map<String, List<Timeslot>> teacherTimetables;
+    private Date timetableWeek;
+    private List<String> timeSlotsDays = new ArrayList<>();
+    private List<InstitutionTimeSlot> timeSlots = new ArrayList<>();
     private List<String> groupsID = new ArrayList<>();
     private List<String> coursesID = new ArrayList<>();
     private List<String> programsID = new ArrayList<>();

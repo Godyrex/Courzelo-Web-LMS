@@ -12,8 +12,10 @@ import org.example.courzelo.dto.requests.institution.SemesterRequest;
 import org.example.courzelo.dto.responses.GroupResponse;
 import org.example.courzelo.dto.responses.StatusMessageResponse;
 import org.example.courzelo.dto.responses.institution.*;
+import org.example.courzelo.models.institution.Timeslot;
 import org.example.courzelo.serviceImpls.TimetableGenerationService;
 import org.example.courzelo.services.IInstitutionService;
+import org.example.courzelo.services.IUserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -31,6 +33,7 @@ import java.util.List;
 public class InstitutionController {
     private final IInstitutionService iInstitutionService;
     private final TimetableGenerationService timetableGenerationService;
+    private final IUserService iUserService;
     @GetMapping("/all")
     public ResponseEntity<PaginatedInstitutionsResponse> getInstitutions(@RequestParam(defaultValue = "0") int page,
                                                                          @RequestParam(defaultValue = "10") int sizePerPage,
@@ -167,5 +170,27 @@ public class InstitutionController {
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')&&@customAuthorization.canAccessInstitution(#institutionID)")
     public ResponseEntity<HttpStatus> generateTimetable(@PathVariable @NotNull String institutionID) {
         return timetableGenerationService.generateWeeklyTimetable(institutionID);
+    }
+    @GetMapping("/{institutionID}/timetable")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<TimetableResponse> getTimetable(@PathVariable @NotNull String institutionID,Principal principal) {
+        return timetableGenerationService.getTimetable(institutionID,principal);
+    }
+    @PutMapping("/{teacherEmail}/update-teacher-disponibility")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
+    public ResponseEntity<HttpStatus> updateTeacherDisponibility(@PathVariable @NotNull @Email String teacherEmail,
+                                                                 @RequestBody List<InstitutionTimeSlot> disponibilitySlots) {
+        return iInstitutionService.updateTeacherDisponibility( teacherEmail, disponibilitySlots);
+    }
+    @PutMapping("/{institutionID}/update-timeslots")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
+    public ResponseEntity<HttpStatus> updateInstitutionTimeSlots(@PathVariable @NotNull String institutionID,
+                                                                 @RequestBody InstitutionTimeSlotsConfiguration timeSlots) {
+        return iInstitutionService.updateInstitutionTimeSlots( institutionID, timeSlots);
+    }
+    @GetMapping("/{institutionID}/timeslots")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<InstitutionTimeSlotsConfiguration> getInstitutionTimeSlots(@PathVariable @NotNull String institutionID) {
+        return iInstitutionService.getInstitutionTimeSlots(institutionID);
     }
 }

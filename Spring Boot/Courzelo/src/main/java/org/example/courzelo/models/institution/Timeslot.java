@@ -22,4 +22,12 @@ public class Timeslot {
         this.startTime = startTime;
         this.endTime = endTime;
     }
+
+    public Timeslot(String teacher, String module, String dayOfWeek, String startTime, String endTime) {
+        this.teacher = teacher;
+        this.module = module;
+        this.dayOfWeek = dayOfWeek;
+        this.startTime = startTime;
+        this.endTime = endTime;
+    }
 }

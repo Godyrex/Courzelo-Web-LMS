@@ -195,6 +195,8 @@ public class InstitutionServiceImpl implements IInstitutionService {
                         .roles(getUserRoleInInstitution(user, institution).stream().map(Role::name).toList())
                         .country(user.getProfile().getCountry())
                         .gender(user.getProfile().getGender())
+                        .disponibilitySlots(user.getEducation().getDisponibilitySlots())
+                        .skills(user.getEducation().getSkill())
                         .build())
                 .collect(Collectors.toList());
         log.info("after response");
@@ -564,6 +566,36 @@ public class InstitutionServiceImpl implements IInstitutionService {
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(filteredTeachers);
+    }
+
+    @Override
+    public ResponseEntity<HttpStatus> updateTeacherDisponibility( String teacherEmail, List<InstitutionTimeSlot> disponibilitySlots) {
+
+            User teacher = userRepository.findByEmail(teacherEmail)
+                    .orElseThrow(() -> new UserNotFoundException("Teacher not found"));
+
+            teacher.getEducation().setDisponibilitySlots(disponibilitySlots);
+            userRepository.save(teacher);
+            return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<HttpStatus> updateInstitutionTimeSlots(String institutionID, InstitutionTimeSlotsConfiguration timeSlots) {
+        Institution institution = institutionRepository.findById(institutionID)
+                .orElseThrow(() -> new InstitutionNotFoundException(INSTITUTION_NOT_FOUND));
+        institution.setTimeSlotsDays(timeSlots.getDays());
+        institution.setTimeSlots(timeSlots.getTimeSlots());
+
+        institutionRepository.save(institution);
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<InstitutionTimeSlotsConfiguration> getInstitutionTimeSlots(String institutionID) {
+        Institution institution = institutionRepository.findById(institutionID)
+                .orElseThrow(() -> new InstitutionNotFoundException(INSTITUTION_NOT_FOUND));
+
+        return ResponseEntity.ok(InstitutionTimeSlotsConfiguration.builder().timeSlots(institution.getTimeSlots()).days(institution.getTimeSlotsDays()).build());
     }
 
     private boolean hasRequiredSkills(User teacher, List<String> requiredSkills) {

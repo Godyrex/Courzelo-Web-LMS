@@ -1,6 +1,7 @@
 package org.example.courzelo.services;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import org.example.courzelo.dto.requests.institution.CalendarEventRequest;
 import org.example.courzelo.dto.requests.institution.InstitutionMapRequest;
@@ -11,6 +12,7 @@ import org.example.courzelo.dto.responses.GroupResponse;
 import org.example.courzelo.dto.responses.StatusMessageResponse;
 import org.example.courzelo.dto.responses.institution.*;
 import org.example.courzelo.models.institution.Institution;
+import org.example.courzelo.models.institution.Timeslot;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
@@ -53,4 +55,10 @@ public interface IInstitutionService {
     ResponseEntity<HttpStatus> clearSemester(@NotNull String institutionID, Principal principal);
 
     ResponseEntity<List<TeacherResponse>> getInstitutionFilteredTeachers(@NotNull String institutionID, List<String> skills);
+
+    ResponseEntity<HttpStatus> updateTeacherDisponibility( @NotNull @Email String teacherEmail, List<InstitutionTimeSlot> disponibilitySlots);
+
+    ResponseEntity<HttpStatus> updateInstitutionTimeSlots(@NotNull String institutionID, InstitutionTimeSlotsConfiguration timeSlots);
+
+    ResponseEntity<InstitutionTimeSlotsConfiguration> getInstitutionTimeSlots(@NotNull String institutionID);
 }

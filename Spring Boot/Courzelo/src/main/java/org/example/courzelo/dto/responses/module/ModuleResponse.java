@@ -20,6 +20,7 @@ public class ModuleResponse {
     private Double scoreToPass;
     private List<String> skills;
     private String duration;
+    private Boolean isFinished;
     private int credit;
     private List<Assessment> assessments;
     private String institutionID;
