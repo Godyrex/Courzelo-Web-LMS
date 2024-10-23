@@ -13,9 +13,9 @@ import {UserEmailsRequest} from '../../models/institution/UserEmailsRequest';
 import {InvitationsResultResponse} from '../../models/institution/InvitationsResultResponse';
 import {SemesterRequest} from '../../models/institution/SemesterRequest';
 import {TeacherResponse} from '../../models/institution/TeacherResponse';
-import {Timeslot, TimetableResponse} from '../../models/institution/TimetableResponse';
-import {InstitutionTimeSlot} from "../../models/institution/InstitutionTimeSlot";
-import {InstitutionTimeSlotConfiguration} from "../../models/institution/InstitutionTimeSlotConfiguration";
+import { TimetableResponse} from '../../models/institution/TimetableResponse';
+import {InstitutionTimeSlot} from '../../models/institution/InstitutionTimeSlot';
+import {InstitutionTimeSlotConfiguration} from '../../models/institution/InstitutionTimeSlotConfiguration';
 
 @Injectable({
   providedIn: 'root'
@@ -68,6 +68,11 @@ export class InstitutionService {
         .set('role', role)
         .set('skills', skills.join(','));
     return this.http.put<InvitationsResultResponse>(`${this.baseUrl}/${institutionID}/invite_users`, emails, { params });
+  }
+  updateSkills(institutionID: string, userEmail: string, skills: string[]) {
+    const params = new HttpParams()
+        .set('skills', skills.join(','));
+    return this.http.put(`${this.baseUrl}/${institutionID}/${userEmail}/update-skills`, null, { params });
   }
   removeInstitutionUserRole(institutionID: string, email: string, role: string) {
     console.log(email, role, institutionID);

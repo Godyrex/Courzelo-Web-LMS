@@ -1,5 +1,5 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {FormBuilder, FormGroup, Validators} from '@angular/forms';
+import {FormArray, FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {ResponseHandlerService} from '../../../../shared/services/user/response-handler.service';
 import {ToastrService} from 'ngx-toastr';
 import {ModuleService} from '../../../../shared/services/institution/module.service';
@@ -33,13 +33,39 @@ export class AddModuleComponent {
       credit: [0, Validators.required],
       scoreToPass: [0, Validators.required],
       semester: [null],
+      moduleParts: this.fb.array([])
+
     });
   }
+  get moduleParts(): FormArray {
+    return this.addModuleForm.get('moduleParts') as FormArray;
+  }
 
+  addModulePart(): void {
+    this.moduleParts.push(this.fb.group({
+      name: ['', Validators.required],
+      value: [0, Validators.required]
+    }));
+  }
+
+  removeModulePart(index: number): void {
+    this.moduleParts.removeAt(index);
+  }
   onSubmit() {
     if (this.addModuleForm.valid) {
-      this.moduleRequest = this.addModuleForm.value;
-        this.moduleRequest.program = this.programID;
+      console.log(this.addModuleForm.value);
+      const formValue = this.addModuleForm.value;
+      const modulePartsMap = {};
+
+      formValue.moduleParts.forEach(part => {
+        modulePartsMap[part.name] = part.value;
+      });
+
+      this.moduleRequest = {
+        ...formValue,
+        moduleParts: modulePartsMap,
+        program: this.programID
+      };
         console.log(this.moduleRequest);
       this.moduleService.createModule(this.moduleRequest).subscribe(
           () => {

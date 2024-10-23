@@ -4,10 +4,17 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.courzelo.exceptions.*;
 import org.example.courzelo.models.*;
+import org.example.courzelo.models.Forum.Comment;
+import org.example.courzelo.models.Forum.ForumThread;
+import org.example.courzelo.models.Forum.Post;
 import org.example.courzelo.models.institution.*;
 import org.example.courzelo.models.institution.Module;
 import org.example.courzelo.repositories.*;
+import org.example.courzelo.repositories.Forum.CommentRepository;
+import org.example.courzelo.repositories.Forum.PostRepository;
+import org.example.courzelo.repositories.Forum.ThreadRepository;
 import org.example.courzelo.serviceImpls.CodeVerificationService;
+import org.example.courzelo.serviceImpls.Forum.CommentNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -28,6 +35,9 @@ public class CustomAuthorization {
     private final ProgramRepository programRepository;
     private final ModuleRepository moduleRepository;
     private final GradeRepository gradeRepository;
+    private final ThreadRepository threadRepository;
+    private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
     public boolean isAdminInInstitution(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
@@ -58,6 +68,35 @@ public class CustomAuthorization {
             return user.getEducation().getInstitutionID().equals(program.getInstitutionID());
         }
         return false;
+    }
+    public boolean canAccessComment(String commentID) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+        User user = userRepository.findUserByEmail(userEmail);
+        Comment comment = commentRepository.findById(commentID).
+                orElseThrow(() -> new CommentNotFoundException("Comment not found"));
+        return user.getEmail().equals(comment.getUserEmail());
+    }
+    public boolean canAccessPost(String postID) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+        User user = userRepository.findUserByEmail(userEmail);
+        Post post = postRepository.findById(postID).orElseThrow(() -> new PostNotFoundException("Post not found"));
+        return user.getEmail().equals(post.getUserEmail());
+    }
+
+    public boolean canAccessThread(String threadID) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+        User user = userRepository.findUserByEmail(userEmail);
+        if(user == null){
+            return false;
+        }
+        if(user.getRoles().contains(Role.SUPERADMIN)){
+            return true;
+        }
+        ForumThread thread = threadRepository.findById(threadID).orElseThrow(() -> new ForumThreadNotFoundException("Thread not found"));
+        return user.getEducation().getInstitutionID().equals(thread.getInstitutionID());
     }
     public boolean canAccessModule(String moduleID) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

@@ -99,6 +99,13 @@ public class InstitutionController {
                                                                  Principal principal) {
         return iInstitutionService.inviteUsers(institutionID, emails, role,skills, principal);
     }
+    @PutMapping("{institutionID}/{userEmail}/update-skills")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')&&@customAuthorization.canAccessInstitution(#institutionID)")
+    public ResponseEntity<HttpStatus> updateSkills(@PathVariable @NotNull String institutionID,
+                                                                  @PathVariable @NotNull String userEmail,
+                                                                 @RequestParam(required = false) List<String> skills) {
+        return iInstitutionService.updateSkills(institutionID,userEmail,skills );
+    }
     @PutMapping("/accept_invite/{code}")
     @PreAuthorize("isAuthenticated()&&@customAuthorization.canAcceptInstitutionInvite(#code)")
     public ResponseEntity<HttpStatus> acceptInvite(@PathVariable @NotNull String code,Principal principal) {

@@ -37,6 +37,8 @@ import { ManageAssessmentComponent } from './modules/manage-assessment/manage-as
 import { StudentGradesComponent } from '../../shared/components/student-grades/student-grades.component';
 import { GenerateCalendarComponent } from './programs/generate-calendar/generate-calendar.component';
 import { TeacherTimeslotsComponent } from './users/teacher-timeslots/teacher-timeslots.component';
+import { UpdateSkillsComponent } from './users/update-skills/update-skills.component';
+import { ViewModulePartsComponent } from './modules/view-module-parts/view-module-parts.component';
 
 
 @NgModule({
@@ -60,6 +62,8 @@ import { TeacherTimeslotsComponent } from './users/teacher-timeslots/teacher-tim
     ManageAssessmentComponent,
     GenerateCalendarComponent,
     TeacherTimeslotsComponent,
+    UpdateSkillsComponent,
+    ViewModulePartsComponent,
   ],
     imports: [
         CommonModule,

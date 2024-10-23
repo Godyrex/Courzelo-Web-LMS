@@ -14,7 +14,7 @@
             <label for="description">Description</label>
             <textarea id="description" formControlName="description" class="form-control"></textarea>
         </div>
-        <div class=" form-group ">
+        <div class="form-group">
             <label for="skills" class="form-label">Skills</label>
             <tag-input id="skills"
                        formControlName="skills"
@@ -27,7 +27,7 @@
         </div>
         <div class="form-group">
             <label for="duration">Duration</label>
-            <input id="duration" formControlName="duration"  class="form-control" />
+            <input id="duration" formControlName="duration" class="form-control" />
         </div>
         <div class="form-group">
             <label for="credit">Credit</label>
@@ -44,6 +44,19 @@
                 <option value="SECOND_SEMESTER">Second Semester</option>
             </select>
         </div>
+        <div class="form-group" formArrayName="moduleParts">
+            <div *ngFor="let part of moduleParts.controls; let i = index" [formGroupName]="i">
+                <label for="partName-{{i}}">Module Part Name</label>
+                <input id="partName-{{i}}" formControlName="name" class="form-control" placeholder="e.g., TP" />
+
+                <label for="partValue-{{i}}">Hours</label>
+                <input id="partValue-{{i}}" formControlName="value" type="number" class="form-control" placeholder="e.g., 5" />
+
+                <button type="button" class="btn btn-danger mt-2 md-2" (click)="removeModulePart(i)">Remove</button>
+            </div>
+        </div>
+
+        <button type="button" class="btn btn-secondary md-2" (click)="addModulePart()">Add Module Part</button>
         <div class="form-group">
             <label for="isFinished">Is Finished</label>
             <input id="isFinished" type="checkbox" formControlName="isFinished" class="form-check-input ml-2" />

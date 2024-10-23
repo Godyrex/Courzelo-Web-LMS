@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.example.courzelo.models.institution.Assessment;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Builder
@@ -25,6 +26,7 @@ public class ModuleResponse {
     private List<Assessment> assessments;
     private String institutionID;
     private String program;
+    private Map<String,Long> moduleParts;
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

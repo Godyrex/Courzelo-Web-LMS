@@ -211,7 +211,7 @@ public class AuthServiceImpl implements IAuthService {
 
     void setHeaders(HttpServletResponse response,User userDetails,boolean rememberMe){
         iRefreshTokenService.deleteUserTokens(userDetails);
-        response.addHeader(HttpHeaders.SET_COOKIE, cookieUtil.createAccessTokenCookie(jwtUtils.generateJwtToken(userDetails.getEmail()), jwtExpirationMs-10000).toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, cookieUtil.createAccessTokenCookie(jwtUtils.generateJwtToken(userDetails.getEmail()), jwtExpirationMs-50000L).toString());
         response.addHeader(HttpHeaders.SET_COOKIE, cookieUtil.createRefreshTokenCookie(
                 iRefreshTokenService.createRefreshToken(userDetails.getEmail(), rememberMe ? refreshRememberMeExpirationMs : refreshExpirationMs).getToken()
                 , rememberMe ? refreshRememberMeExpirationMs : refreshExpirationMs).toString());

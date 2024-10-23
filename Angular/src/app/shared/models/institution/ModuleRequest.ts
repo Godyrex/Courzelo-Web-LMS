@@ -8,4 +8,5 @@ export interface ModuleRequest {
     isFinished: boolean;
     credit: number;
     program: string;
+    moduleParts: Map<string, number>;
 }

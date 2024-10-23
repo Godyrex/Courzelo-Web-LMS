@@ -1,32 +1,22 @@
 // forum-routing.module.ts
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AddForumComponent } from './add-forum/add-forum.component';
-import { ListForumComponent } from './list-forum/list-forum.component';
-import { AddPostComponent } from './Post/add-post/add-post.component';
-import { ListPostComponent } from './Post/list-post/list-post.component';
-import { ViewSubComponent } from './view-sub/view-sub.component';
+import {ThreadsViewComponent} from './threads-view/threads-view.component';
+import {ThreadPostsViewComponent} from './thread-posts-view/thread-posts-view.component';
+import {ThreadPostViewComponent} from './thread-post-view/thread-post-view.component';
 
 const routes: Routes = [
   {
-    path: 'addforum',
-    component: AddForumComponent
+    path: ':institutionID',
+    component: ThreadsViewComponent
   },
   {
-    path: 'list',
-    component: ListForumComponent
+    path: ':threadID/posts',
+    component: ThreadPostsViewComponent
   },
   {
-    path: 'addpost/:id',
-    component: AddPostComponent
-  },
-  {
-    path: 'listpost/:id',
-    component: ListPostComponent
-  },
-  {
-    path: 'view-sub/:id',
-    component: ViewSubComponent
+    path: 'post/:postID',
+    component: ThreadPostViewComponent
   },
 ];
 

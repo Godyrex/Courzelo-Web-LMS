@@ -1,5 +1,6 @@
 package org.example.courzelo.exceptions;
 
+import org.example.courzelo.serviceImpls.Forum.CommentNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -117,5 +118,17 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NoTimeslotAvailableException.class)
     public ResponseEntity<String> handleNoTimeslotAvailableException(NoTimeslotAvailableException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+    @ExceptionHandler(ForumThreadNotFoundException.class)
+    public ResponseEntity<String> handleForumThreadNotFoundException(ForumThreadNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+    @ExceptionHandler(PostNotFoundException.class)
+    public ResponseEntity<String> handlePostNotFoundException(PostNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+    @ExceptionHandler(CommentNotFoundException.class)
+    public ResponseEntity<String> handleCommentNotFoundException(CommentNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 }

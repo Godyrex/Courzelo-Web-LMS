@@ -11,6 +11,7 @@ import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {ActivatedRoute} from '@angular/router';
 import {UserEmailsRequest} from '../../../shared/models/institution/UserEmailsRequest';
 import {TeacherTimeslotsComponent} from './teacher-timeslots/teacher-timeslots.component';
+import {UpdateSkillsComponent} from "./update-skills/update-skills.component";
 
 @Component({
   selector: 'app-users',
@@ -173,6 +174,23 @@ export class UsersComponent implements OnInit {
                     this.toastr.error(error.error);
                 } else {
                     this.toastr.error('An error occurred while updating teacher disponibility');
+                }
+                modalRef.close();
+            }
+        );
+    }
+    openUpdateSkillsModal(teacher: InstitutionUserResponse) {
+        const modalRef = this.modalService.open(UpdateSkillsComponent, { backdrop: false });
+        modalRef.componentInstance.teacher = teacher;
+        modalRef.componentInstance.institutionID = this.institutionID;
+        modalRef.componentInstance.teacherSkillsUpdated.subscribe((updatedTeacher) => {
+                teacher = updatedTeacher;
+                modalRef.close();
+            }, error => {
+                if (error.error) {
+                    this.toastr.error(error.error);
+                } else {
+                    this.toastr.error('An error occurred while updating teacher skills');
                 }
                 modalRef.close();
             }

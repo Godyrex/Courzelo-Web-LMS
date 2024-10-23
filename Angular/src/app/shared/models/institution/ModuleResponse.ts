@@ -16,4 +16,5 @@ export interface ModuleResponse {
     program?: string;
     courseCreated?: boolean;
     courseID?: string;
+    moduleParts: Map<string, number>;
 }

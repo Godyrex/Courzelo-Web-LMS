@@ -63,6 +63,7 @@ export class AssignTeacherComponent implements OnInit {
       this.courseService.setTeacher(this.module.courseID, this.assignTeacherForm.value.email).subscribe(
           () => {
             this.toastr.success('Teacher assigned successfully');
+            this.toastr.info('Refresh your page to see changes');
           },
           error => {
             if (error.error) {

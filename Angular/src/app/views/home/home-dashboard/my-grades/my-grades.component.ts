@@ -38,13 +38,13 @@ export class MyGradesComponent implements OnInit {
         this.sessionStorageService.getUser().subscribe(
             user => {
                 this.user = user;
-                this.loadMyGrades();
             },
             error => {
                 console.log(error);
             }
         );
-    }
+      this.loadMyGrades();
+  }
     onClose(): void {
         this.close.emit();
     }

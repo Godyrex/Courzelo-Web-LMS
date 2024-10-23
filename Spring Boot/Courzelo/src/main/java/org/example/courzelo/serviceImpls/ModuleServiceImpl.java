@@ -39,6 +39,8 @@ public class ModuleServiceImpl implements IModuleService {
         if(moduleRepository.existsByNameAndProgram(moduleRequest.getName(), moduleRequest.getProgram())) {
             throw new ModuleAlreadyExistsException("Module with name " + moduleRequest.getName() + " already exists");
         }
+        log.info("Creating module");
+        log.info("Module request: " + moduleRequest);
         Program program = programRepository.findById(moduleRequest.getProgram()).orElseThrow(() -> new ProgramNotFoundException("Program not found"));
         Module module = Module.builder()
                 .name(moduleRequest.getName())
@@ -51,6 +53,7 @@ public class ModuleServiceImpl implements IModuleService {
                 .credit(moduleRequest.getCredit())
                 .isFinished(false)
                 .institutionID(program.getInstitutionID())
+                .moduleParts(moduleRequest.getModuleParts())
                 .build();
         moduleRepository.save(module);
         addModuleToProgram(program, module.getId());
@@ -75,6 +78,7 @@ public class ModuleServiceImpl implements IModuleService {
         module.setDescription(moduleRequest.getDescription());
         module.setIsFinished(moduleRequest.getIsFinished());
         module.setCredit(moduleRequest.getCredit());
+        module.setModuleParts(moduleRequest.getModuleParts());
         moduleRepository.save(module);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -104,6 +108,7 @@ public class ModuleServiceImpl implements IModuleService {
         } else {
             modulePage = moduleRepository.findAllByProgramAndNameContainingIgnoreCase(programID, keyword, pageable);
         }
+        log.info(modulePage.toString());
         log.info("Returning modules by program");
         return new ResponseEntity<>(PaginatedModulesResponse.builder()
                 .modules(modulePage.getContent().stream().map(
@@ -120,6 +125,7 @@ public class ModuleServiceImpl implements IModuleService {
                                 .isFinished(module.getIsFinished())
                                 .program(module.getProgram())
                                 .institutionID(module.getInstitutionID())
+                                .moduleParts(module.getModuleParts())
                                 .build()
                 ).toList())
                 .totalPages(modulePage.getTotalPages())
@@ -144,6 +150,7 @@ public class ModuleServiceImpl implements IModuleService {
                 .isFinished(module.getIsFinished())
                 .program(module.getProgram())
                 .institutionID(module.getInstitutionID())
+                .moduleParts(module.getModuleParts())
                 .build(), HttpStatus.OK);
     }
 

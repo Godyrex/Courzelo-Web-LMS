@@ -598,6 +598,15 @@ public class InstitutionServiceImpl implements IInstitutionService {
         return ResponseEntity.ok(InstitutionTimeSlotsConfiguration.builder().timeSlots(institution.getTimeSlots()).days(institution.getTimeSlotsDays()).build());
     }
 
+    @Override
+    public ResponseEntity<HttpStatus> updateSkills(String institutionID,String userEmail, List<String> skills) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        user.getEducation().setSkill(skills);
+        userRepository.save(user);
+        return ResponseEntity.ok().build();
+    }
+
     private boolean hasRequiredSkills(User teacher, List<String> requiredSkills) {
         List<String> teacherSkills = teacher.getEducation().getSkill();
         for (String requiredSkill : requiredSkills) {

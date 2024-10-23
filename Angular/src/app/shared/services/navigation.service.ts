@@ -143,6 +143,8 @@ export class NavigationService {
                         type: 'link', roles: ['ADMIN'], mustBeInInstitutions: true },
                     { icon: 'i-Pen-2', name: 'Edit', state: 'institution/' + this.user?.education?.institutionID + '/edit',
                         type: 'link', roles: ['ADMIN'], mustBeInInstitutions: true },
+                    { icon: 'i-Find-User', name: 'Forum', state: 'forum/' + this.user?.education?.institutionID,
+                        type: 'link', mustBeInInstitutions: true },
                     ...(this.user?.education?.courses ? this.user.education.courses.map(course => ({
                         icon: 'i-Book',
                         name: course.courseName,

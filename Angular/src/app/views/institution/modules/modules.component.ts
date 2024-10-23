@@ -14,6 +14,7 @@ import {ActivatedRoute} from '@angular/router';
 import {InstitutionResponse} from '../../../shared/models/institution/InstitutionResponse';
 import {InstitutionService} from '../../../shared/services/institution/institution.service';
 import {ManageAssessmentComponent} from './manage-assessment/manage-assessment.component';
+import {ViewModulePartsComponent} from './view-module-parts/view-module-parts.component';
 
 @Component({
   selector: 'app-modules',
@@ -70,6 +71,7 @@ export class ModulesComponent implements OnInit {
           this.paginatedModules = response;
           this.totalPages = response.totalPages;
           this.totalItems = response.totalItems;
+          console.log(response);
           this.loadingModules = false;
         },
         error => {
@@ -105,6 +107,13 @@ export class ModulesComponent implements OnInit {
     modalRef.componentInstance.institution = this.currentInstitution;
     modalRef.componentInstance.moduleAdded.subscribe(() => {
       this.getModules(this.currentPage, this.itemsPerPage, this.currentProgram.id, null);
+      modalRef.close();
+    });
+  }
+  openViewModulePartsModal(module: ModuleResponse) {
+    const modalRef = this.modalService.open(ViewModulePartsComponent, {backdrop: false});
+    modalRef.componentInstance.moduleResponse = module;
+    modalRef.componentInstance.close.subscribe(() => {
       modalRef.close();
     });
   }

@@ -8,7 +8,7 @@ import {CourseRequest} from '../../../../shared/models/institution/CourseRequest
 import {GroupService} from '../../../../shared/services/institution/group.service';
 import {ViewStudentsComponent} from '../../../../shared/components/view-students/view-students.component';
 import {AssignTeacherComponent} from './assign-teacher/assign-teacher.component';
-import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import {NgbModal, NgbModalRef} from '@ng-bootstrap/ng-bootstrap';
 import {StudentGradesComponent} from '../../../../shared/components/student-grades/student-grades.component';
 
 @Component({
@@ -21,6 +21,7 @@ export class ViewCoursesComponent implements OnInit {
   @Input() program: string;
   @Input() group: GroupResponse;
   @Input() module: ModuleResponse;
+    currentCourse: ModuleResponse;
   @Output() close = new EventEmitter<void>();
   loading = false;
     showFullDescription: { [key: string]: boolean } = {};
@@ -64,6 +65,17 @@ export class ViewCoursesComponent implements OnInit {
     toggleDescription(moduleId: string) {
         this.showFullDescription[moduleId] = !this.showFullDescription[moduleId];
     }
+    openDeleteCourseModal(module: ModuleResponse, content: NgbModalRef) {
+        this.currentCourse = module;
+        this.modalService.open(content, { ariaLabelledBy: 'modal-title-course' , backdrop: false }).result.then(
+            result => {
+                if (result === 'Ok') {
+                    this.deleteCourse(module.courseID);
+                }
+            },
+            reason => {}
+        );
+    }
     onClose() {
         this.close.emit();
     }
@@ -72,21 +84,11 @@ export class ViewCoursesComponent implements OnInit {
         this.courseService.deleteCourse(id).subscribe(
         () => {
             this.toastr.success('Course deleted successfully');
-            this.groupService.getGroup(this.group.id).subscribe(
-                group => {
-                    this.group = group;
-                    this.fetchModules();
-                },
-                error => {
-                    if (error.error) {
-                        this.toastr.error(error.error);
-                    } else {
-                        this.toastr.error('Failed to fetch group');
-                    }
-                    this.loading = false;
-                }
-            );
-        },
+            this.currentCourse = null;
+            this.modules = this.modules.filter(m => m.courseID !== id);
+            this.toastr.info('Refresh your page to see changes');
+            this.loading = false;
+            },
         error => {
             if (error.error) {
                 this.toastr.error(error.error);

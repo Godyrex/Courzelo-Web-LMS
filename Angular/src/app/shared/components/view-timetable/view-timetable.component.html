@@ -1,4 +1,4 @@
-<ng-container *ngIf="group" >
+<ng-container *ngIf="group && timeTableSlots" >
     <div class="timetable-container" >
         <h1 class="text-center text-secondary">{{ groupKey }} Timetable</h1>
         <h4 class="text-center text-secondary">{{timetableWeek | date:'longDate'}}</h4>
@@ -33,7 +33,7 @@
 </div>
     </div>
 </ng-container>
-<ng-container *ngIf="teacher">
+<ng-container *ngIf="teacher && timeTableSlots">
     <h1 class="text-center text-secondary">{{ teacherKey }} Timetable</h1>
     <h4 class="text-center text-secondary">{{timetableWeek | date:'longDate'}}</h4>
     <div class="timetable text-white">

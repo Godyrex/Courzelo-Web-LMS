@@ -28,7 +28,7 @@
                     <span>{{ gradesResponse.average | number:'1.2-2' }}</span>
                 </h5>
             </div>
-            <div *ngIf="gradesResponse?.grades?.length > 0" class="col-6 mb-4 text-center">
+            <div *ngIf="gradesResponse?.grades?.length > 0 && programResponse" class="col-6 mb-4 text-center">
                 <h5>Your Total credit:
                     <span>{{ calculateStudentTotalCredits() | number:'1.0-0' }}/{{ programResponse.credits }}</span>
                 </h5>

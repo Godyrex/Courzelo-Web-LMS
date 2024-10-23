@@ -61,4 +61,6 @@ public interface IInstitutionService {
     ResponseEntity<HttpStatus> updateInstitutionTimeSlots(@NotNull String institutionID, InstitutionTimeSlotsConfiguration timeSlots);
 
     ResponseEntity<InstitutionTimeSlotsConfiguration> getInstitutionTimeSlots(@NotNull String institutionID);
+
+    ResponseEntity<HttpStatus> updateSkills(@NotNull String institutionID,String userEmail, List<String> skills);
 }

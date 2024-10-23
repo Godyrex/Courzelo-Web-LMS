@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Map;
 
 
 @Data
@@ -22,5 +23,6 @@ public class ModuleRequest {
     private List<String> skills;
     private int credit;
     private String program;
+    private Map<String,Long> moduleParts;
 
 }

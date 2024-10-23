@@ -1,11 +1,11 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {FormBuilder, FormGroup, Validators} from '@angular/forms';
+import {FormArray, FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {ResponseHandlerService} from '../../../../shared/services/user/response-handler.service';
 import {ToastrService} from 'ngx-toastr';
 import {ModuleResponse} from '../../../../shared/models/institution/ModuleResponse';
 import {ModuleService} from '../../../../shared/services/institution/module.service';
 import {InstitutionResponse} from '../../../../shared/models/institution/InstitutionResponse';
-import {ModuleRequest} from "../../../../shared/models/institution/ModuleRequest";
+import {ModuleRequest} from '../../../../shared/models/institution/ModuleRequest';
 
 @Component({
   selector: 'app-edit-module',
@@ -17,6 +17,7 @@ export class EditModuleComponent implements OnInit {
   @Input() institution: InstitutionResponse;
   @Output() moduleUpdated = new EventEmitter<void>();
   editModuleForm: FormGroup;
+  moduleRequest: ModuleRequest;
 
   constructor(
       private fb: FormBuilder,
@@ -26,6 +27,11 @@ export class EditModuleComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // Convert moduleParts object into an array of [key, value] pairs
+    const moduleParts = this.module.moduleParts
+        ? Object.entries(this.module.moduleParts) // Converts { "TP": 40, "Cour": 80 } to [["TP", 40], ["Cour", 80]]
+        : [];
+
     this.editModuleForm = this.fb.group({
       name: [this.module.name, Validators.required],
       description: [this.module.description, Validators.required],
@@ -40,16 +46,49 @@ export class EditModuleComponent implements OnInit {
                 ? 'SECOND_SEMESTER'
                 : null
       ],
+      moduleParts: this.fb.array(
+          moduleParts.map(([key, value]) =>
+              this.fb.group({
+                name: [key, Validators.required],   // "TP" or "Cour"
+                value: [value, Validators.required] // 40 or 80
+              })
+          )
+      ),
       isFinished: [this.module.isFinished || false]
     });
   }
 
+
+  get moduleParts(): FormArray {
+    return this.editModuleForm.get('moduleParts') as FormArray;
+  }
+
+  addModulePart(): void {
+    this.moduleParts.push(this.fb.group({
+      name: ['', Validators.required],
+      value: [0, Validators.required]
+    }));
+  }
+
+  removeModulePart(index: number): void {
+    this.moduleParts.removeAt(index);
+  }
   onSubmit() {
     if (this.editModuleForm.valid) {
       console.log(this.editModuleForm.value);
-      const moduleRequest: ModuleRequest = this.editModuleForm.value;
-      console.log(moduleRequest);
-      this.moduleService.updateModule(this.module.id, moduleRequest).subscribe(
+      const formValue = this.editModuleForm.value;
+      const modulePartsMap = {};
+
+      formValue.moduleParts.forEach(part => {
+        modulePartsMap[part.name] = part.value;
+      });
+
+      this.moduleRequest = {
+        ...formValue,
+        moduleParts: modulePartsMap,
+      };
+      console.log(this.moduleRequest);
+      this.moduleService.updateModule(this.module.id, this.moduleRequest).subscribe(
           () => {
             this.toastr.success('Module updated successfully');
             this.moduleUpdated.emit({ ...this.module, ...this.editModuleForm.value });
