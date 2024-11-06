@@ -2,7 +2,7 @@ import {AfterViewInit, Component, OnInit, TemplateRef, ViewChild} from '@angular
 import {InstitutionRequest} from '../../../shared/models/institution/InstitutionRequest';
 import {InstitutionService} from '../../../shared/services/institution/institution.service';
 import {ResponseHandlerService} from '../../../shared/services/user/response-handler.service';
-import {FormBuilder, FormGroup, Validators} from '@angular/forms';
+import {AbstractControl, FormBuilder, FormGroup, ValidationErrors, ValidatorFn, Validators} from '@angular/forms';
 import {ToastrService} from 'ngx-toastr';
 import {ActivatedRoute} from '@angular/router';
 import {UserService} from '../../../shared/services/user/user.service';
@@ -10,7 +10,10 @@ import * as L from 'leaflet';
 import {InstitutionMapRequest} from '../../../shared/models/institution/InstitutionMapRequest';
 import {CalendarEventRequest} from '../../../shared/models/institution/CalendarEventRequest';
 import {environment} from '../../../../environments/environment';
-
+import {SemesterRequest} from '../../../shared/models/institution/SemesterRequest';
+import {InstitutionResponse} from '../../../shared/models/institution/InstitutionResponse';
+import {InstitutionTimeSlot} from '../../../shared/models/institution/InstitutionTimeSlot';
+import {InstitutionTimeSlotConfiguration} from '../../../shared/models/institution/InstitutionTimeSlotConfiguration';
 @Component({
   selector: 'app-edit',
   templateUrl: './edit.component.html',
@@ -24,13 +27,26 @@ export class EditComponent implements OnInit, AfterViewInit {
       private toastr: ToastrService,
       private route: ActivatedRoute,
         private userService: UserService
-  ) { }
-
+  ) {
+        this.timeslotForm = this.formBuilder.group({
+            startTime: ['', Validators.required],
+            endTime: ['', Validators.required]
+        }, { validators: [this.timeOrderValidator, this.overlappingTimesValidator.bind(this)] });
+        this.daysForm = this.formBuilder.group({
+            selectedDays: [[]]
+        });
+    }
+    daysForm: FormGroup;
+    daysSelected = false;
+    days: string[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    selectedDays: string[] = [];
+    timeslotForm: FormGroup;
+    timeslots: InstitutionTimeSlot[] = [];
     selectedFileName: string;
     selectedFileUrl: string | ArrayBuffer;
     file: any;
     generationEvent: CalendarEventRequest = {};
-    generationEventList: CalendarEventRequest[] = [];
+    institutionTimeSlotsConfiguration: InstitutionTimeSlotConfiguration;
     year: number = new Date().getFullYear(); // Set current year as default
     events: Event[] = []; // User-defined events
     today = new Date();
@@ -50,7 +66,7 @@ export class EditComponent implements OnInit, AfterViewInit {
         day: 1
     };
     institutionID: string;
-    currentInstitution;
+    currentInstitution: InstitutionResponse;
     institutionMapRequest: InstitutionMapRequest = {};
     loading = false;
     countries = [];
@@ -74,9 +90,25 @@ export class EditComponent implements OnInit, AfterViewInit {
         name: ['', [Validators.required, Validators.maxLength(15)]],
         color: ['#FFFF00', [Validators.required]],
     }, { validators: [this.sameMonth, this.dateOrder] });
+    firstSemesterBSValue = {
+        year: this.today.getFullYear(),
+        month: 1,
+        day: 1
+    };
+    secondSemesterBSValue = {
+        year: this.today.getFullYear(),
+        month: 6,
+        day: 1
+    };
+    SetSemesterForm = this.formBuilder.group({
+        firstSemesterStart: [this.firstSemesterBSValue, [Validators.required]],
+        secondSemesterStart: [this.secondSemesterBSValue, [Validators.required]],
+    });
+
   ngOnInit() {
       this.generationEvent.startDate = new Date();
       this.institutionID = this.route.snapshot.paramMap.get('institutionID');
+      this.loadTimeslots();
       this.userService.getCountries().subscribe(
           countries => {
               this.countries = countries;
@@ -108,7 +140,51 @@ if (this.pageTemplate)  {
     this.initializeMap();
 }
   }
+    onDayChange(event: any) {
+        const day = event.target.value;
+        if (event.target.checked) {
+            this.selectedDays.push(day);
+        } else {
+            this.selectedDays = this.selectedDays.filter(d => d !== day);
+        }
+    }
+    selectDays() {
+        this.selectedDays = this.daysForm.value.selectedDays;
+        if (this.selectedDays.length > 0) {
+            this.daysSelected = true;
+        }
+    }
+    setEligibleTimes() {
+        this.timeslots.push(this.timeslotForm.value);
+        this.timeslotForm.reset(); // Reset the form after adding a time slot
+    }
+    timeOrderValidator(control: FormGroup): ValidationErrors | null {
+        const startTime = control.get('startTime')?.value;
+        const endTime = control.get('endTime')?.value;
 
+        if (startTime && endTime && startTime >= endTime) {
+            return { timeOrder: true };
+        }
+        return null;
+    }
+
+    overlappingTimesValidator(control: FormGroup): ValidationErrors | null {
+        const startTime = control.get('startTime')?.value;
+        const endTime = control.get('endTime')?.value;
+
+        if (startTime && endTime) {
+            for (const slot of this.timeslots) {
+                if (
+                    (startTime >= slot.startTime && startTime < slot.endTime) ||
+                    (endTime > slot.startTime && endTime <= slot.endTime) ||
+                    (startTime <= slot.startTime && endTime >= slot.endTime)
+                ) {
+                    return { overlappingTimes: true };
+                }
+            }
+        }
+        return null;
+    }
     initializeMap() {
         if (document.getElementById('map')) {
             this.setLocation();
@@ -116,22 +192,99 @@ if (this.pageTemplate)  {
             console.error('Map container not found');
         }
     }
-    downloadExcel() {
-        this.institutionService.downloadExcel(this.institutionID).subscribe(
+    generateTimetable() {
+        const loadingToastr = this.toastr.info('Generating timetable... This could take a few minutes.',
+            'Please wait', { disableTimeOut: true });
+        this.institutionService.generateTimetable(this.institutionID).subscribe(
             response => {
-                const blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-                const url = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = 'file.xlsx';
-                link.click();
-                window.URL.revokeObjectURL(url);
+                this.toastr.clear(loadingToastr.toastId);
+                this.toastr.success('Timetable generated successfully.');
             },
             error => {
-                console.log('error downloading');
-                this.toastr.error('Error downloading Excel.');
+                this.toastr.clear(loadingToastr.toastId);
+                if (error.error) {
+                    this.toastr.error(error.error);
+                } else {
+                    this.toastr.error('Error generating timetable.');
+                }
             }
         );
+    }
+    loadTimeslots() {
+      console.log('Loading timeslots');
+        this.institutionService.getInstitutionTimeSlots(this.institutionID).subscribe(timeslots => {
+            this.institutionTimeSlotsConfiguration = timeslots;
+            this.timeslots = timeslots.timeSlots;
+            this.selectedDays = timeslots.days;
+        });
+    }
+    addTimeslot() {
+        if (this.timeslotForm.valid) {
+            this.timeslots.push(this.timeslotForm.value);
+            this.timeslotForm.reset();
+        }
+    }
+
+    removeTimeslot(index: number) {
+        this.timeslots.splice(index, 1);
+    }
+
+    updateInstitutionTimeSlots(institutionID: string) {
+      const institutionTimeSlotsConfiguration: InstitutionTimeSlotConfiguration = {
+            days: this.selectedDays,
+            timeSlots: this.timeslots
+        };
+        this.institutionService.updateInstitutionTimeSlots(institutionID, institutionTimeSlotsConfiguration).subscribe(response => {
+            this.toastr.success('Timeslots updated successfully.');
+        }, error => {
+            if (error.error) {
+                this.toastr.error(error.error);
+            } else {
+                this.toastr.error('Error updating timeslots.');
+            }
+            }
+            );
+    }
+    clearSemester() {
+        this.institutionService.clearSemester(this.institutionID).subscribe(
+            response => {
+                this.toastr.success('Semester cleared successfully.');
+                this.currentInstitution.firstSemesterStart = null;
+                this.currentInstitution.secondSemesterStart = null;
+            }, error => {
+                if (error.error) {
+                    this.toastr.error(error.error);
+                } else {
+                    this.toastr.error('Error clearing semester.');
+                }
+            });
+    }
+    setSemester() {
+        if (this.SetSemesterForm.valid) {
+            const semester: SemesterRequest = {
+                firstSemesterStart: new Date(this.SetSemesterForm.controls['firstSemesterStart'].value.year,
+                    this.SetSemesterForm.controls['firstSemesterStart'].value.month - 1,
+                    this.SetSemesterForm.controls['firstSemesterStart'].value.day),
+                secondSemesterStart: new Date(this.SetSemesterForm.controls['secondSemesterStart'].value.year,
+                    this.SetSemesterForm.controls['secondSemesterStart'].value.month - 1,
+                    this.SetSemesterForm.controls['secondSemesterStart'].value.day)
+            };
+            this.institutionService.setSemester(this.institutionID, semester).subscribe(
+                response => {
+                    this.toastr.success('Semester set successfully.');
+                    this.currentInstitution.firstSemesterStart = semester.firstSemesterStart;
+                    this.currentInstitution.secondSemesterStart = semester.secondSemesterStart;
+                }, error => {
+                    if (error.error) {
+                        this.toastr.error(error.error);
+                    } else {
+                        this.toastr.error('Error setting semester.');
+                    }
+                }
+            );
+        } else {
+            this.toastr.error('Please fill all fields');
+        }
     }
     returnEvent(form: FormGroup): CalendarEventRequest {
         return Object.assign(this.generationEvent, form.value, {color: form.controls['color'].value});
@@ -159,43 +312,6 @@ if (this.pageTemplate)  {
         }
 
         return null;
-    }
-    addEvent() {
-        if (this.generateForm.valid) {
-            const newEvent = this.returnEvent(this.generateForm);
-            newEvent.startDate = new Date(this.generateForm.controls['startDate'].value.year,
-                this.generateForm.controls['startDate'].value.month - 1,
-                this.generateForm.controls['startDate'].value.day);
-            newEvent.finishDate = new Date(this.generateForm.controls['finishDate'].value.year,
-                this.generateForm.controls['finishDate'].value.month - 1,
-                this.generateForm.controls['finishDate'].value.day);
-            console.log('New Event', newEvent);
-            for (const event of this.generationEventList) {
-                console.log('Event', event);
-                if (this.isOverlapping(newEvent, event)) {
-                    console.log('Event overlaps with an existing event.');
-                    this.toastr.error('Event overlaps with an existing event.');
-                    return;
-                }
-            }
-            const clonedEvent = JSON.parse(JSON.stringify(newEvent));
-            this.generationEventList.push(clonedEvent);
-            this.toastr.success('Event added successfully.');
-        } else {
-            this.toastr.error('Form is not valid.');
-        }
-    }
-    generateExcel() {
-        console.log('Events being generated : ' + this.generationEventList);
-        this.institutionService.generateExcel(this.institutionID, this.generationEventList).subscribe(
-            response => {
-                console.log('success generating');
-                this.toastr.success('Excel generated successfully.');
-            }, error => {
-                console.log('error generating');
-                this.toastr.error('Error generating Excel.');
-            }
-        );
     }
   updateInstitution(id: string) {
     if (this.updateInstitutionForm.valid) {

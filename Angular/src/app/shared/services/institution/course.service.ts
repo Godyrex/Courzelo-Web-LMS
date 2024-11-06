@@ -16,6 +16,9 @@ export class CourseService {
   addCourse(institutionID: string, courseRequest: CourseRequest): Observable<void> {
     return this.http.post<void>(`${this.baseUrl}/${institutionID}/add`, courseRequest);
   }
+  addProgramCourses(institutionID: string, semester: string, programID: string): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/${institutionID}/${programID}/add`, null, { params: { semester } });
+  }
 
   updateCourse(courseID: string, courseRequest: CourseRequest): Observable<void> {
     return this.http.put<void>(`${this.baseUrl}/${courseID}/update`, courseRequest);
@@ -27,6 +30,9 @@ export class CourseService {
 
   getCourse(courseID: string): Observable<CourseResponse> {
     return this.http.get<CourseResponse>(`${this.baseUrl}/${courseID}`);
+  }
+  getMyCourses(): Observable<CourseResponse[]> {
+    return this.http.get<CourseResponse[]>(`${this.baseUrl}/myCourses`);
   }
   downloadFile(courseID: string, fileName: string): Observable<Blob> {
     return this.http.get(`${this.baseUrl}/${courseID}/${fileName}/download`, { responseType: 'blob' });

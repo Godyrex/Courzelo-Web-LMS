@@ -8,5 +8,6 @@ export interface InstitutionResponse {
     website?: string;
     latitude?: number;
     longitude?: number;
-    hasCalendar?: boolean;
+    firstSemesterStart?: Date;
+    secondSemesterStart?: Date;
 }

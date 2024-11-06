@@ -26,8 +26,7 @@ export class Interceptor implements HttpInterceptor {
         //    console.log(isAuthRoute);
           if (error.status === 401 && !error.url.includes('/api/v1/auth/check-auth') ) {
               this.toastr.error('Session Expired', 'Error', {progressBar: true});
-            this.authService.logout().subscribe();
-              this.router.navigateByUrl('/sessions/signin');
+            this.authService.logout();
           }
            return throwError(error);
          })

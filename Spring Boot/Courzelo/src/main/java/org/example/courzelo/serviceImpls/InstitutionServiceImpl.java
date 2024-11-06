@@ -4,26 +4,19 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.example.courzelo.dto.requests.CalendarEventRequest;
-import org.example.courzelo.dto.requests.InstitutionMapRequest;
-import org.example.courzelo.dto.requests.InstitutionRequest;
+import org.example.courzelo.dto.requests.institution.CalendarEventRequest;
+import org.example.courzelo.dto.requests.institution.InstitutionMapRequest;
+import org.example.courzelo.dto.requests.institution.InstitutionRequest;
+import org.example.courzelo.dto.requests.UserEmailsRequest;
+import org.example.courzelo.dto.requests.institution.SemesterRequest;
 import org.example.courzelo.dto.responses.*;
 import org.example.courzelo.dto.responses.institution.*;
-import org.example.courzelo.models.CodeType;
-import org.example.courzelo.models.CodeVerification;
-import org.example.courzelo.models.institution.Course;
-import org.example.courzelo.models.institution.Group;
-import org.example.courzelo.models.institution.Institution;
-import org.example.courzelo.models.Role;
-import org.example.courzelo.models.User;
-import org.example.courzelo.repositories.CourseRepository;
-import org.example.courzelo.repositories.GroupRepository;
-import org.example.courzelo.repositories.InstitutionRepository;
-import org.example.courzelo.repositories.UserRepository;
-import org.example.courzelo.services.ICodeVerificationService;
-import org.example.courzelo.services.IGroupService;
-import org.example.courzelo.services.IInstitutionService;
-import org.example.courzelo.services.IMailService;
+import org.example.courzelo.dto.responses.institution.InvitationsResultResponse;
+import org.example.courzelo.exceptions.*;
+import org.example.courzelo.models.*;
+import org.example.courzelo.models.institution.*;
+import org.example.courzelo.repositories.*;
+import org.example.courzelo.services.*;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -40,6 +33,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.security.Principal;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -56,6 +51,15 @@ public class InstitutionServiceImpl implements IInstitutionService {
     private final IGroupService groupService;
     private final GroupRepository groupRepository;
     private final CourseRepository courseRepository;
+    private final IGroupService iGroupService;
+    private final ICourseService iCourseService;
+    private final IInvitationService iInvitationService;
+    private final InvitationRepository invitationRepository;
+    private final CodeVerificationRepository codeVerificationRepository;
+    private final IProgramService iProgramService;
+    private final static String INSTITUTION_NOT_FOUND = "Institution not found";
+    private final static String GROUP_NOT_FOUND = "Group not found";
+
     @Override
     public ResponseEntity<PaginatedInstitutionsResponse> getInstitutions(int page, int sizePerPage, String keyword) {
         log.info("Fetching institutions for page: {}, sizePerPage: {}", page, sizePerPage);
@@ -101,7 +105,7 @@ public class InstitutionServiceImpl implements IInstitutionService {
 
     @Override
     public ResponseEntity<HttpStatus> updateInstitutionInformation(String institutionID, InstitutionRequest institutionRequest,Principal principal) {
-        Institution institution = institutionRepository.findById(institutionID).orElseThrow(()-> new NoSuchElementException("Institution not found"));
+        Institution institution = institutionRepository.findById(institutionID).orElseThrow(()-> new InstitutionNotFoundException(INSTITUTION_NOT_FOUND));
         institution.updateInstitution(institutionRequest);
         institutionRepository.save(institution);
         return ResponseEntity.ok().build();
@@ -109,22 +113,23 @@ public class InstitutionServiceImpl implements IInstitutionService {
 
     @Override
     public ResponseEntity<StatusMessageResponse> deleteInstitution(String institutionID) {
-        removeAllInstitutionUsers(institutionRepository.findById(institutionID).orElseThrow(()-> new NoSuchElementException("Institution not found")));
+        iProgramService.deleteAllInstitutionPrograms(institutionID);
         groupService.deleteGroupsByInstitution(institutionID);
+        removeAllInstitutionUsers(institutionRepository.findById(institutionID).orElseThrow(()-> new InstitutionNotFoundException(INSTITUTION_NOT_FOUND)));
         institutionRepository.deleteById(institutionID);
         return ResponseEntity.ok(new StatusMessageResponse("Success","Institution deleted successfully"));
     }
 
     @Override
     public ResponseEntity<InstitutionResponse> getInstitutionByID(String institutionID) {
-        return ResponseEntity.ok(new InstitutionResponse(institutionRepository.findById(institutionID).orElseThrow(()-> new NoSuchElementException("Institution not found"))));
+        return ResponseEntity.ok(new InstitutionResponse(institutionRepository.findById(institutionID).orElseThrow(()-> new InstitutionNotFoundException(INSTITUTION_NOT_FOUND))));
     }
 
 
     @Override
     public ResponseEntity<PaginatedInstitutionUsersResponse> getInstitutionUsers(String institutionID, String keyword, String role, int page, int sizePerPage) {
         log.info("Fetching users for institution: {}, page: {}, sizePerPage: {}, keyword: {}, role: {}", institutionID, page, sizePerPage, keyword, role);
-        Institution institution = institutionRepository.findById(institutionID).orElseThrow(()-> new NoSuchElementException("Institution not found"));
+        Institution institution = institutionRepository.findById(institutionID).orElseThrow(()-> new InstitutionNotFoundException(INSTITUTION_NOT_FOUND));
         List<User> users;
         if (role == null) {
             log.info("role is null");
@@ -190,6 +195,8 @@ public class InstitutionServiceImpl implements IInstitutionService {
                         .roles(getUserRoleInInstitution(user, institution).stream().map(Role::name).toList())
                         .country(user.getProfile().getCountry())
                         .gender(user.getProfile().getGender())
+                        .disponibilitySlots(user.getEducation().getDisponibilitySlots())
+                        .skills(user.getEducation().getSkill())
                         .build())
                 .collect(Collectors.toList());
         log.info("after response");
@@ -206,24 +213,28 @@ public class InstitutionServiceImpl implements IInstitutionService {
     @Override
     public void removeAllInstitutionUsers(Institution institution) {
         institution.getUsers().forEach(user -> {
-            User user1 = userRepository.findUserByEmail(user);
-            user1.getEducation().setInstitutionID(null);
-            userRepository.save(user1);
+            userRepository.findByEmail(user).ifPresent(user1 -> {
+                user1.getEducation().setInstitutionID(null);
+                if (institution.getAdmins() != null && institution.getAdmins().contains(user)) {
+                    user1.getRoles().remove(Role.ADMIN);
+                }
+                if (institution.getTeachers() != null && institution.getTeachers().contains(user)) {
+                    user1.getRoles().remove(Role.TEACHER);
+                }
+                if (institution.getStudents() != null && institution.getStudents().contains(user)) {
+                    user1.getRoles().remove(Role.STUDENT);
+                }
+                userRepository.save(user1);
+            });
         });
     }
 
     @Override
     public ResponseEntity<HttpStatus> removeInstitutionUser(String institutionID, String email, Principal principal) {
         log.info("Removing user from institution {} with email: {}", institutionID, email);
-        Institution institution = institutionRepository.findById(institutionID).orElseThrow(()-> new NoSuchElementException("Institution not found"));
+        Institution institution = institutionRepository.findById(institutionID).orElseThrow(()-> new InstitutionNotFoundException(INSTITUTION_NOT_FOUND));
         log.info("Institution found");
-        User user = userRepository.findUserByEmail(email);
-        log.info("User finding");
-        if(user == null ){
-            log.info("test");
-            return ResponseEntity.notFound().build();
-        }
-        log.info("User found");
+        User user = userRepository.findByEmail(email).orElseThrow(()-> new UserNotFoundException("User not found"));
         if(isUserInInstitution(user, institution)){
             log.info("User in institution");
             if(institution.getAdmins().contains(user.getEmail())){
@@ -234,11 +245,13 @@ public class InstitutionServiceImpl implements IInstitutionService {
             if (institution.getTeachers().contains(user.getEmail())){
                 institution.getTeachers().remove(user.getEmail());
                 user.getRoles().remove(Role.TEACHER);
+                iCourseService.removeTeacherFromCourses(user.getEmail());
                 log.info("User removed from teachers");
             }
             if (institution.getStudents().contains(user.getEmail())){
                 user.getRoles().remove(Role.STUDENT);
                 institution.getStudents().remove(user.getEmail());
+                iGroupService.removeStudentFromGroup(user);
                 log.info("User removed from students");
             }
             user.getEducation().setInstitutionID(null);
@@ -247,35 +260,38 @@ public class InstitutionServiceImpl implements IInstitutionService {
             institutionRepository.save(institution);
             return ResponseEntity.ok().build();
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        throw new UserNotPartOfInstitutionException(user.getEmail()+" not part of "+ institution.getName());
     }
 
     @Override
     public ResponseEntity<HttpStatus> addInstitutionUserRole(String institutionID, String email, String role, Principal principal) {
-        Institution institution = institutionRepository.findById(institutionID).orElseThrow(()-> new NoSuchElementException("Institution not found"));
-        User user = userRepository.findUserByEmail(email);
-        if(user == null ){
-            return ResponseEntity.notFound().build();
-        }
+        Institution institution = institutionRepository.findById(institutionID).orElseThrow(()-> new InstitutionNotFoundException(INSTITUTION_NOT_FOUND));
+        User user = userRepository.findByEmail(email).orElseThrow(()-> new UserNotFoundException("User not found"));
         if(isUserInInstitution(user, institution)){
             if(role.equals("ADMIN")){
                 if(institution.getAdmins().contains(user.getEmail())){
-                    return ResponseEntity.status(HttpStatus.CONFLICT).build();
+                    throw new UserAlreadyHasRoleException(user.getEmail()+" already has role "+role.toLowerCase());
                 }
                 institution.getAdmins().add(user.getEmail());
-                user.getRoles().add(Role.ADMIN);
+                if (!user.getRoles().contains(Role.ADMIN)) {
+                    user.getRoles().add(Role.ADMIN);
+                }
             }else if(role.equals("TEACHER")) {
                 if (institution.getTeachers().contains(user.getEmail())) {
-                    return ResponseEntity.status(HttpStatus.CONFLICT).build();
+                    throw new UserAlreadyHasRoleException(user.getEmail()+" already has role "+role.toLowerCase());
                 }
                 institution.getTeachers().add(user.getEmail());
-                user.getRoles().add(Role.TEACHER);
+                if (!user.getRoles().contains(Role.TEACHER)) {
+                    user.getRoles().add(Role.TEACHER);
+                }
             }else{
                 if (institution.getStudents().contains(user.getEmail())) {
-                    return ResponseEntity.status(HttpStatus.CONFLICT).build();
+                    throw new UserAlreadyHasRoleException(user.getEmail()+" already has role "+role.toLowerCase());
                 }
                 institution.getStudents().add(user.getEmail());
-                user.getRoles().add(Role.STUDENT);
+                if (!user.getRoles().contains(Role.STUDENT)) {
+                    user.getRoles().add(Role.STUDENT);
+                }
             }
             userRepository.save(user);
             institutionRepository.save(institution);
@@ -286,11 +302,8 @@ public class InstitutionServiceImpl implements IInstitutionService {
 
     @Override
     public ResponseEntity<HttpStatus> removeInstitutionUserRole(String institutionID, String email, String role, Principal principal) {
-        Institution institution = institutionRepository.findById(institutionID).orElseThrow(()-> new NoSuchElementException("Institution not found"));
-        User user = userRepository.findUserByEmail(email);
-        if(user == null ){
-            return ResponseEntity.notFound().build();
-        }
+        Institution institution = institutionRepository.findById(institutionID).orElseThrow(()-> new InstitutionNotFoundException(INSTITUTION_NOT_FOUND));
+        User user = userRepository.findByEmail(email).orElseThrow(()-> new UserNotFoundException("User not found"));
         if(isUserInInstitution(user, institution)){
             if(role.equals("ADMIN")){
                 if(institution.getAdmins().contains(user.getEmail())){
@@ -315,14 +328,14 @@ public class InstitutionServiceImpl implements IInstitutionService {
             institutionRepository.save(institution);
             return ResponseEntity.ok().build();
         }
-        return ResponseEntity.badRequest().build();
+        throw new UserNotPartOfInstitutionException(user.getEmail()+" not part of "+ institution.getName());
     }
 
     @Override
     public ResponseEntity<HttpStatus> setInstitutionMap(String institutionID, InstitutionMapRequest institutionMapRequest, Principal principal) {
         log.info("Setting institution map for institution: {}", institutionID);
         log.info("Latitude: {}, Longitude: {}", institutionMapRequest.getLatitude(), institutionMapRequest.getLongitude());
-        Institution institution = institutionRepository.findById(institutionID).orElseThrow(()-> new NoSuchElementException("Institution not found"));
+        Institution institution = institutionRepository.findById(institutionID).orElseThrow(()-> new InstitutionNotFoundException(INSTITUTION_NOT_FOUND));
         institution.setLatitude(institutionMapRequest.getLatitude());
         institution.setLongitude(institutionMapRequest.getLongitude());
         institutionRepository.save(institution);
@@ -330,39 +343,9 @@ public class InstitutionServiceImpl implements IInstitutionService {
     }
 
     @Override
-    public ResponseEntity<HttpStatus> generateExcel(String institutionID, List<CalendarEventRequest> events, Principal principal) {
-            Institution institution = institutionRepository.findById(institutionID).orElseThrow(()-> new NoSuchElementException("Institution not found"));
-            try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-                calendarService.createCalendarSheet(workbook, events);
-                workbook.write(outputStream);
-                institution.setExcelFile(outputStream.toByteArray());
-                institutionRepository.save(institution);
-                return ResponseEntity.ok().build();
-            } catch (IOException e) {
-                e.printStackTrace();
-                return ResponseEntity.badRequest().build();
-            }
-    }
-
-    @Override
-    public ResponseEntity<byte[]> downloadExcel(String institutionID, Principal principal) {
-            Institution institution = institutionRepository.findById(institutionID).orElseThrow(()-> new NoSuchElementException("Institution not found"));
-            byte[] excelFile = institution.getExcelFile();
-            if (excelFile != null) {
-                HttpHeaders headers = new HttpHeaders();
-                headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=school-year-calendar.xlsx");
-                return ResponseEntity.ok()
-                        .headers(headers)
-                        .body(excelFile);
-            }
-
-        return ResponseEntity.badRequest().build();
-    }
-
-    @Override
     public ResponseEntity<HttpStatus> uploadInstitutionImage(String institutionID, MultipartFile file, Principal principal) {
         try {
-            Institution institution= institutionRepository.findById(institutionID).orElseThrow(()-> new NoSuchElementException("Institution not found"));
+            Institution institution= institutionRepository.findById(institutionID).orElseThrow(()-> new InstitutionNotFoundException(INSTITUTION_NOT_FOUND));
             // Define the path where you want to save the image
             String baseDir = "upload" + File.separator + institution.getName() + File.separator + "logo" + File.separator;
 
@@ -410,7 +393,7 @@ public class InstitutionServiceImpl implements IInstitutionService {
     public ResponseEntity<byte[]> getInstitutionImage(String institutionID, Principal principal) {
         try {
             // Get the user
-            Institution instituion = institutionRepository.findById(institutionID).orElseThrow(()-> new NoSuchElementException("Institution not found"));
+            Institution instituion = institutionRepository.findById(institutionID).orElseThrow(()-> new InstitutionNotFoundException(INSTITUTION_NOT_FOUND));
             if(instituion.getLogo() == null){
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
             }
@@ -424,27 +407,57 @@ public class InstitutionServiceImpl implements IInstitutionService {
         }
     }
 
-    @Override
-    public ResponseEntity<HttpStatus> inviteUser(String institutionID, String email, String role, Principal principal) {
-        log.info("Inviting user to institution {} with email: {} and role : {} ", institutionID, email , role);
-        Institution institution = institutionRepository.findById(institutionID).orElseThrow(()-> new NoSuchElementException("Institution not found"));
-        User user = userRepository.findUserByEmail(email);
-
-        CodeVerification codeVerification = codeVerificationService.saveCode(
-                CodeType.INSTITUTION_INVITATION,
-                codeVerificationService.generateCode(),
-                email,
-                Role.valueOf(role),
-                institutionID,
-                Instant.now().plusSeconds(3600)
+    public ResponseEntity<InvitationsResultResponse> inviteUsers(String institutionID, UserEmailsRequest emails, String role,List<String> skills, Principal principal) {
+        log.info("Inviting user to institution {} with emails: {} and role : {} ", institutionID, emails , role);
+        Institution institution = institutionRepository.findById(institutionID).orElseThrow(()-> new InstitutionNotFoundException(INSTITUTION_NOT_FOUND));
+        InvitationsResultResponse invitationsResultResponse = InvitationsResultResponse.builder()
+                .emailsAlreadyAccepted(new ArrayList<>())
+                .emailsNotFound(new ArrayList<>())
+                .build();
+        emails.getEmails().forEach(
+                email -> {
+                   InvitationsResultResponse emailResponse = inviteUser(institutionID, email, role,skills, institution);
+                   if(emailResponse != null){
+                       if(!emailResponse.getEmailsNotFound().isEmpty()){
+                           invitationsResultResponse.getEmailsNotFound().addAll(emailResponse.getEmailsNotFound());
+                       }
+                       if(!emailResponse.getEmailsAlreadyAccepted().isEmpty()){
+                           invitationsResultResponse.getEmailsAlreadyAccepted().addAll(emailResponse.getEmailsAlreadyAccepted());
+                       }
+                   }
+                }
         );
-        if(user == null){
-            log.info("User not found");
-            mailService.sendInstituionInvitationEmail(email, institution,codeVerification);
-        }else {
-            mailService.sendInstituionInvitationEmail(user, institution, codeVerification);
+        log.info("Failed emails: {}", invitationsResultResponse);
+        return ResponseEntity.ok(invitationsResultResponse);
+    }
+
+    private InvitationsResultResponse inviteUser(String institutionID, String email, String role,List<String> skills, Institution institution) {
+        User user = userRepository.findUserByEmail(email);
+        InvitationsResultResponse invitationsResultResponse = InvitationsResultResponse.builder()
+                .emailsAlreadyAccepted(new ArrayList<>())
+                .emailsNotFound(new ArrayList<>())
+                .build();
+        if (user != null) {
+            Invitation invitation = invitationRepository.findByEmailAndInstitutionID(email, institutionID).orElse(null);
+            if (invitation == null ||  !invitation.getStatus().equals(InvitationStatus.ACCEPTED)) {
+                CodeVerification codeVerification = codeVerificationRepository.findByEmailAndInstitutionID(email, institutionID).orElse(null);
+                if(codeVerification == null)
+                {
+                    codeVerification = new CodeVerification(CodeType.INSTITUTION_INVITATION, UUID.randomUUID().toString(), email, Role.valueOf(role), institutionID, Instant.now().plusSeconds(86400));
+                    codeVerificationRepository.save(codeVerification);
+                }
+                iInvitationService.createInvitation(institutionID, email, Role.valueOf(role),skills, codeVerification.getId(), LocalDateTime.ofInstant(codeVerification.getExpiryDate(), ZoneId.systemDefault() )
+                        );
+                    mailService.sendInstituionInvitationEmail(email, institution,codeVerification);
+                return invitationsResultResponse;
+            }else{
+                invitationsResultResponse.getEmailsAlreadyAccepted().add(email);
+                return invitationsResultResponse;
+            }
+        }else{
+            invitationsResultResponse.getEmailsNotFound().add(email);
+            return invitationsResultResponse;
         }
-        return ResponseEntity.ok().build();
     }
 
     @Override
@@ -458,13 +471,15 @@ public class InstitutionServiceImpl implements IInstitutionService {
         log.info("Removing user from old institution");
         if(isUserInInstitution(user, institution) && getUserRoleInInstitution(user, institution).contains(codeVerification.getRole())){
             log.info("User already in institution");
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            throw new UserAlreadyPartOfInstitutionException(user.getEmail()+" already "+codeVerification.getRole() + " in "+institution.getName());
         }
         if(user.getEducation().getInstitutionID()!=null && !isUserInInstitution(user, institution)){
             removeInstitutionUser(user.getEducation().getInstitutionID(), codeVerification.getEmail(), null);
         }
         addInstitutionToUser(user, institution, codeVerification.getRole());
         addUserToInstitution(user, institution, codeVerification.getRole());
+        iInvitationService.updateInvitationStatus(codeVerification.getEmail(),institution.getId(), InvitationStatus.ACCEPTED);
+        iInvitationService.setUserSkills(codeVerification.getEmail(),institution.getId());
         log.info("Deleting code");
         codeVerificationService.deleteCode(codeVerification.getEmail(), CodeType.INSTITUTION_INVITATION);
         return ResponseEntity.ok().build();
@@ -472,14 +487,14 @@ public class InstitutionServiceImpl implements IInstitutionService {
 
     @Override
     public ResponseEntity<List<String>> getInstitutionStudents(String institutionID) {
-        Institution institution = institutionRepository.findById(institutionID).orElseThrow(()-> new NoSuchElementException("Institution not found"));
+        Institution institution = institutionRepository.findById(institutionID).orElseThrow(()-> new InstitutionNotFoundException(INSTITUTION_NOT_FOUND));
         log.info("Getting students for institution: {}", institution.getStudents());
         return ResponseEntity.ok(institution.getStudents());
     }
 
     @Override
     public ResponseEntity<List<String>> getInstitutionTeachers(String institutionID) {
-        Institution institution = institutionRepository.findById(institutionID).orElseThrow(()-> new NoSuchElementException("Institution not found"));
+        Institution institution = institutionRepository.findById(institutionID).orElseThrow(()-> new InstitutionNotFoundException(INSTITUTION_NOT_FOUND));
         log.info("Getting teachers for institution: {}", institution.getTeachers());
         return ResponseEntity.ok(institution.getTeachers());
     }
@@ -487,9 +502,9 @@ public class InstitutionServiceImpl implements IInstitutionService {
     @Override
     public ResponseEntity<List<GroupResponse>> getInstitutionGroups(String institutionID) {
         log.info("Getting groups for institution: {}", institutionID);
-        Institution institution = institutionRepository.findById(institutionID).orElseThrow(()-> new NoSuchElementException("Institution not found"));
+        Institution institution = institutionRepository.findById(institutionID).orElseThrow(()-> new InstitutionNotFoundException(INSTITUTION_NOT_FOUND));
         List<Group> groups = institution.getGroupsID().stream().map(
-                groupID -> groupRepository.findById(groupID).orElseThrow(()-> new NoSuchElementException("Group not found"))
+                groupID -> groupRepository.findById(groupID).orElseThrow(()-> new GroupNotFoundException(GROUP_NOT_FOUND))
         ).toList();
         log.info("Groups found: {}", groups);
         return ResponseEntity.ok(groups.stream().map(
@@ -499,10 +514,11 @@ public class InstitutionServiceImpl implements IInstitutionService {
                         .students(group.getStudents())
                         .courses(group.getCourses().stream().map(
                                         courseID -> {
-                                            Course course = courseRepository.findById(courseID).orElseThrow(() -> new NoSuchElementException("Course not found"));
+                                            Course course = courseRepository.findById(courseID).orElseThrow(() -> new CourseNotFoundException("Course not found"));
                                             return SimplifiedCourseResponse.builder()
                                                     .courseID(course.getId())
-                                                    .courseName(course.getName())
+                                                    .teacher(course.getTeacher())
+                                                    .module(course.getModule())
                                                     .build();
                                         }
                                 ).toList()
@@ -511,17 +527,109 @@ public class InstitutionServiceImpl implements IInstitutionService {
     }
 
     @Override
+    public ResponseEntity<HttpStatus> setSemester(String institutionID, SemesterRequest semesterRequest, Principal principal) {
+        log.info("Setting semester : {} for institution: {}",semesterRequest, institutionID);
+        Institution institution = institutionRepository.findById(institutionID).orElseThrow(()-> new InstitutionNotFoundException(INSTITUTION_NOT_FOUND));
+        if (semesterRequest.getFirstSemesterStart() != null && semesterRequest.getSecondSemesterStart() != null && semesterRequest.getFirstSemesterStart().before(semesterRequest.getSecondSemesterStart())) {
+            institution.setFirstSemesterStart(semesterRequest.getFirstSemesterStart());
+            institution.setSecondSemesterStart(semesterRequest.getSecondSemesterStart());
+            institutionRepository.save(institution);
+            return ResponseEntity.ok().build();
+        }
+        throw new SemesterMustBeInOrderException("First semester must be before second semester");
+    }
+
+    @Override
+    public ResponseEntity<HttpStatus> clearSemester(String institutionID, Principal principal) {
+        log.info("Clearing semester for institution: {}", institutionID);
+        Institution institution = institutionRepository.findById(institutionID).orElseThrow(()-> new InstitutionNotFoundException(INSTITUTION_NOT_FOUND));
+        institution.setFirstSemesterStart(null);
+        institution.setSecondSemesterStart(null);
+        institutionRepository.save(institution);
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<List<TeacherResponse>> getInstitutionFilteredTeachers(String institutionID, List<String> skills) {
+        Institution institution = institutionRepository.findById(institutionID)
+                .orElseThrow(() -> new InstitutionNotFoundException(INSTITUTION_NOT_FOUND));
+
+        List<TeacherResponse> filteredTeachers = institution.getTeachers().stream()
+                .map(email -> userRepository.findByEmail(email).orElse(null))
+                .filter(Objects::nonNull)
+                .filter(teacher -> hasRequiredSkills(teacher, skills))
+                .map(teacher -> TeacherResponse.builder().skills(teacher.getEducation().getSkill())
+                        .email(teacher.getEmail())
+                        .name(teacher.getProfile().getName())
+                        .lastname(teacher.getProfile().getLastname())
+                        .build())
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(filteredTeachers);
+    }
+
+    @Override
+    public ResponseEntity<HttpStatus> updateTeacherDisponibility( String teacherEmail, List<InstitutionTimeSlot> disponibilitySlots) {
+
+            User teacher = userRepository.findByEmail(teacherEmail)
+                    .orElseThrow(() -> new UserNotFoundException("Teacher not found"));
+
+            teacher.getEducation().setDisponibilitySlots(disponibilitySlots);
+            userRepository.save(teacher);
+            return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<HttpStatus> updateInstitutionTimeSlots(String institutionID, InstitutionTimeSlotsConfiguration timeSlots) {
+        Institution institution = institutionRepository.findById(institutionID)
+                .orElseThrow(() -> new InstitutionNotFoundException(INSTITUTION_NOT_FOUND));
+        institution.setTimeSlotsDays(timeSlots.getDays());
+        institution.setTimeSlots(timeSlots.getTimeSlots());
+
+        institutionRepository.save(institution);
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<InstitutionTimeSlotsConfiguration> getInstitutionTimeSlots(String institutionID) {
+        Institution institution = institutionRepository.findById(institutionID)
+                .orElseThrow(() -> new InstitutionNotFoundException(INSTITUTION_NOT_FOUND));
+
+        return ResponseEntity.ok(InstitutionTimeSlotsConfiguration.builder().timeSlots(institution.getTimeSlots()).days(institution.getTimeSlotsDays()).build());
+    }
+
+    @Override
+    public ResponseEntity<HttpStatus> updateSkills(String institutionID,String userEmail, List<String> skills) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        user.getEducation().setSkill(skills);
+        userRepository.save(user);
+        return ResponseEntity.ok().build();
+    }
+
+    private boolean hasRequiredSkills(User teacher, List<String> requiredSkills) {
+        List<String> teacherSkills = teacher.getEducation().getSkill();
+        for (String requiredSkill : requiredSkills) {
+            for (String teacherSkill : teacherSkills) {
+                if (teacherSkill.equalsIgnoreCase(requiredSkill) || teacherSkill.toLowerCase().contains(requiredSkill.toLowerCase())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
     public ResponseEntity<HttpStatus> addInstitutionUser(String institutionID, String email, String role,Principal principal) {
         log.info("Adding user to institution {} with email: {} and role : {} ", institutionID, email , role);
-        Institution institution = institutionRepository.findById(institutionID).orElseThrow(()-> new NoSuchElementException("Institution not found"));
+        Institution institution = institutionRepository.findById(institutionID).orElseThrow(()-> new InstitutionNotFoundException(INSTITUTION_NOT_FOUND));
         User user = userRepository.findUserByEmail(email);
-        if(user == null){
-            log.info("User not found");
-            return ResponseEntity.notFound().build();
+        if (user == null) {
+            throw new UserNotFoundException("User not found");
         }
         if(isUserInInstitution(user, institution) && getUserRoleInInstitution(user, institution).contains(Role.valueOf(role))){
             log.info("User already in institution");
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            throw new UserAlreadyPartOfInstitutionException("User already in institution");
         }
         addUserToInstitution(user, institution, Role.valueOf(role));
         addInstitutionToUser(user, institution, Role.valueOf(role));
@@ -529,20 +637,26 @@ public class InstitutionServiceImpl implements IInstitutionService {
     }
     public void addInstitutionToUser(User user, Institution institution, Role role){
             log.info("Setting user institution");
+            if(user.getEducation() == null){
+                user.setEducation(new UserEducation());
+            }
             user.getEducation().setInstitutionID(institution.getId());
 
             if (!user.getRoles().contains(role)) {
                 user.getRoles().add(role);
             }
             userRepository.save(user);
+            log.info("User institution set");
     }
     public void addUserToInstitution(User user, Institution institution, Role role){
+        log.info("Adding user to institution");
         switch (role) {
             case ADMIN -> institution.getAdmins().add(user.getEmail());
             case TEACHER -> institution.getTeachers().add(user.getEmail());
             case STUDENT -> institution.getStudents().add(user.getEmail());
         }
         institutionRepository.save(institution);
+        log.info("User added to institution");
     }
 
     public boolean isUserInInstitution(User user, Institution institution){

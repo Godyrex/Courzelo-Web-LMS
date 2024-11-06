@@ -3,7 +3,7 @@ package org.example.courzelo.institution;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-import org.example.courzelo.dto.requests.InstitutionRequest;
+import org.example.courzelo.dto.requests.institution.InstitutionRequest;
 import org.example.courzelo.dto.responses.institution.InstitutionResponse;
 import org.example.courzelo.models.institution.Institution;
 import org.example.courzelo.repositories.InstitutionRepository;
@@ -14,7 +14,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 

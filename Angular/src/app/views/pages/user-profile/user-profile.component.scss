@@ -1,0 +1,14 @@
+.profile-picture {
+  width: 100px;
+  height: 100px;
+}
+
+@media (max-width: 768px) {
+  .breadcrumb-container h1 {
+    font-size: 1.5rem;
+  }
+  .profile-picture {
+    width: 75px;
+    height: 75px;
+  }
+}

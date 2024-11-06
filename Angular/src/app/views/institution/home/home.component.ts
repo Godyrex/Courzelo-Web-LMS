@@ -65,8 +65,11 @@ export class HomeComponent implements OnInit {
                         this.authenticationService.refreshPageInfo();
                     },
                     error => {
-                        console.error(error);
-                        this.toastr.error('Error accepting invitation');
+                        if (error.status === 403) {
+                            this.toastr.error('You do not have permission');
+                        } else {
+                            this.toastr.error(error.error);
+                        }
                     }
                 );
             } else {
@@ -92,18 +95,21 @@ export class HomeComponent implements OnInit {
       });
 
   }
-  onTabChange(event: any) {
-    if (event.nextId === 'mapTab') {
-      setTimeout(() => {
-        this.initializeMap();
-      }, 0);
+    onTabChange(event: any) {
+        if (event.nextId === 2) {
+            this.toastr.info('Loading Map...');
+            setTimeout(() => {
+                this.initializeMap();
+            }, 1000);
+        }
+
+        if (event.nextId === 4) {  // The numeric ID for the Tools tab
+            setTimeout(() => {
+                this.loadGroupsAndTeachers();
+            }, 0);
+        }
     }
-      if (event.nextId === 'tools') {
-          setTimeout(() => {
-            this.loadGroupsAndTeachers();
-          }, 0);
-      }
-  }
+
   loadGroupsAndTeachers() {
     this.institutionService.getInstitutionGroups(this.institutionID).subscribe(
         response => {
@@ -111,7 +117,11 @@ export class HomeComponent implements OnInit {
           console.log('groups', this.groups);
         },
         error => {
-          console.error(error);
+            if (error.error) {
+                this.toastr.error(error.error);
+            } else {
+                this.toastr.error('Error loading groups');
+            }
           this.toastr.error('Error loading groups');
         }
     );
@@ -121,72 +131,24 @@ export class HomeComponent implements OnInit {
           console.log('teachers', this.teachers);
         },
         error => {
-          console.error(error);
-          this.toastr.error('Error loading teachers');
-        }
-    );
-  }
-    addCourse() {
-        this.loading = true;
-        if (this.createCourseForm.valid) {
-            this.course = this.createCourseForm.getRawValue();
-            this.courseService.addCourse(this.institutionID, this.course).subscribe(
-                response => {
-                    this.toastr.success('Course added successfully');
-                    this.createCourseForm.reset();
-                    this.loading = false;
-                    this.authenticationService.refreshPageInfo();
-                },
-                error => {
-                    console.error(error);
-                    this.toastr.error('Error adding course');
-                    this.loading = false;
-                }
-            );
-        } else {
-            console.log(this.createCourseForm.errors);
-            this.toastr.error('Please fill all fields correctly');
-            this.loading = false;
-        }
-    }
-    shouldShowError(controlName: string, errorName: string): boolean {
-        const control = this.createCourseForm.get(controlName);
-        return control && control.errors && control.errors[errorName] && (control.dirty || control.touched);
-    }
-    addCourseModel(content) {
-        this.modalService.open( content, { ariaLabelledBy: 'Create Course' })
-            .result.then((result) => {
-            console.log(result);
-        }, (reason) => {
-            console.log('Err!', reason);
-        });
-    }
-  downloadExcel() {
-    this.institutionService.downloadExcel(this.institutionID).subscribe(
-        response => {
-          const blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-          const url = window.URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = 'file.xlsx';
-          link.click();
-          window.URL.revokeObjectURL(url);
-        },
-        error => {
-          console.log('error downloading');
-          this.toastr.error('Error downloading Excel.');
+            if (error.error) {
+                this.toastr.error(error.error);
+            } else {
+                this.toastr.error('Error loading teachers');
+            }
+            this.toastr.error('Error loading teachers');
         }
     );
   }
   initializeMap() {
-    if (this.currentInstitution.latitude === 0 || this.currentInstitution.longitude === 0 ||
+      if (this.currentInstitution.latitude === 0 || this.currentInstitution.longitude === 0 ||
         this.currentInstitution.latitude === undefined || this.currentInstitution.longitude === undefined) {
       this.toastr.warning('You Don\'t have a location set, setting default location.');
       this.currentInstitution.latitude = 36.7832;
       this.currentInstitution.longitude = 10.1843;
     }
     if (this.map) {
-      this.map.remove();
+        this.map.remove();
     }
     this.map = L.map('map').setView([this.currentInstitution.latitude, this.currentInstitution.longitude], 15);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {}).addTo(this.map);

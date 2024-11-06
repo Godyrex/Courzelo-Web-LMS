@@ -1,14 +1,12 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { RouterModule, Routes } from '@angular/router';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { SharedModule } from './shared/shared.module';
 import { InMemoryWebApiModule } from 'angular-in-memory-web-api';
 import { InMemoryDataService } from './shared/inmemory-db/inmemory-db.service';
 import { MatIconModule } from '@angular/material/icon';
-import {CreateQuizComponent} from './views/forms/Quiz/create-quiz/create-quiz.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule, DatePipe } from '@angular/common';
 
@@ -58,12 +56,11 @@ import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
     ViewdetailsComponent ,
     PdfComponent,
     DossierComponent,
-    UploadFileComponent,    
+    UploadFileComponent,
     ProjectComponent,
     ProjectDetailsComponent,
     ProgressDashboardComponent,
    ProjectCalendarComponent ,
- 
    PublicationComponent,
    AddpublicationComponent,
   RevisionComponent,
@@ -74,7 +71,7 @@ import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
    ParticipateRevisionComponent,
    QuizrevisionComponent,
 CalendarFormProjectComponent
- 
+
   ],
   imports: [
     NgxPaginationModule,
@@ -85,11 +82,8 @@ CalendarFormProjectComponent
     BrowserAnimationsModule,
     InMemoryWebApiModule.forRoot(InMemoryDataService, { passThruUnknownUrl: true }),
     AppRoutingModule ,
-    FormsModule,
     CommonModule,
     ReactiveFormsModule ,
-    BrowserAnimationsModule,
-    AppRoutingModule,
     FormsModule,
     ForumRoutingModule,
     TicketsRoutingModule,

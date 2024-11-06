@@ -3,6 +3,7 @@ import {UserSecurityResponse} from './UserSecurityResponse';
 import {UserEducationResponse} from './UserEducationResponse';
 
 export interface UserResponse {
+    id?: string;
     email?: string;
     roles?: string[];
     profile?: UserProfileResponse;

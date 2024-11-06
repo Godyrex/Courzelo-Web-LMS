@@ -41,10 +41,23 @@ public class User implements UserDetails {
         this.password = encode;
         this.roles.add(role);
     }
+    public User(String email, String name, String lastname, Date birthDate, String gender, String country, String encode) {
+        this.email = email;
+        this.profile.setName(name);
+        this.profile.setLastname(lastname);
+        this.profile.setBirthDate(birthDate);
+        this.profile.setGender(gender);
+        this.profile.setCountry(country);
+        this.password = encode;
+        this.roles = new ArrayList<>();
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles.stream().map(role -> new SimpleGrantedAuthority("ROLE_" + role.name())).toList();
+        return roles.stream()
+                .filter(Objects::nonNull)
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
+                .toList();
     }
 
     @Override

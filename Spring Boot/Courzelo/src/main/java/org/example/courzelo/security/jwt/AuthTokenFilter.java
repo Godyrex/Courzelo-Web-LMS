@@ -57,12 +57,14 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             }
 
         String accessToken = cookieUtil.getAccessTokenFromCookies(request);
-        String refreshToken = cookieUtil.getRefreshTokenFromCookies(request);
         try {
             if (accessToken != null) {
+                log.info("Access token found in cookies");
                 handleAccessToken(request, accessToken);
                 filterChain.doFilter(request, response);
-            } else if (refreshToken != null) {
+            } else  {
+                log.info("No access token found in cookies");
+                String refreshToken = cookieUtil.getRefreshTokenFromCookies(request);
                 handleRefreshToken(response,request, refreshToken);
                 filterChain.doFilter(request, response);
             }

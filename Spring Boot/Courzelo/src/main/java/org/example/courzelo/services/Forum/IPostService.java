@@ -1,22 +1,23 @@
 package org.example.courzelo.services.Forum;
 
 
+import org.example.courzelo.dto.requests.forum.CreatePostRequest;
+import org.example.courzelo.dto.requests.forum.PaginatedPostsResponse;
+import org.example.courzelo.dto.requests.forum.PostResponse;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
-import org.example.courzelo.models.Forum.Post;
-import org.example.courzelo.models.User;
-
-import java.util.List;
-import java.util.Optional;
+import java.security.Principal;
 
 public interface IPostService {
-    List<Post> getPostByUser(User user);
-    Post getPost(String id);
-    List<Post> getAllPosts();
-    List<Post> getPostsBySub(String id);
 
-    void deletePost(String id);
+    ResponseEntity<PaginatedPostsResponse> getPostsByThread(String threadID, int page, String keyword, int sizePerPage);
 
-    Post savePost(Post post);
-    Post updatePost(Post ticket);
-    Post updatePost1(String id,String name, String content, String description);
+    ResponseEntity<PostResponse> getPost(String postID);
+
+    ResponseEntity<HttpStatus> savePost(CreatePostRequest postRequest, Principal principal);
+
+    ResponseEntity<HttpStatus> updatePost(String postID, CreatePostRequest postRequest);
+
+    ResponseEntity<HttpStatus> deletePost(String postID);
 }

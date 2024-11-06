@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {FormBuilder, FormControl, Validators} from '@angular/forms';
+import {AbstractControl, FormBuilder, FormControl, ValidatorFn, Validators} from '@angular/forms';
 import {ResponseHandlerService} from '../../../shared/services/user/response-handler.service';
 import {debounceTime} from 'rxjs/operators';
 import {InstitutionResponse} from '../../../shared/models/institution/InstitutionResponse';
@@ -11,9 +11,7 @@ import {UserService} from '../../../shared/services/user/user.service';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {InstitutionUserResponse} from '../../../shared/models/institution/InstitutionUserResponse';
 import {UserResponse} from '../../../shared/models/user/UserResponse';
-import {GroupResponse} from '../../../shared/models/institution/GroupResponse';
-import {GroupService} from '../../../shared/services/institution/group.service';
-import {GroupRequest} from '../../../shared/models/institution/GroupRequest';
+import {UserEmailsRequest} from '../../../shared/models/institution/UserEmailsRequest';
 
 @Component({
   selector: 'app-institutions',
@@ -50,7 +48,6 @@ export class InstitutionsComponent implements OnInit {
       private toastr: ToastrService,
       private userService: UserService,
       private modalService: NgbModal,
-      private groupService: GroupService,
   ) { }
     showInstitutionsTable = true;
   institutions: InstitutionResponse[] = [];
@@ -81,14 +78,18 @@ export class InstitutionsComponent implements OnInit {
         }
     );
     addUserForm = this.formBuilder.group({
-            email: ['', [Validators.required, Validators.email]],
+        studentsEmails: [[], Validators.required],
             role: ['', [Validators.required]],
+            skills: [[]]
         }
     );
+    emailRequest: UserEmailsRequest;
+
     institutionRequest: InstitutionRequest = {};
     countries = [];
     selectedRole = '';
     availableRoles: string[] = ['ADMIN', 'STUDENT', 'TEACHER'];
+    pasteSplitPattern = /[\s,;]+/;
   ngOnInit() {
     this.loadInstitutions(this.currentPage, this.itemsPerPage, '');
     this.searchControl.valueChanges
@@ -121,7 +122,11 @@ export class InstitutionsComponent implements OnInit {
                 this.addInstitutionForm.reset();
                 this.loadInstitutions(this.currentPage, this.itemsPerPage, '');
             }, error => {
-                this.handleResponse.handleError(error);
+                if (error.error) {
+                    this.toastr.error(error.error);
+                } else {
+                    this.toastr.error('Error adding institution');
+                }
             }
         );
     } else {
@@ -129,19 +134,53 @@ export class InstitutionsComponent implements OnInit {
 
         }
     }
+    public onSelect(item) {
+        console.log('tag selected: value is ' + item);
+        console.log('students emails: ' + this.addUserForm.get('studentsEmails').value);
+    }
+    emailValidator: ValidatorFn = (control: AbstractControl) => {
+        const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        const isValid = emailPattern.test(control.value);
+        return isValid ? null : { 'invalidEmail': true };
+    }
     inviteUser() {
         this.loadingUsers = true;
         if (this.addUserForm.valid) {
-            this.institutionService.inviteUser(this.currentInstitution.id,
-                this.addUserForm.controls.email.value,
-                this.addUserForm.controls.role.value.toUpperCase()).subscribe(
+            this.emailRequest = {
+                emails: this.addUserForm.controls.studentsEmails.value
+            };
+            console.log(this.emailRequest);
+            this.institutionService.inviteUsers(this.currentInstitution.id,
+                this.emailRequest,
+                this.addUserForm.controls.role.value.toUpperCase(), this.addUserForm.controls.skills.value).subscribe(
                 response => {
-                    this.toastr.success('User invited successfully');
+                    console.log(response);
+                    console.log('lengths',
+                        this.emailRequest.emails.length,
+                        response.emailsAlreadyAccepted.length,
+                        response.emailsNotFound.length);
+                    if (this.emailRequest.emails.length !== response.emailsNotFound.length + response.emailsAlreadyAccepted.length) {
+                        this.toastr.success('Users invited successfully');
+                    }
+                    if (response.emailsAlreadyAccepted.length > 0) {
+                        this.toastr.warning('Some users have already accepted an invitation : ' + response.emailsAlreadyAccepted.join(', '), '', {
+                            timeOut: 15000 // 15 seconds
+                        });
+                    }
+                    if (response.emailsNotFound.length > 0) {
+                        this.toastr.warning('Some users were not found : ' + response.emailsNotFound.join(', '), '', {
+                            timeOut: 15000 // 15 seconds
+                        });
+                    }
                     this.addUserForm.reset();
                     this.getInstitutionUsers(this.currentPageUsers, this.itemsPerPageUsers, null, null);
                     this.loadingUsers = false;
                 }, error => {
-                    this.handleResponse.handleError(error);
+                    if (error.error) {
+                        this.toastr.error(error.error);
+                    } else {
+                        this.toastr.error('Error inviting users');
+                    }
                     this.loadingUsers = false;
                 }
             );
@@ -161,13 +200,17 @@ export class InstitutionsComponent implements OnInit {
           this.itemsPerPage = response.itemsPerPage;
           this.loading = false;
         }, error => {
-          this.handleResponse.handleError(error);
-          this.loading = false;
+        if (error.error) {
+            this.toastr.error(error.error);
+        } else {
+            this.toastr.error('Error loading institutions');
+        }
+        this.loading = false;
         }
     );
   }
     addInstitutionModel(content) {
-        this.modalService.open(content, { ariaLabelledBy: 'add Institution' })
+        this.modalService.open(content, { ariaLabelledBy: 'add Institution', backdrop: false })
             .result.then((result) => {
             console.log(result);
         }, (reason) => {
@@ -180,7 +223,11 @@ export class InstitutionsComponent implements OnInit {
                 this.toastr.success('Institution deleted successfully');
                 this.loadInstitutions(this.currentPage, this.itemsPerPage, '');
             }, error => {
-                this.handleResponse.handleError(error);
+                if (error.error) {
+                    this.toastr.error(error.error);
+                } else {
+                    this.toastr.error('Error deleting institution');
+                }
             }
         );
     }
@@ -193,7 +240,11 @@ export class InstitutionsComponent implements OnInit {
                   this.addInstitutionForm.reset();
                   this.loadInstitutions(this.currentPage, this.itemsPerPage, '');
               }, error => {
-                  this.handleResponse.handleError(error);
+                  if (error.error) {
+                      this.toastr.error(error.error);
+                  } else {
+                      this.toastr.error('Error updating institution');
+                  }
               }
           );
       } else {
@@ -202,7 +253,7 @@ export class InstitutionsComponent implements OnInit {
     }
     deleteInstitutionModal(content, institution: InstitutionResponse) {
         this.currentInstitution = institution;
-        const modalRef = this.modalService.open(content, { ariaLabelledBy: 'delete Institution'});
+        const modalRef = this.modalService.open(content, { ariaLabelledBy: 'delete Institution', backdrop: false});
         modalRef.result.then((result) => {
             if (result === 'Ok') {
                 this.deleteInstitution(this.currentInstitution.id);
@@ -213,7 +264,7 @@ export class InstitutionsComponent implements OnInit {
     }
     addUserModel(content, institution: InstitutionResponse) {
         this.currentInstitution = institution;
-        this.modalService.open(content, { ariaLabelledBy: 'invite User' })
+        this.modalService.open(content, { ariaLabelledBy: 'invite User', backdrop: false })
             .result.then((result) => {
             console.log(result);
         }, (reason) => {
@@ -239,7 +290,9 @@ export class InstitutionsComponent implements OnInit {
         this.loadingUsers = true;
         this.institutionService.getInstitutionUsers(this.currentInstitution.id, keyword, role, page - 1, size).subscribe(
             response => {
-                console.log(response);
+                response.users.forEach(user => {
+                    user.roles = user.roles.map(role1 => role1.toLowerCase());
+                });
                 this.users = response.users;
                 this._currentPageUsers = response.currentPage + 1;
                 this.totalPagesUsers = response.totalPages;
@@ -247,7 +300,11 @@ export class InstitutionsComponent implements OnInit {
                 this.itemsPerPageUsers = response.itemsPerPage;
                 this.loadingUsers = false;
             }, error => {
-                this.handleResponse.handleError(error);
+                if (error.error) {
+                    this.toastr.error(error.error);
+                } else {
+                    this.toastr.error('Error loading users');
+                }
                 this.loadingUsers = false;
             }
         );
@@ -272,14 +329,18 @@ export class InstitutionsComponent implements OnInit {
                 this.getInstitutionUsers(this.currentPageUsers, this.itemsPerPageUsers, null, null);
                 this.loadingUsers = false;
             }, error => {
-                this.handleResponse.handleError(error);
+                if (error.error) {
+                    this.toastr.error(error.error);
+                } else {
+                    this.toastr.error('Error removing user');
+                }
                 this.loadingUsers = false;
             }
         );
     }
     modalConfirmUserFunction(content: any, user: InstitutionUserResponse) {
       this.currentUser = user;
-        this.modalService.open(content, { ariaLabelledBy: 'confirm User' })
+        this.modalService.open(content, { ariaLabelledBy: 'confirm User', backdrop: false })
             .result.then((result) => {
             if (result === 'Ok') {
                 this.removeInstitutionUser(user);
@@ -296,7 +357,11 @@ export class InstitutionsComponent implements OnInit {
                 user.roles.push(this.selectedRole);
                 this.loadingUsers = false;
             }, error => {
-                this.handleResponse.handleError(error);
+                if (error.error) {
+                    this.toastr.error(error.error);
+                } else {
+                    this.toastr.error('Error updating user role');
+                }
                 this.loadingUsers = false;
             });
         } else if (this.selectedRole && user.roles.includes(this.selectedRole)) {
@@ -305,9 +370,31 @@ export class InstitutionsComponent implements OnInit {
                 user.roles = user.roles.filter(role => role !== this.selectedRole);
                 this.loadingUsers = false;
             }, error => {
-                this.handleResponse.handleError(error);
+                if (error.error) {
+                    this.toastr.error(error.error);
+                } else {
+                    this.toastr.error('Error updating user role');
+                }
                 this.loadingUsers = false;
             });
+        } else {
+            this.toastr.error('Please select a role');
+            this.loadingUsers = false;
+        }
+    }
+
+    getRoleIconClass(role: string): string {
+        switch (role) {
+            case 'student':
+                return 'fas fa-user-graduate';
+            case 'admin':
+                return 'fas fa-user-shield';
+            case 'superadmin':
+                return 'fas fa-user-tie'; // Changed icon
+            case 'teacher':
+                return 'fas fa-chalkboard-teacher';
+            default:
+                return 'fas fa-user';
         }
     }
 }

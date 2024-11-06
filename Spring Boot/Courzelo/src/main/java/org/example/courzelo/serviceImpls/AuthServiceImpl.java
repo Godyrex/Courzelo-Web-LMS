@@ -7,6 +7,7 @@ import org.example.courzelo.dto.requests.LoginRequest;
 import org.example.courzelo.dto.requests.SignupRequest;
 import org.example.courzelo.dto.responses.*;
 import org.example.courzelo.dto.responses.institution.SimplifiedCourseResponse;
+import org.example.courzelo.exceptions.UserNotFoundException;
 import org.example.courzelo.models.CodeType;
 import org.example.courzelo.models.CodeVerification;
 import org.example.courzelo.models.Role;
@@ -14,10 +15,7 @@ import org.example.courzelo.models.User;
 import org.example.courzelo.models.institution.Course;
 import org.example.courzelo.models.institution.Group;
 import org.example.courzelo.models.institution.Institution;
-import org.example.courzelo.repositories.CourseRepository;
-import org.example.courzelo.repositories.GroupRepository;
-import org.example.courzelo.repositories.InstitutionRepository;
-import org.example.courzelo.repositories.UserRepository;
+import org.example.courzelo.repositories.*;
 import org.example.courzelo.security.jwt.JWTUtils;
 import org.example.courzelo.services.*;
 import org.example.courzelo.utils.CookieUtil;
@@ -59,6 +57,7 @@ public class AuthServiceImpl implements IAuthService {
     private final InstitutionRepository institutionRepository;
     private final CourseRepository courseRepository;
     private final GroupRepository groupRepository;
+    private final ModuleRepository moduleRepository;
     @Value("${Security.app.jwtExpirationMs}")
     private long jwtExpirationMs;
     @Value("${Security.app.refreshExpirationMs}")
@@ -66,7 +65,7 @@ public class AuthServiceImpl implements IAuthService {
     @Value("${Security.app.refreshRememberMeExpirationMs}")
     private long refreshRememberMeExpirationMs;
 
-    public AuthServiceImpl(UserRepository userRepository, IRefreshTokenService iRefreshTokenService, JWTUtils jwtUtils, PasswordEncoder encoder, CookieUtil cookieUtil, AuthenticationManager authenticationManager, IUserService userService, IMailService mailService, ICodeVerificationService codeVerificationService, InstitutionRepository institutionRepository, CourseRepository courseRepository, GroupRepository groupRepository) {
+    public AuthServiceImpl(UserRepository userRepository, IRefreshTokenService iRefreshTokenService, JWTUtils jwtUtils, PasswordEncoder encoder, CookieUtil cookieUtil, AuthenticationManager authenticationManager, IUserService userService, IMailService mailService, ICodeVerificationService codeVerificationService, InstitutionRepository institutionRepository, CourseRepository courseRepository, GroupRepository groupRepository, ModuleRepository moduleRepository) {
         this.userRepository = userRepository;
         this.iRefreshTokenService = iRefreshTokenService;
         this.jwtUtils = jwtUtils;
@@ -79,13 +78,13 @@ public class AuthServiceImpl implements IAuthService {
         this.institutionRepository = institutionRepository;
         this.courseRepository = courseRepository;
         this.groupRepository = groupRepository;
+        this.moduleRepository = moduleRepository;
     }
 
     @Override
     public ResponseEntity<StatusMessageResponse> logout(String email, HttpServletRequest request, HttpServletResponse response) {
         log.info("Logging out user");
-        User user = userRepository.findUserByEmail(email);
-        if(user != null){
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(USER_NOT_FOUND + email));
             iRefreshTokenService.deleteUserTokens(user);
             log.info("User found");
             user.getActivity().setLastLogout(Instant.now());
@@ -97,9 +96,6 @@ public class AuthServiceImpl implements IAuthService {
             log.info("Logout :Refresh Token removed");
             log.info("User logged out");
             return ResponseEntity.ok(new StatusMessageResponse("success","User logged out successfully"));
-        }else{
-            throw new UsernameNotFoundException(USER_NOT_FOUND + email);
-        }
     }
 
     @Override
@@ -196,7 +192,7 @@ public class AuthServiceImpl implements IAuthService {
                                             courseID -> {
                                                 log.info("Course ID: "+courseID);
                                                 Course course = courseRepository.findById(courseID).orElseThrow();
-                                                return SimplifiedCourseResponse.builder().courseID(course.getId()).courseName(course.getName()).build();
+                                                return SimplifiedCourseResponse.builder().courseID(course.getId()).module(course.getModule()).build();
                                             }
                                     ).toList() : null)
                                     .build())
@@ -215,7 +211,7 @@ public class AuthServiceImpl implements IAuthService {
 
     void setHeaders(HttpServletResponse response,User userDetails,boolean rememberMe){
         iRefreshTokenService.deleteUserTokens(userDetails);
-        response.addHeader(HttpHeaders.SET_COOKIE, cookieUtil.createAccessTokenCookie(jwtUtils.generateJwtToken(userDetails.getEmail()), jwtExpirationMs).toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, cookieUtil.createAccessTokenCookie(jwtUtils.generateJwtToken(userDetails.getEmail()), jwtExpirationMs-50000L).toString());
         response.addHeader(HttpHeaders.SET_COOKIE, cookieUtil.createRefreshTokenCookie(
                 iRefreshTokenService.createRefreshToken(userDetails.getEmail(), rememberMe ? refreshRememberMeExpirationMs : refreshExpirationMs).getToken()
                 , rememberMe ? refreshRememberMeExpirationMs : refreshExpirationMs).toString());
@@ -234,8 +230,7 @@ public class AuthServiceImpl implements IAuthService {
                 signupRequest.getBirthDate(),
                 signupRequest.getGender(),
                 signupRequest.getCountry(),
-                encoder.encode(signupRequest.getPassword()),
-                Role.STUDENT
+                encoder.encode(signupRequest.getPassword())
         );
         userRepository.save(user);
         sendVerificationCode(user.getEmail());
@@ -307,7 +302,7 @@ public class AuthServiceImpl implements IAuthService {
                                             courseID -> {
                                                 log.info("Course ID: "+courseID);
                                                 Course course = courseRepository.findById(courseID).orElseThrow();
-                                                return SimplifiedCourseResponse.builder().courseID(course.getId()).courseName(course.getName()).build();
+                                                return SimplifiedCourseResponse.builder().courseID(course.getId()).module(course.getModule()).build();
                                             }
                                     ).toList() : null)
                                     .build())
@@ -336,7 +331,7 @@ public class AuthServiceImpl implements IAuthService {
             mailService.sendConfirmationEmail(userRepository.findUserByEmail(email),codeVerification);
             return ResponseEntity.ok(new StatusMessageResponse("success","Verification code sent successfully"));
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new StatusMessageResponse("error","User not found"));
+        throw new UserNotFoundException("User not found");
     }
 
     @Override
@@ -351,7 +346,7 @@ public class AuthServiceImpl implements IAuthService {
             mailService.sendPasswordResetEmail(userRepository.findUserByEmail(email),codeVerification);
             return ResponseEntity.ok(new StatusMessageResponse("success","Verification code sent successfully"));
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new StatusMessageResponse("error","User not found"));
+        throw new UserNotFoundException("User not found");
     }
 
     @Override
@@ -420,7 +415,7 @@ public class AuthServiceImpl implements IAuthService {
                                             courseID -> {
                                                 log.info("Course ID: "+courseID);
                                                 Course course = courseRepository.findById(courseID).orElseThrow();
-                                                return SimplifiedCourseResponse.builder().courseID(course.getId()).courseName(course.getName()).build();
+                                                return SimplifiedCourseResponse.builder().courseID(course.getId()).module(course.getModule()).build();
                                             }
                                     ).toList() : null)
                                     .build())

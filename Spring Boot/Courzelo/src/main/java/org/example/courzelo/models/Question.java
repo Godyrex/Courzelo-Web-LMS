@@ -2,7 +2,6 @@ package org.example.courzelo.models;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
@@ -17,5 +16,6 @@ public class Question {
     private String QuizID;
     private String correctAnswer;
     private QuestionType type;
-    private List<Answer> answers;
+    private String answer;
+    private int points;
 }

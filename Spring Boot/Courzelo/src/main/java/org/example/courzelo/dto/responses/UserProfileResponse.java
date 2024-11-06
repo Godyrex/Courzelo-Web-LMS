@@ -25,4 +25,7 @@ public class UserProfileResponse {
         this.title = userProfile.getTitle();
         this.bio = userProfile.getBio();
     }
+
+    public UserProfileResponse(String name, String lastname) {
+    }
 }

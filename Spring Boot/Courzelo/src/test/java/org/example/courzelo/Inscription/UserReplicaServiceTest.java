@@ -63,4 +63,80 @@ public class UserReplicaServiceTest {
         assertNotNull(savedUserReplica);
         assertEquals("test@example.com", savedUserReplica.getEmail());
     }
+
+    @Test
+    void loadUserByUsername() {
+    }
+
+    @Test
+    void loadUserByEmail() {
+    }
+
+    @Test
+    void validUser() {
+    }
+
+    @Test
+    void updateUserProfile() {
+    }
+
+    @Test
+    void uploadProfileImage() {
+    }
+
+    @Test
+    void getProfileImage() {
+    }
+
+    @Test
+    void getUserProfile() {
+    }
+
+    @Test
+    void updatePassword() {
+    }
+
+    @Test
+    void resetPassword() {
+    }
+
+    @Test
+    void generateTwoFactorAuthQrCode() {
+    }
+
+    @Test
+    void generateQRCodeImage() {
+    }
+
+    @Test
+    void enableTwoFactorAuth() {
+    }
+
+    @Test
+    void disableTwoFactorAuth() {
+    }
+
+    @Test
+    void verifyTwoFactorAuth() {
+    }
+
+    @Test
+    void getUserProfileByEmail() {
+    }
+
+    @Test
+    void addSkill() {
+    }
+
+    @Test
+    void getSkills() {
+    }
+
+    @Test
+    void removeSkill() {
+    }
+
+    @Test
+    void getProfById() {
+    }
 }

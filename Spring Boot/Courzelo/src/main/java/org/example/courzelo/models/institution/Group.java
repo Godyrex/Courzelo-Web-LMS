@@ -15,6 +15,7 @@ public class Group {
     private String id;
     private String name;
     private String institutionID;
+    private String program;
     private List<String> students;
     private List<String> courses;
 }

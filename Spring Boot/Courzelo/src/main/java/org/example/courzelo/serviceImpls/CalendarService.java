@@ -4,7 +4,7 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.DefaultIndexedColorMap;
 import org.apache.poi.xssf.usermodel.XSSFColor;
-import org.example.courzelo.dto.requests.CalendarEventRequest;
+import org.example.courzelo.dto.requests.institution.CalendarEventRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.YearMonth;

@@ -7,9 +7,15 @@ import {StatusMessageResponse} from '../../models/user/StatusMessageResponse';
 import {InstitutionResponse} from '../../models/institution/InstitutionResponse';
 import {PaginatedInstitutionUsersResponse} from '../../models/institution/PaginatedInstitutionUsersResponse';
 import {InstitutionMapRequest} from '../../models/institution/InstitutionMapRequest';
-import {CalendarEventRequest} from '../../models/institution/CalendarEventRequest';
 import {map} from 'rxjs/operators';
-import {GroupResponse} from "../../models/institution/GroupResponse";
+import {GroupResponse} from '../../models/institution/GroupResponse';
+import {UserEmailsRequest} from '../../models/institution/UserEmailsRequest';
+import {InvitationsResultResponse} from '../../models/institution/InvitationsResultResponse';
+import {SemesterRequest} from '../../models/institution/SemesterRequest';
+import {TeacherResponse} from '../../models/institution/TeacherResponse';
+import { TimetableResponse} from '../../models/institution/TimetableResponse';
+import {InstitutionTimeSlot} from '../../models/institution/InstitutionTimeSlot';
+import {InstitutionTimeSlotConfiguration} from '../../models/institution/InstitutionTimeSlotConfiguration';
 
 @Injectable({
   providedIn: 'root'
@@ -41,6 +47,11 @@ export class InstitutionService {
   getInstitutionTeachers(institutionID: string) {
     return this.http.get(`${this.baseUrl}/${institutionID}/teachers`);
   }
+  getInstitutionFilteredTeachers(institutionID: string, skills: string[]) {
+    const params = new HttpParams()
+        .set('skills', skills.join(','));
+    return this.http.get<TeacherResponse[]>(`${this.baseUrl}/${institutionID}/filtered-teachers`, {params});
+  }
   getInstitutionGroups(institutionID: string) {
     return this.http.get<GroupResponse[]>(`${this.baseUrl}/${institutionID}/groups`);
   }
@@ -52,11 +63,16 @@ export class InstitutionService {
   deleteInstitution(institutionID: string): Observable<StatusMessageResponse> {
     return this.http.delete<StatusMessageResponse>(`${this.baseUrl}/delete/${institutionID}`);
   }
-  inviteUser(institutionID: string, email: string, role: string) {
+  inviteUsers(institutionID: string, emails: UserEmailsRequest, role: string, skills: string[]): Observable<InvitationsResultResponse> {
     const params = new HttpParams()
-        .set('email', email)
-        .set('role', role);
-    return this.http.put(`${this.baseUrl}/${institutionID}/invite_user`, null, { params });
+        .set('role', role)
+        .set('skills', skills.join(','));
+    return this.http.put<InvitationsResultResponse>(`${this.baseUrl}/${institutionID}/invite_users`, emails, { params });
+  }
+  updateSkills(institutionID: string, userEmail: string, skills: string[]) {
+    const params = new HttpParams()
+        .set('skills', skills.join(','));
+    return this.http.put(`${this.baseUrl}/${institutionID}/${userEmail}/update-skills`, null, { params });
   }
   removeInstitutionUserRole(institutionID: string, email: string, role: string) {
     console.log(email, role, institutionID);
@@ -99,11 +115,11 @@ export class InstitutionService {
   setInstitutionMap(institutionID: string, institutionMapRequest: InstitutionMapRequest) {
     return this.http.put(`${this.baseUrl}/${institutionID}/set-map`, institutionMapRequest);
   }
-  generateExcel(institutionID: string, generation: CalendarEventRequest[]) {
-    return this.http.post(`${this.baseUrl}/${institutionID}/generate-excel`, generation);
+  setSemester(institutionID: string, semesterRequest: SemesterRequest) {
+    return this.http.put(`${this.baseUrl}/${institutionID}/set-semester`, semesterRequest);
   }
-  downloadExcel(institutionID: string) {
-    return this.http.get(`${this.baseUrl}/${institutionID}/download-excel`, { responseType: 'blob' });
+  clearSemester(institutionID: string) {
+    return this.http.put(`${this.baseUrl}/${institutionID}/clear-semester`, null);
   }
   uploadImage(institutionID: string, image: File) {
     const formData = new FormData();
@@ -124,4 +140,19 @@ export class InstitutionService {
     acceptInvite(code: string) {
         return this.http.put(`${this.baseUrl}/accept_invite/${code}`, null);
     }
+  generateTimetable(institutionID: string) {
+    return this.http.post(`${this.baseUrl}/${institutionID}/generate-timetable`, null);
+  }
+  getTimetable(institutionID: string) {
+    return this.http.get<TimetableResponse>(`${this.baseUrl}/${institutionID}/timetable`);
+  }
+  updateTeacherDisponibility( teacherEmail: string, disponibilitySlots: InstitutionTimeSlot[]) {
+    return this.http.put(`${this.baseUrl}/${teacherEmail}/update-teacher-disponibility`, disponibilitySlots);
+  }
+  updateInstitutionTimeSlots(institutionID: string, timeSlots: InstitutionTimeSlotConfiguration) {
+    return this.http.put(`${this.baseUrl}/${institutionID}/update-timeslots`, timeSlots);
+  }
+  getInstitutionTimeSlots(institutionID: string): Observable<InstitutionTimeSlotConfiguration> {
+    return this.http.get<InstitutionTimeSlotConfiguration>(`${this.baseUrl}/${institutionID}/timeslots`);
+  }
 }

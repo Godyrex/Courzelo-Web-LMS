@@ -13,14 +13,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.courzelo.dto.requests.ProfileInformationRequest;
 import org.example.courzelo.dto.requests.UpdatePasswordRequest;
 import org.example.courzelo.dto.responses.*;
-import org.example.courzelo.dto.responses.institution.SimplifiedCourseResponse;
+import org.example.courzelo.exceptions.UserNotFoundException;
 import org.example.courzelo.models.*;
-import org.example.courzelo.models.institution.Course;
 import org.example.courzelo.models.institution.Institution;
 import org.example.courzelo.repositories.InstitutionRepository;
 import org.example.courzelo.repositories.UserRepository;
 import org.example.courzelo.services.ICodeVerificationService;
 import org.example.courzelo.services.IUserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +30,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.swagger2.mappers.ModelMapper;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -165,7 +166,7 @@ public class UserServiceImpl implements UserDetailsService, IUserService {
             // Get the user
             User user = userRepository.findUserByEmail(email);
             if(user.getProfile().getProfileImage() == null){
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
             }
             String filePath = user.getProfile().getProfileImage();
             // Read the file
@@ -179,10 +180,7 @@ public class UserServiceImpl implements UserDetailsService, IUserService {
 
     @Override
     public ResponseEntity<LoginResponse> getUserProfile(String email) {
-        User user = userRepository.findUserByEmail(email);
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new LoginResponse("error", "User not found"));
-        }
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User not found"));
         Institution institution = null;
         if (user.getEducation() != null && user.getEducation().getInstitutionID() != null) {
             institution = institutionRepository.findById(user.getEducation().getInstitutionID()).orElse(null);
@@ -371,5 +369,20 @@ public class UserServiceImpl implements UserDetailsService, IUserService {
     }
 
 
+    public User getProfById(String id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Teacher with id " + id + " doesn't exist!"));
+        // Check if the user has the TEACHER role
+        boolean hasTeacherRole = user.getRoles().stream()
+                .anyMatch(role -> role == Role.TEACHER);
+        if (!hasTeacherRole) {
+            throw new RuntimeException("No TEACHER role found for user with id: " + id);
+        }
+        return user;
+    }
 
+    public User findUserById(String teacher) {
+        return userRepository.findById(teacher)
+                .orElseThrow(() -> new RuntimeException("User with id " + teacher + " doesn't exist!"));
+    }
 }

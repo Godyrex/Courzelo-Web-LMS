@@ -11,7 +11,6 @@ import { DashboardProjectComponent } from './shared/components/Project/Admin/das
 import { AddProjectComponent } from './shared/components/Project/Admin/add-project/add-project.component';
 import { ViewdetailsComponent } from './shared/components/Project/Admin/viewdetails/viewdetails.component';
 import { PdfComponent } from './shared/components/Project/User/pdf/pdf.component';
-import { AddForumComponent } from './views/Forum/add-forum/add-forum.component';
 import { UploadFileComponent } from './views/Admission/upload-file/upload-file.component';
 import { ProjectCalendarComponent } from './shared/components/Project/User/project-calendar/project-calendar.component';
 import { ProjectComponent } from './shared/components/Project/User/project/project.component';
@@ -116,28 +115,27 @@ const userRoutes: Routes = [
     { path: 'addprojects', component: AddProjectComponent, canActivate: [AuthGuard], data: { roles: ['TEACHER'] }},
     { path: 'project/:id', component: ViewdetailsComponent, canActivate: [AuthGuard], data: { roles: ['TEACHER'] }},
     { path: 'pdf', component: PdfComponent },
-    { path: 'addforum', component: AddForumComponent},
     { path: 'uploadfile', component: UploadFileComponent},
 
-    { path: 'projects', component: DashboardProjectComponent},//teacher
-    { path: 'addprojects', component: AddProjectComponent},//teacher
-    { path: 'project/:id', component: ViewdetailsComponent},//teacher
+    { path: 'projects', component: DashboardProjectComponent, canActivate: [AuthGuard], data: { roles: ['TEACHER'] }}, // teacher
+    { path: 'addprojects', component: AddProjectComponent, canActivate: [AuthGuard], data: { roles: ['TEACHER'] }}, // teacher
+    { path: 'project/:id', component: ViewdetailsComponent, canActivate: [AuthGuard], data: { roles: ['TEACHER'] }}, // teacher
 
     { path: 'pdf', component: PdfComponent},
-    { path: 'projectcalendar/:id', component: ProjectCalendarComponent },//user
-    { path: 'getallprojects', component: ProjectComponent},//user
-    { path: 'projectdetails/:id', component: ProjectDetailsComponent},//user
-    { path: 'ProgressDashboard/:id', component: ProgressDashboardComponent},//user
-    { path: 'publication/:id', component: PublicationComponent},//user
-    
- ///////////////////////////////////////////////////////
-     { path: 'revision', component:RevisionComponent },//teacher
-     { path: 'consultrevision/:id', component:ConsultRevisionComponent },//teacher
-     { path: 'clientrevision', component:ClientRevisionComponent
-      },//user
-     { path: 'participaterevision/:id', component:ParticipateRevisionComponent },//user
-     { path: 'QandA/:id', component:QuizrevisionComponent },//user
-   
+    { path: 'projectcalendar/:id', component: ProjectCalendarComponent , canActivate: [AuthGuard] }, // user
+    { path: 'getallprojects', component: ProjectComponent, canActivate: [AuthGuard]}, // user
+    { path: 'projectdetails/:id', component: ProjectDetailsComponent, canActivate: [AuthGuard]}, // user
+    { path: 'ProgressDashboard/:id', component: ProgressDashboardComponent, canActivate: [AuthGuard]}, // user
+    { path: 'publication/:id', component: PublicationComponent, canActivate: [AuthGuard]}, // user
+
+     { path: 'revision', component: RevisionComponent, canActivate: [AuthGuard], data: { roles: ['TEACHER'] } }, // teacher
+     { path: 'consultrevision/:id', component: ConsultRevisionComponent,
+         canActivate: [AuthGuard], data: { roles: ['TEACHER'] } }, // teacher
+     { path: 'clientrevision', component: ClientRevisionComponent
+      }, // user
+     { path: 'participaterevision/:id', component: ParticipateRevisionComponent , canActivate: [AuthGuard]}, // user
+     { path: 'QandA/:id', component: QuizrevisionComponent , canActivate: [AuthGuard]}, // user
+
     {
         path: 'settings',
         loadChildren: () => import('./views/settings/settings.module').then(m => m.SettingsModule)
@@ -156,6 +154,11 @@ const userRoutes: Routes = [
         path: 'institution',
         loadChildren: () => import('./views/institution/institution.module').then(m => m.InstitutionModule),
         canActivate: [AuthGuard],
+    },
+    {
+        path: 'home',
+        loadChildren: () => import('./views/home/home.module').then(m => m.HomeModule),
+        canActivate: [AuthGuard],
     }
 
   ];
@@ -163,7 +166,7 @@ const userRoutes: Routes = [
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'dashboard/v1',
+    redirectTo: 'home',
     pathMatch: 'full'
   },
   {

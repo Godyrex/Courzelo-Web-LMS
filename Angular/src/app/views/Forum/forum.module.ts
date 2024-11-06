@@ -7,41 +7,36 @@ import { NgxEchartsModule } from 'ngx-echarts';
 import { SharedComponentsModule } from 'src/app/shared/components/shared-components.module';
 
 import { ForumRoutingModule } from './forum-routing.module';
-import { ListForumComponent } from './list-forum/list-forum.component';
-import { AddForumComponent } from './add-forum/add-forum.component';
-import { PostTileComponent } from './Shared/post-tile/post-tile.component';
-import { SideBarComponent } from './Shared/side-bar/side-bar.component';
-import { SubSideBarComponent } from './Shared/sub-side-bar/sub-side-bar.component';
-import { HomeforumComponent } from './homeforum/homeforum.component';
-import { AddPostComponent } from './Post/add-post/add-post.component';
-import { ListPostComponent } from './Post/list-post/list-post.component';
-import { ViewSubComponent } from './view-sub/view-sub.component';
-import { UpdatePostComponent } from './view-sub/update-post/update-post.component';
-import { EditCommentComponent } from './Post/edit-comment/edit-comment.component';
+
+import { ThreadsViewComponent } from './threads-view/threads-view.component';
+import { CreateThreadComponent } from './threads-view/create-thread/create-thread.component';
+import { UpdateThreadComponent } from './threads-view/update-thread/update-thread.component';
+import { ThreadPostsViewComponent } from './thread-posts-view/thread-posts-view.component';
+import {NgxPaginationModule} from "ngx-pagination";
+import { CreatePostComponent } from './thread-posts-view/create-post/create-post.component';
+import { UpdatePostComponent } from './thread-posts-view/update-post/update-post.component';
+import { ThreadPostViewComponent } from './thread-post-view/thread-post-view.component';
 
 @NgModule({
   declarations: [
-    ListForumComponent,
-    AddForumComponent,
-    PostTileComponent,
-    SideBarComponent,
-    SubSideBarComponent,
-    HomeforumComponent,
-    AddPostComponent,
-    ListPostComponent,
-    ViewSubComponent,
-    UpdatePostComponent,
-    EditCommentComponent
+         ThreadsViewComponent,
+         CreateThreadComponent,
+         UpdateThreadComponent,
+         ThreadPostsViewComponent,
+         CreatePostComponent,
+         UpdatePostComponent,
+         ThreadPostViewComponent
   ],
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule, // Ensure ReactiveFormsModule is imported here
-    NgbModule,
-    NgxDatatableModule,
-    NgxEchartsModule,
-    SharedComponentsModule,
-    ForumRoutingModule
-  ]
+    imports: [
+        CommonModule,
+        FormsModule,
+        ReactiveFormsModule, // Ensure ReactiveFormsModule is imported here
+        NgbModule,
+        NgxDatatableModule,
+        NgxEchartsModule,
+        SharedComponentsModule,
+        ForumRoutingModule,
+        NgxPaginationModule
+    ]
 })
 export class ForumModule { }

@@ -12,6 +12,7 @@ public class CourseResponse {
     private String id;
     private String name;
     private String description;
+    private String module;
     private int credit;
     private String teacher;
     private List<String> students;

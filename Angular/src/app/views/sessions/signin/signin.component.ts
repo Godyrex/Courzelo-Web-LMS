@@ -60,7 +60,7 @@ export class SigninComponent implements OnInit {
                         this.responseHandler.handleSuccess(res.message);
                         this.sessionStorageService.setUser(res.user);
                         this.sessionStorageService.setAuthenticated(true);
-                        this.router.navigateByUrl('/dashboard/v1');
+                        this.router.navigateByUrl('/home');
                     }
             },
                 error => {

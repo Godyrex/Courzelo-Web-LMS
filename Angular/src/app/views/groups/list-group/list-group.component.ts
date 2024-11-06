@@ -10,6 +10,8 @@ import { UserService } from 'src/app/shared/services/user/user.service';
 import { AddMemberComponent } from '../add-member/add-member.component';
 import { ChatGroup } from 'src/app/shared/models/ChatGroups/chatgroup';
 import { SharedChatserviceService } from 'src/app/shared/services/chatgroups/Sharedchatservice.service';
+import { UserResponse } from 'src/app/shared/models/user/UserResponse';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-list-group',
@@ -22,6 +24,7 @@ export class ListGroupComponent implements OnInit{
   groups: any[] = [] ; 
   newGroupsList: any[] = [];  // Ensure this is initialized
   currentMessageList$: Observable<any[]>;
+  connectedUser:UserResponse;
   imageSrc: any;
   private groupsSubject = new BehaviorSubject<any[]>([]);
   groups$: Observable<any[]> = this.groupsSubject.asObservable();
@@ -30,16 +33,17 @@ export class ListGroupComponent implements OnInit{
     private sharedService: SharedChatserviceService,
     private sanitizer: DomSanitizer,
     private sessionStorageService: SessionStorageService,
-    private userService: UserService,
+    private router: Router,
     public dialog: MatDialog,
     private cdr: ChangeDetectorRef ) { }
 
   ngOnInit(): void {
+    this.connectedUser=this.sessionStorageService.getUserFromSession();
     /*this.userService.getProfileImageBlobUrl(this..email).subscribe((blob: Blob) => {
       const objectURL = URL.createObjectURL(blob);
       this.imageSrc = this.sanitizer.bypassSecurityTrustUrl(objectURL);
     });  */
-    this.LoadGroups();
+    this.LoadGroupsToMe();
     console.log("Groups in newGroupsList:", this.newGroupsList);
 
   }
@@ -68,6 +72,26 @@ export class ListGroupComponent implements OnInit{
     );
   }
   
+  LoadGroupsToMe(): void {
+    this.chatService.getGroupsbyUser(this.connectedUser.email).subscribe(
+      data => {
+        console.log("Fetched data:", data);
+        if (Array.isArray(data)) {
+          this.newGroupsList = data;
+          this.cdr.detectChanges(); // Force change detection
+          console.log("Assigned newGroupsList:", this.newGroupsList);
+        } else {
+          console.error("Fetched data is not an array", data);
+        }
+      },
+      error => {
+        console.error("Error fetching groups", error);
+      }
+    );
+  }
+  addgroup(){
+    this.router.navigate(['/chatgroups/add']);
+  }
   
   add(id:any){
     const dialogRef = this.dialog.open(AddMemberComponent,{

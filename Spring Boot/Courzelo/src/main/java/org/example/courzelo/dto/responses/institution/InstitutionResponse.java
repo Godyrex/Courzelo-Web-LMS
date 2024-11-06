@@ -3,6 +3,8 @@ package org.example.courzelo.dto.responses.institution;
 import lombok.Data;
 import org.example.courzelo.models.institution.Institution;
 
+import java.util.Date;
+
 @Data
 public class InstitutionResponse {
     private String id;
@@ -14,6 +16,8 @@ public class InstitutionResponse {
     private String website;
     private double latitude;
     private double longitude;
+    private Date firstSemesterStart;
+    private Date secondSemesterStart;
     private boolean hasCalendar;
     public InstitutionResponse(Institution institution)
     {
@@ -26,6 +30,7 @@ public class InstitutionResponse {
         this.website = institution.getWebsite();
         this.latitude = institution.getLatitude();
         this.longitude = institution.getLongitude();
-        this.hasCalendar = institution.getExcelFile() != null;
+        this.firstSemesterStart = institution.getFirstSemesterStart();
+        this.secondSemesterStart = institution.getSecondSemesterStart();
     }
 }
