@@ -24,10 +24,10 @@ public class GradeController {
     public ResponseEntity<List<GradeResponse>> getGrades(@PathVariable String groupID) {
         return iGradeService.getGradesByGroup(groupID);
     }
-    @GetMapping("/{groupID}/{moduleID}")
+    @GetMapping("/{groupID}/{courseID}")
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')&&@customAuthorization.canAccessGroup(#groupID)")
-    public ResponseEntity<List<GradeResponse>> getGrades(@PathVariable String groupID,@PathVariable String moduleID) {
-        return iGradeService.getGradesByGroupAndModule(groupID,moduleID);
+    public ResponseEntity<List<GradeResponse>> getGrades(@PathVariable String groupID,@PathVariable String courseID) {
+        return iGradeService.getGradesByGroupAndCourse(groupID,courseID);
     }
     @GetMapping("/my")
     @PreAuthorize("isAuthenticated()")

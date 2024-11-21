@@ -41,7 +41,7 @@
                         <div class="card h-100">
                             <div class="card-body">
                                 <!-- Module Name -->
-                                <h5 class="card-title text-center">{{ module.module.name || 'Module Name' }}</h5>
+                                <h5 class="card-title text-center">{{ module.course.name || 'Module Name' }}</h5>
 
                                 <!-- Grades List -->
                                 <ul class="list-group">
@@ -53,15 +53,15 @@
                                 <!-- Module Average Score and Status -->
                                 <div class="mt-3">
                                     <p>Average Score:
-                                        <span [ngClass]="getScoreColorClass(module.average, module?.module?.scoreToPass)">
+                                        <span [ngClass]="getScoreColorClass(module.average, module?.course?.scoreToPass)">
                                             {{ module.average | number:'1.2-2' }}
                                         </span>
                                     </p>
                                     <p [ngClass]="{
-                                        'text-success': module.average >= module?.module?.scoreToPass,
-                                        'text-danger': module.average < module?.module?.scoreToPass
+                                        'text-success': module.average >= module?.course?.scoreToPass,
+                                        'text-danger': module.average < module?.course?.scoreToPass
                                     }">
-                                        Status: {{ module.average >= module?.module?.scoreToPass ? 'Passed' : 'Not Passed' }}
+                                        Status: {{ module.average >= module?.course?.scoreToPass ? 'Passed' : 'Not Passed' }}
                                     </p>
                                 </div>
                             </div>
@@ -73,7 +73,7 @@
                 <h5  class="flex-column text-info">
                     Note:
                     <span class="text-dark">
-      Only modules that have a score will be displayed.
+      Only courses that have a score will be displayed.
     </span>
                 </h5>
             </div>

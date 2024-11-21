@@ -3,7 +3,7 @@ package org.example.courzelo.models.Timetable;
 import lombok.Builder;
 import lombok.Data;
 import org.example.courzelo.models.User;
-import org.example.courzelo.models.institution.Course;
+import org.example.courzelo.models.institution.ClassRoom;
 import org.example.courzelo.models.institution.Group;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
@@ -26,7 +26,7 @@ public class ElementModule {
     private String institutionID;
     private List<String> students;
     @DBRef
-    private Course course;
+    private ClassRoom classRoom;
     @DBRef
     private Group group;
     @DBRef

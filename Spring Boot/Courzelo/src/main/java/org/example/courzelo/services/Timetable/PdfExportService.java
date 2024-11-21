@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.example.courzelo.dto.responses.GroupResponse;
-import org.example.courzelo.dto.responses.UserResponse;
 import org.example.courzelo.models.Timetable.ElementModule;
 import org.example.courzelo.models.Timetable.Period;
 import org.example.courzelo.models.User;
@@ -131,7 +130,7 @@ public class PdfExportService {
                 if(elms.size()>0){
                     Paragraph Libele = new Paragraph(elms.get(0).getName()+" ("+elms.get(0).getNmbrHours()+")",Calibri1);
                     Libele.setAlignment(Element.ALIGN_CENTER);
-                    Paragraph classe = new Paragraph(elms.get(0).getCourse().getClass().getName(),Calibri3);
+                    Paragraph classe = new Paragraph(elms.get(0).getClassRoom().getClass().getName(),Calibri3);
                     classe.setAlignment(Element.ALIGN_CENTER);
                     CellList.add(Libele);
                     CellList.add(classe);

@@ -5,14 +5,14 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.courzelo.dto.responses.institution.InstitutionTimeSlotsConfiguration;
 import org.example.courzelo.dto.responses.institution.TimetableResponse;
-import org.example.courzelo.exceptions.CourseNotFoundException;
+import org.example.courzelo.exceptions.ClassRoomNotFoundException;
 import org.example.courzelo.models.Role;
 import org.example.courzelo.models.User;
-import org.example.courzelo.models.institution.Course;
+import org.example.courzelo.models.institution.ClassRoom;
 import org.example.courzelo.models.institution.Group;
 import org.example.courzelo.models.institution.Institution;
 import org.example.courzelo.models.institution.Timeslot;
-import org.example.courzelo.repositories.CourseRepository;
+import org.example.courzelo.repositories.ClassRoomRepository;
 import org.example.courzelo.repositories.GroupRepository;
 import org.example.courzelo.repositories.InstitutionRepository;
 import org.example.courzelo.repositories.UserRepository;
@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Slf4j
 public class TimetableGenerationService {
-    private final CourseRepository courseRepository;
+    private final ClassRoomRepository classRoomRepository;
 
     private final InstitutionRepository institutionRepository;
 
@@ -42,7 +42,7 @@ public class TimetableGenerationService {
 
     public ResponseEntity<HttpStatus> generateWeeklyTimetable(String institutionID) {
         Institution institution = institutionRepository.findById(institutionID)
-                .orElseThrow(()-> new CourseNotFoundException("Institution not found"));
+                .orElseThrow(()-> new ClassRoomNotFoundException("Institution not found"));
         timetableService.getGroupTimetables().clear();
         timetableService.getTeacherTimetables().clear();
         timetableService.setInstitutionTimeSlotsConfiguration(InstitutionTimeSlotsConfiguration.builder()
@@ -50,11 +50,11 @@ public class TimetableGenerationService {
                 .timeSlots(institution.getTimeSlots())
                 .build());
         timetableService.initializeTimeslots();
-        List<Course> courses = courseRepository.findAllByInstitutionID(institutionID)
-                .orElseThrow(()-> new CourseNotFoundException("No courses found for institution"));
+        List<ClassRoom> cours = classRoomRepository.findAllByInstitutionID(institutionID)
+                .orElseThrow(()-> new ClassRoomNotFoundException("No courses found for institution"));
 
         // Generate timetable using the Greedy algorithm
-        timetableService.generateTimetable(courses,institutionID);
+        timetableService.generateTimetable(cours,institutionID);
 
         // Save or display timetables
         Map<String, List<Timeslot>> groupTimetables = timetableService.getGroupTimetables();
@@ -84,9 +84,9 @@ public class TimetableGenerationService {
     }
     public ResponseEntity<TimetableResponse> getTimetable(@NotNull String institutionID, Principal principal) {
         Institution institution = institutionRepository.findById(institutionID)
-                .orElseThrow(() -> new CourseNotFoundException("Institution not found"));
+                .orElseThrow(() -> new ClassRoomNotFoundException("Institution not found"));
         User user = userRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new CourseNotFoundException("User not found"));
+                .orElseThrow(() -> new ClassRoomNotFoundException("User not found"));
         Map<String, List<Timeslot>> groupTimetables = null;
         Map<String, List<Timeslot>> teacherTimetables = null;
 
@@ -101,7 +101,7 @@ public class TimetableGenerationService {
         }else if(user.getRoles().contains(Role.STUDENT)) {
             if(user.getEducation().getGroupID()!= null) {
                 Group group = groupRepository.findById(user.getEducation().getGroupID())
-                        .orElseThrow(() -> new CourseNotFoundException("Group not found"));
+                        .orElseThrow(() -> new ClassRoomNotFoundException("Group not found"));
                 groupTimetables = institution.getGroupTimetables().entrySet().stream()
                         .filter(entry -> entry.getKey().equals(group.getName()))
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));

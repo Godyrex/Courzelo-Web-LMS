@@ -8,7 +8,7 @@ import org.example.courzelo.models.Forum.Comment;
 import org.example.courzelo.models.Forum.ForumThread;
 import org.example.courzelo.models.Forum.Post;
 import org.example.courzelo.models.institution.*;
-import org.example.courzelo.models.institution.Module;
+import org.example.courzelo.models.institution.Course;
 import org.example.courzelo.repositories.*;
 import org.example.courzelo.repositories.Forum.CommentRepository;
 import org.example.courzelo.repositories.Forum.PostRepository;
@@ -28,12 +28,12 @@ public class CustomAuthorization {
     private final InstitutionRepository institutionRepository;
     private final UserRepository userRepository;
     private final CodeVerificationService codeVerificationService;
-    private final CourseRepository courseRepository;
+    private final ClassRoomRepository classRoomRepository;
     private final GroupRepository groupRepository;
     private final QuizRepository quizRepository;
     private final InvitationRepository invitationRepository;
     private final ProgramRepository programRepository;
-    private final ModuleRepository moduleRepository;
+    private final CourseRepository courseRepository;
     private final GradeRepository gradeRepository;
     private final ThreadRepository threadRepository;
     private final PostRepository postRepository;
@@ -98,7 +98,7 @@ public class CustomAuthorization {
         ForumThread thread = threadRepository.findById(threadID).orElseThrow(() -> new ForumThreadNotFoundException("Thread not found"));
         return user.getEducation().getInstitutionID().equals(thread.getInstitutionID());
     }
-    public boolean canAccessModule(String moduleID) {
+    public boolean canAccessCourse(String courseID) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
         User user = userRepository.findUserByEmail(userEmail);
@@ -108,8 +108,8 @@ public class CustomAuthorization {
         if(user.getRoles().contains(Role.SUPERADMIN)){
             return true;
         }
-        Module module = moduleRepository.findById(moduleID).orElseThrow(() -> new ModuleNotFoundException("Module not found"));
-        return user.getEducation().getInstitutionID().equals(module.getInstitutionID());
+        Course course = courseRepository.findById(courseID).orElseThrow(() -> new CourseNotFoundException("Module not found"));
+        return user.getEducation().getInstitutionID().equals(course.getInstitutionID());
     }
     public boolean canAccessGroup(String groupID) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -162,7 +162,7 @@ public class CustomAuthorization {
         CodeVerification codeVerification= codeVerificationService.verifyCode(code);
         return codeVerification != null && codeVerification.getEmail().equals(userEmail) && codeVerification.getCodeType().equals(CodeType.INSTITUTION_INVITATION);
     }
-    public boolean canCreateCourse(String institutionID) {
+    public boolean canCreateClassRoom(String institutionID) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
         User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new UserNotFoundException("User not found"));
@@ -172,7 +172,7 @@ public class CustomAuthorization {
         Institution institution = institutionRepository.findById(institutionID).orElseThrow(() -> new InstitutionNotFoundException("Institution not found"));
         return institution.getAdmins().stream().anyMatch(admin -> admin.equals(userEmail));
     }
-    public boolean canAccessCourse(String courseID) {
+    public boolean canAccessClassroom(String courseID) {
         log.info("Checking if user can access course");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
@@ -185,22 +185,22 @@ public class CustomAuthorization {
             log.info("User is superadmin");
             return true;
         }
-        Course course= courseRepository.findById(courseID).orElseThrow(() -> new CourseNotFoundException("Course not found"));
-        if(course.getInstitutionID().equals(user.getEducation().getInstitutionID())){
+        ClassRoom classRoom = classRoomRepository.findById(courseID).orElseThrow(() -> new ClassRoomNotFoundException("Course not found"));
+        if(classRoom.getInstitutionID().equals(user.getEducation().getInstitutionID())){
             log.info("User is in institution");
             return true;
         }
-        if(course.getGroup()!=null) {
+        if(classRoom.getGroup()!=null) {
             log.info("Course has group");
-            Group group = groupRepository.findById(course.getGroup()).orElseThrow(() -> new GroupNotFoundException("Group not found"));
-            return (course.getTeacher()!= null&&course.getTeacher().equals(userEmail)) || group.getStudents().stream().anyMatch(student -> student.equals(userEmail));
+            Group group = groupRepository.findById(classRoom.getGroup()).orElseThrow(() -> new GroupNotFoundException("Group not found"));
+            return (classRoom.getTeacher()!= null&& classRoom.getTeacher().equals(userEmail)) || group.getStudents().stream().anyMatch(student -> student.equals(userEmail));
         }
-        return course.getTeacher().equals(userEmail);
+        return classRoom.getTeacher().equals(userEmail);
     }
     public boolean canAccessQuiz(String quizID) {
         Quiz quiz = quizRepository.findById(quizID).orElseThrow(()->new NoSuchElementException("Quiz not found"));
         if(quiz.getCourse()!=null){
-            return canAccessCourse(quiz.getCourse());
+            return canAccessClassroom(quiz.getCourse());
         }else{
             return false;
         }

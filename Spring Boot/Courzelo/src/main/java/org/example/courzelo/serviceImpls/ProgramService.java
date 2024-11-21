@@ -13,10 +13,10 @@ import org.example.courzelo.exceptions.*;
 import org.example.courzelo.models.User;
 import org.example.courzelo.models.institution.Group;
 import org.example.courzelo.models.institution.Institution;
-import org.example.courzelo.models.institution.Module;
+import org.example.courzelo.models.institution.Course;
 import org.example.courzelo.models.institution.Program;
 import org.example.courzelo.repositories.*;
-import org.example.courzelo.services.IModuleService;
+import org.example.courzelo.services.ICourseService;
 import org.example.courzelo.services.IProgramService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -38,12 +38,12 @@ import java.util.List;
 public class ProgramService implements IProgramService {
     private final ProgramRepository programRepository;
     private final UserRepository userRepository;
-    private final IModuleService moduleService;
+    private final ICourseService moduleService;
     private final InstitutionRepository institutionRepository;
     private final GroupServiceImpl groupService;
     private final GroupRepository groupRepository;
     private final CalendarService calendarService;
-    private final ModuleRepository moduleRepository;
+    private final CourseRepository courseRepository;
 
     @Override
     public ResponseEntity<HttpStatus> createProgram(ProgramRequest programRequest, Principal principal) {
@@ -64,7 +64,7 @@ public class ProgramService implements IProgramService {
                 .credits(programRequest.getCredits())
                 .duration(programRequest.getDuration())
                 .groups(new ArrayList<>())
-                .modules(new ArrayList<>())
+                .courses(new ArrayList<>())
                 .build();
         programRepository.save(program);
         addProgramToInstitution(program.getId(), user.getEducation().getInstitutionID());
@@ -92,7 +92,7 @@ public class ProgramService implements IProgramService {
     public ResponseEntity<HttpStatus> deleteProgram(String id) {
         Program program = programRepository.findById(id).orElseThrow(() -> new ProgramNotFoundException("Program not found"));
         removeProgramFromInstitution(program.getId(), program.getInstitutionID());
-        moduleService.deleteAllProgramModules(program.getId());
+        moduleService.deleteAllProgramCourses(program.getId());
         if(program.getGroups()!=null) {
             program.getGroups().forEach(groupService::deleteGroup);
         }
@@ -176,6 +176,27 @@ public class ProgramService implements IProgramService {
     }
 
     @Override
+    public void addModuleToProgram(String moduleID, String programID) {
+        Program program = programRepository.findById(programID).orElseThrow(() -> new ProgramNotFoundException("Program not found"));
+        if(program.getModules() == null) {
+            program.setModules(new ArrayList<>());
+        }
+        if (!program.getModules().contains(moduleID)) {
+            program.getModules().add(moduleID);
+            programRepository.save(program);
+        }
+    }
+
+    @Override
+    public void removeModuleFromProgram(String moduleID, String programID) {
+        Program program = programRepository.findById(programID).orElseThrow(() -> new ProgramNotFoundException("Program not found"));
+        if (program.getModules()!=null&&program.getModules().contains(moduleID)) {
+            program.getModules().remove(moduleID);
+            programRepository.save(program);
+        }
+    }
+
+    @Override
     public ResponseEntity<SimplifiedProgramResponse> getSimplifiedProgramById(String id) {
         Program program = programRepository.findById(id).orElseThrow(() -> new ProgramNotFoundException("Program not found"));
         SimplifiedProgramResponse simplifiedProgramResponse = SimplifiedProgramResponse.builder()
@@ -255,8 +276,8 @@ public class ProgramService implements IProgramService {
 
     @Override
     public ResponseEntity<Integer> getProgramModuleCreditsSum(String id) {
-        List<Module> modules = moduleRepository.findCreditsByProgram(id).orElseThrow(() -> new ModuleNotFoundException("No modules found"));
-        int sum = modules.stream().mapToInt(Module::getCredit).sum();
+        List<Course> courses = courseRepository.findCreditsByProgram(id).orElseThrow(() -> new CourseNotFoundException("No modules found"));
+        int sum = courses.stream().mapToInt(Course::getCredit).sum();
         log.info("Sum: " + sum);
         return new ResponseEntity<>(sum, HttpStatus.OK);
     }

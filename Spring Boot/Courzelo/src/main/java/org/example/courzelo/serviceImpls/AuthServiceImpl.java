@@ -6,13 +6,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.courzelo.dto.requests.LoginRequest;
 import org.example.courzelo.dto.requests.SignupRequest;
 import org.example.courzelo.dto.responses.*;
-import org.example.courzelo.dto.responses.institution.SimplifiedCourseResponse;
+import org.example.courzelo.dto.responses.institution.SimplifiedClassRoomResponse;
 import org.example.courzelo.exceptions.UserNotFoundException;
 import org.example.courzelo.models.CodeType;
 import org.example.courzelo.models.CodeVerification;
 import org.example.courzelo.models.Role;
 import org.example.courzelo.models.User;
-import org.example.courzelo.models.institution.Course;
+import org.example.courzelo.models.institution.ClassRoom;
 import org.example.courzelo.models.institution.Group;
 import org.example.courzelo.models.institution.Institution;
 import org.example.courzelo.repositories.*;
@@ -55,9 +55,9 @@ public class AuthServiceImpl implements IAuthService {
     private final IMailService mailService;
     private final ICodeVerificationService codeVerificationService;
     private final InstitutionRepository institutionRepository;
-    private final CourseRepository courseRepository;
+    private final ClassRoomRepository classRoomRepository;
     private final GroupRepository groupRepository;
-    private final ModuleRepository moduleRepository;
+    private final CourseRepository courseRepository;
     @Value("${Security.app.jwtExpirationMs}")
     private long jwtExpirationMs;
     @Value("${Security.app.refreshExpirationMs}")
@@ -65,7 +65,7 @@ public class AuthServiceImpl implements IAuthService {
     @Value("${Security.app.refreshRememberMeExpirationMs}")
     private long refreshRememberMeExpirationMs;
 
-    public AuthServiceImpl(UserRepository userRepository, IRefreshTokenService iRefreshTokenService, JWTUtils jwtUtils, PasswordEncoder encoder, CookieUtil cookieUtil, AuthenticationManager authenticationManager, IUserService userService, IMailService mailService, ICodeVerificationService codeVerificationService, InstitutionRepository institutionRepository, CourseRepository courseRepository, GroupRepository groupRepository, ModuleRepository moduleRepository) {
+    public AuthServiceImpl(UserRepository userRepository, IRefreshTokenService iRefreshTokenService, JWTUtils jwtUtils, PasswordEncoder encoder, CookieUtil cookieUtil, AuthenticationManager authenticationManager, IUserService userService, IMailService mailService, ICodeVerificationService codeVerificationService, InstitutionRepository institutionRepository, ClassRoomRepository classRoomRepository, GroupRepository groupRepository, CourseRepository courseRepository) {
         this.userRepository = userRepository;
         this.iRefreshTokenService = iRefreshTokenService;
         this.jwtUtils = jwtUtils;
@@ -76,9 +76,9 @@ public class AuthServiceImpl implements IAuthService {
         this.mailService = mailService;
         this.codeVerificationService = codeVerificationService;
         this.institutionRepository = institutionRepository;
-        this.courseRepository = courseRepository;
+        this.classRoomRepository = classRoomRepository;
         this.groupRepository = groupRepository;
-        this.moduleRepository = moduleRepository;
+        this.courseRepository = courseRepository;
     }
 
     @Override
@@ -156,9 +156,9 @@ public class AuthServiceImpl implements IAuthService {
             {
                 log.info("User has group");
                 Group group = groupRepository.findById(userDetails.getEducation().getGroupID()).orElse(null);
-                if(group!=null && group.getCourses()!=null)
+                if(group!=null && group.getClassRooms()!=null)
                 {
-                   courses = group.getCourses();
+                   courses = group.getClassRooms();
                    log.info("Courses: "+courses);
                 } else {
                     courses = new ArrayList<>();
@@ -166,8 +166,8 @@ public class AuthServiceImpl implements IAuthService {
             } else {
                 courses = new ArrayList<>();
             }
-            if(userDetails.getEducation()!= null&&userDetails.getEducation().getCoursesID() != null){
-                userDetails.getEducation().getCoursesID().forEach(
+            if(userDetails.getEducation()!= null&&userDetails.getEducation().getClassroomsID() != null){
+                userDetails.getEducation().getClassroomsID().forEach(
                         courseID -> {
                             if(!courses.contains(courseID)){
                                 log.info("user has course teaching");
@@ -188,11 +188,11 @@ public class AuthServiceImpl implements IAuthService {
                                     .institutionID(userDetails.getEducation().getInstitutionID())
                                     .institutionName(institution != null ? institution.getName() : null)
                                     .groupID(userDetails.getEducation().getGroupID() != null ? userDetails.getEducation().getGroupID() : null)
-                                    .courses(!courses.isEmpty() ? courses.stream().map(
+                                    .classrooms(!courses.isEmpty() ? courses.stream().map(
                                             courseID -> {
                                                 log.info("Course ID: "+courseID);
-                                                Course course = courseRepository.findById(courseID).orElseThrow();
-                                                return SimplifiedCourseResponse.builder().courseID(course.getId()).module(course.getModule()).build();
+                                                ClassRoom classRoom = classRoomRepository.findById(courseID).orElseThrow();
+                                                return SimplifiedClassRoomResponse.builder().classroomID(classRoom.getId()).course(classRoom.getCourse()).build();
                                             }
                                     ).toList() : null)
                                     .build())
@@ -266,9 +266,9 @@ public class AuthServiceImpl implements IAuthService {
             {
                 log.info("User has group");
                 Group group = groupRepository.findById(userDetails.getEducation().getGroupID()).orElse(null);
-                if(group!=null && group.getCourses()!=null)
+                if(group!=null && group.getClassRooms()!=null)
                 {
-                    courses = group.getCourses();
+                    courses = group.getClassRooms();
                     log.info("Courses: "+courses);
                 } else {
                     courses = new ArrayList<>();
@@ -276,8 +276,8 @@ public class AuthServiceImpl implements IAuthService {
             } else {
                 courses = new ArrayList<>();
             }
-            if(userDetails.getEducation()!= null&&userDetails.getEducation().getCoursesID() != null){
-                userDetails.getEducation().getCoursesID().forEach(
+            if(userDetails.getEducation()!= null&&userDetails.getEducation().getClassroomsID() != null){
+                userDetails.getEducation().getClassroomsID().forEach(
                         courseID -> {
                             if(!courses.contains(courseID)){
                                 log.info("user has course teaching");
@@ -298,11 +298,11 @@ public class AuthServiceImpl implements IAuthService {
                                     .institutionID(userDetails.getEducation().getInstitutionID())
                                     .institutionName(institution != null ? institution.getName() : null)
                                     .groupID(userDetails.getEducation().getGroupID() != null ? userDetails.getEducation().getGroupID() : null)
-                                    .courses(!courses.isEmpty() ? courses.stream().map(
+                                    .classrooms(!courses.isEmpty() ? courses.stream().map(
                                             courseID -> {
                                                 log.info("Course ID: "+courseID);
-                                                Course course = courseRepository.findById(courseID).orElseThrow();
-                                                return SimplifiedCourseResponse.builder().courseID(course.getId()).module(course.getModule()).build();
+                                                ClassRoom classRoom = classRoomRepository.findById(courseID).orElseThrow();
+                                                return SimplifiedClassRoomResponse.builder().classroomID(classRoom.getId()).course(classRoom.getCourse()).build();
                                             }
                                     ).toList() : null)
                                     .build())
@@ -379,9 +379,9 @@ public class AuthServiceImpl implements IAuthService {
             {
                 log.info("User has group");
                 Group group = groupRepository.findById(user.getEducation().getGroupID()).orElse(null);
-                if(group!=null && group.getCourses()!=null)
+                if(group!=null && group.getClassRooms()!=null)
                 {
-                    courses = group.getCourses();
+                    courses = group.getClassRooms();
                     log.info("Courses: "+courses);
                 } else {
                     courses = new ArrayList<>();
@@ -389,8 +389,8 @@ public class AuthServiceImpl implements IAuthService {
             } else {
                 courses = new ArrayList<>();
             }
-            if(user.getEducation()!= null&&user.getEducation().getCoursesID() != null){
-                user.getEducation().getCoursesID().forEach(
+            if(user.getEducation()!= null&&user.getEducation().getClassroomsID() != null){
+                user.getEducation().getClassroomsID().forEach(
                         courseID -> {
                             if(!courses.contains(courseID)){
                                 log.info("user has course teaching");
@@ -411,11 +411,11 @@ public class AuthServiceImpl implements IAuthService {
                                     .institutionID(user.getEducation().getInstitutionID())
                                     .institutionName(institution != null ? institution.getName() : null)
                                     .groupID(user.getEducation().getGroupID() != null ? user.getEducation().getGroupID() : null)
-                                    .courses(!courses.isEmpty() ? courses.stream().map(
+                                    .classrooms(!courses.isEmpty() ? courses.stream().map(
                                             courseID -> {
                                                 log.info("Course ID: "+courseID);
-                                                Course course = courseRepository.findById(courseID).orElseThrow();
-                                                return SimplifiedCourseResponse.builder().courseID(course.getId()).module(course.getModule()).build();
+                                                ClassRoom classRoom = classRoomRepository.findById(courseID).orElseThrow();
+                                                return SimplifiedClassRoomResponse.builder().classroomID(classRoom.getId()).course(classRoom.getCourse()).build();
                                             }
                                     ).toList() : null)
                                     .build())

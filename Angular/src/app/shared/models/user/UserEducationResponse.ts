@@ -1,8 +1,8 @@
-import {SimplifiedCourseResponse} from '../institution/SimplifiedCourseResponse';
+import {SimplifiedClassRoomResponse} from '../institution/SimplifiedClassRoomResponse';
 
 export interface UserEducationResponse {
     institutionID?: string;
     institutionName?: string;
-    courses?: SimplifiedCourseResponse[];
+    classrooms?: SimplifiedClassRoomResponse[];
     groupID?: string;
 }

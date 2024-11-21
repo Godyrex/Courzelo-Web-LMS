@@ -22,8 +22,8 @@ export class GradeService {
   updateGradeValidity(groupID: string)  {
     return this.http.put(`${this.baseUrl}/${groupID}/update-validity`, null);
   }
-  getGradesByGroupAndModule(groupID: string, moduleID: string): Observable<GradeResponse[]> {
-    return this.http.get<GradeResponse[]>(`${this.baseUrl}/${groupID}/${moduleID}`);
+  getGradesByGroupAndCourse(groupID: string, courseID: string): Observable<GradeResponse[]> {
+    return this.http.get<GradeResponse[]>(`${this.baseUrl}/${groupID}/${courseID}`);
   }
 
   addGrade(gradeRequest: GradeRequest): Observable<void> {

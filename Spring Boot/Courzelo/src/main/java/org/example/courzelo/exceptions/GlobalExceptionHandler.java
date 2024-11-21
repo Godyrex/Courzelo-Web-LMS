@@ -19,8 +19,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleInstitutionNotFoundException(InstitutionNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
-    @ExceptionHandler(CourseNotFoundException.class)
-    public ResponseEntity<String> handleCourseNotFoundException(CourseNotFoundException ex) {
+    @ExceptionHandler(ClassRoomNotFoundException.class)
+    public ResponseEntity<String> handleCourseNotFoundException(ClassRoomNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
     @ExceptionHandler(InvitationNotFoundException.class)
@@ -75,12 +75,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleProgramNotFoundException(ProgramNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
-    @ExceptionHandler(ModuleNotFoundException.class)
-    public ResponseEntity<String> handleModuleNotFoundException(ModuleNotFoundException ex) {
+    @ExceptionHandler(CourseNotFoundException.class)
+    public ResponseEntity<String> handleModuleNotFoundException(CourseNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
-    @ExceptionHandler(ModuleAlreadyExistsException.class)
-    public ResponseEntity<String> handleModuleAlreadyExistsException(ModuleAlreadyExistsException ex) {
+    @ExceptionHandler(CourseAlreadyExistsException.class)
+    public ResponseEntity<String> handleModuleAlreadyExistsException(CourseAlreadyExistsException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
     @ExceptionHandler(UserNotInGroupException.class)
@@ -91,12 +91,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleSemesterMustBeInOrderException(SemesterMustBeInOrderException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
-    @ExceptionHandler(CourseAlreadyCreatedException.class)
-    public ResponseEntity<String> handleCourseAlreadyCreatedException(CourseAlreadyCreatedException ex) {
+    @ExceptionHandler(ClassRoomAlreadyCreatedException.class)
+    public ResponseEntity<String> handleCourseAlreadyCreatedException(ClassRoomAlreadyCreatedException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
-    @ExceptionHandler(ModuleSemesterNotSetException.class)
-    public ResponseEntity<String> handleModuleSemesterNotSetException(ModuleSemesterNotSetException ex) {
+    @ExceptionHandler(CourseSemesterNotSetException.class)
+    public ResponseEntity<String> handleModuleSemesterNotSetException(CourseSemesterNotSetException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
     @ExceptionHandler(AssessmentAlreadyExistsException.class)
@@ -130,5 +130,17 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CommentNotFoundException.class)
     public ResponseEntity<String> handleCommentNotFoundException(CommentNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+    @ExceptionHandler(ModuleAlreadyExistsException.class)
+    public ResponseEntity<String> handleModuleAlreadyExistsException(ModuleAlreadyExistsException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+    @ExceptionHandler(ModuleNotFoundException.class)
+    public ResponseEntity<String> handleModuleNotFoundException(ModuleNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+    @ExceptionHandler(ClassroomBadRequestException.class)
+    public ResponseEntity<String> handleClassroomBadRequestException(ClassroomBadRequestException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 }

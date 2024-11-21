@@ -20,7 +20,8 @@ public interface IProgramService {
     void deleteAllInstitutionPrograms(String institutionID);
     void addProgramToInstitution(String programID, String institutionID);
     void removeProgramFromInstitution(String programID, String institutionID);
-
+    void addModuleToProgram(String moduleID, String programID);
+    void removeModuleFromProgram(String moduleID, String programID);
     ResponseEntity<SimplifiedProgramResponse> getSimplifiedProgramById(String id);
 
     ResponseEntity<List<SimplifiedProgramResponse>> getSimplifiedProgramsByInstitution(String institutionID);

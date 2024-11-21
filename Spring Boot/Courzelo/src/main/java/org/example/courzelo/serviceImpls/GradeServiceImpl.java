@@ -6,16 +6,15 @@ import org.example.courzelo.dto.requests.GradeRequest;
 import org.example.courzelo.dto.responses.GradeResponse;
 import org.example.courzelo.dto.responses.ModuleGradesResponse;
 import org.example.courzelo.dto.responses.MyGradesResponse;
-import org.example.courzelo.dto.responses.module.ModuleResponse;
+import org.example.courzelo.dto.responses.course.CourseResponse;
 import org.example.courzelo.exceptions.GradeNotFoundException;
-import org.example.courzelo.exceptions.ModuleNotFoundException;
+import org.example.courzelo.exceptions.CourseNotFoundException;
 import org.example.courzelo.exceptions.UserNotFoundException;
 import org.example.courzelo.models.User;
+import org.example.courzelo.models.institution.Course;
 import org.example.courzelo.models.institution.Grade;
-import org.example.courzelo.models.institution.Module;
 import org.example.courzelo.repositories.GradeRepository;
-import org.example.courzelo.repositories.ModuleRepository;
-import org.example.courzelo.repositories.ProgramRepository;
+import org.example.courzelo.repositories.CourseRepository;
 import org.example.courzelo.repositories.UserRepository;
 import org.example.courzelo.services.IGradeService;
 import org.springframework.http.HttpStatus;
@@ -34,12 +33,12 @@ import java.util.Map;
 public class GradeServiceImpl implements IGradeService {
     private final GradeRepository gradeRepository;
     private final UserRepository userRepository;
-    private final ModuleRepository moduleRepository;
+    private final CourseRepository courseRepository;
 
     @Override
     public ResponseEntity<HttpStatus> createGrade(GradeRequest gradeRequest) {
-        Grade existingGrade = gradeRepository.findByNameAndModuleIDAndStudentEmail(
-                        gradeRequest.getName(), gradeRequest.getModuleID(), gradeRequest.getStudentEmail())
+        Grade existingGrade = gradeRepository.findByNameAndCourseIDAndStudentEmail(
+                        gradeRequest.getName(), gradeRequest.getCourseID(), gradeRequest.getStudentEmail())
                 .orElse(null);
 
         if (existingGrade != null) {
@@ -51,7 +50,7 @@ public class GradeServiceImpl implements IGradeService {
 
             Grade newGrade = Grade.builder()
                     .name(gradeRequest.getName())
-                    .moduleID(gradeRequest.getModuleID())
+                    .courseID(gradeRequest.getCourseID())
                     .groupID(gradeRequest.getGroupID())
                     .institutionID(user.getEducation().getInstitutionID())
                     .studentEmail(gradeRequest.getStudentEmail())
@@ -97,7 +96,7 @@ public class GradeServiceImpl implements IGradeService {
         grades.forEach(grade -> gradeResponses.add(GradeResponse.builder()
                 .id(grade.getId())
                 .name(grade.getName())
-                .moduleID(grade.getModuleID())
+                .courseID(grade.getCourseID())
                 .groupID(grade.getGroupID())
                 .institutionID(grade.getInstitutionID())
                 .studentEmail(grade.getStudentEmail())
@@ -105,26 +104,26 @@ public class GradeServiceImpl implements IGradeService {
                 .valid(grade.isValid())
                 .build()));
 
-        Map<ModuleResponse, List<GradeResponse>> moduleGradesMap = new HashMap<>();
+        Map<CourseResponse, List<GradeResponse>> moduleGradesMap = new HashMap<>();
         gradeResponses.forEach(gradeResponse -> {
-            Module module = moduleRepository.findById(gradeResponse.getModuleID())
-                    .orElseThrow(() -> new ModuleNotFoundException("Module not found"));
-            ModuleResponse moduleResponse = ModuleResponse.builder()
-                    .id(module.getId())
-                    .name(module.getName())
-                    .scoreToPass(module.getScoreToPass())
-                    .credit(module.getCredit())
-                    .semester(String.valueOf(module.getSemester()))
-                    .duration(module.getDuration())
-                    .assessments(module.getAssessments())
+            Course course = courseRepository.findById(gradeResponse.getCourseID())
+                    .orElseThrow(() -> new CourseNotFoundException("Module not found"));
+            CourseResponse courseResponse = CourseResponse.builder()
+                    .id(course.getId())
+                    .name(course.getName())
+                    .scoreToPass(course.getScoreToPass())
+                    .credit(course.getCredit())
+                    .semester(String.valueOf(course.getSemester()))
+                    .duration(course.getDuration())
+                    .assessments(course.getAssessments())
                     .build();
-            moduleGradesMap.computeIfAbsent(moduleResponse, k -> new ArrayList<>()).add(gradeResponse);
+            moduleGradesMap.computeIfAbsent(courseResponse, k -> new ArrayList<>()).add(gradeResponse);
         });
 
         List<ModuleGradesResponse> moduleGradesResponses = new ArrayList<>();
-        moduleGradesMap.forEach((module, gradesList) -> {
+        moduleGradesMap.forEach((course, gradesList) -> {
             ModuleGradesResponse moduleGradesResponse = ModuleGradesResponse.builder()
-                    .module(module)
+                    .course(course)
                     .grades(gradesList)
                     .build();
             moduleGradesResponses.add(moduleGradesResponse);
@@ -140,7 +139,7 @@ public class GradeServiceImpl implements IGradeService {
     public ResponseEntity<HttpStatus> updateGrade(String gradeID, GradeRequest gradeRequest) {
        Grade grade = gradeRepository.findById(gradeID).orElseThrow(() -> new GradeNotFoundException("Grade not found"));
          grade.setName(gradeRequest.getName());
-            grade.setModuleID(gradeRequest.getModuleID());
+            grade.setCourseID(gradeRequest.getCourseID());
             grade.setGroupID(gradeRequest.getGroupID());
             grade.setStudentEmail(gradeRequest.getStudentEmail());
             grade.setGrade(gradeRequest.getGrade());
@@ -166,7 +165,7 @@ public class GradeServiceImpl implements IGradeService {
         grades.forEach(grade -> gradeResponses.add(GradeResponse.builder()
                 .id(grade.getId())
                 .name(grade.getName())
-                .moduleID(grade.getModuleID())
+                .courseID(grade.getCourseID())
                 .groupID(grade.getGroupID())
                 .institutionID(grade.getInstitutionID())
                 .studentEmail(grade.getStudentEmail())
@@ -178,14 +177,14 @@ public class GradeServiceImpl implements IGradeService {
     }
 
     @Override
-    public ResponseEntity<List<GradeResponse>> getGradesByGroupAndModule(String groupID, String moduleID) {
-        List<Grade> grades = gradeRepository.findAllByGroupIDAndModuleID(groupID, moduleID).orElseThrow(() -> new GradeNotFoundException("Grades not found"));
+    public ResponseEntity<List<GradeResponse>> getGradesByGroupAndCourse(String groupID, String courseID) {
+        List<Grade> grades = gradeRepository.findAllByGroupIDAndCourseID(groupID, courseID).orElseThrow(() -> new GradeNotFoundException("Grades not found"));
         List<GradeResponse> gradeResponses = new ArrayList<>();
         log.info("Grades found: {}", grades);
         grades.forEach(grade -> gradeResponses.add(GradeResponse.builder()
                 .id(grade.getId())
                 .name(grade.getName())
-                .moduleID(grade.getModuleID())
+                .courseID(grade.getCourseID())
                 .groupID(grade.getGroupID())
                 .institutionID(grade.getInstitutionID())
                 .studentEmail(grade.getStudentEmail())

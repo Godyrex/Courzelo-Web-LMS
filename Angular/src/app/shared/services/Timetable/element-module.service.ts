@@ -4,7 +4,7 @@ import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {GroupResponse} from '../../models/institution/GroupResponse';
 import {UserResponse} from '../../models/user/UserResponse';
-import {CourseResponse} from '../../models/institution/CourseResponse';
+import {ClassRoomResponse} from '../../models/institution/ClassRoomResponse';
 
 @Injectable({
   providedIn: 'root'
@@ -66,7 +66,7 @@ export class ElementModuleService {
   getTeachers(): Observable<UserResponse[]> {
     return this.http.get<any[]>(`${this.baseUrl}/teachers`);
   }
-  getCourses(): Observable<CourseResponse[]> {
+  getCourses(): Observable<ClassRoomResponse[]> {
     return this.http.get<any[]>(`${this.baseUrl}/courses`);
   }
 }

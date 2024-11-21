@@ -2,7 +2,7 @@ package org.example.courzelo.GAlgo;
 
 import lombok.extern.slf4j.Slf4j;
 import org.example.courzelo.dto.responses.GroupResponse;
-import org.example.courzelo.dto.responses.institution.SimplifiedCourseResponse;
+import org.example.courzelo.dto.responses.institution.SimplifiedClassRoomResponse;
 import org.example.courzelo.models.Timetable.ElementModule;
 import org.example.courzelo.models.Timetable.Period;
 import org.example.courzelo.repositories.Timetable.ElementModuleRepo;
@@ -81,14 +81,14 @@ public class GAlgorithm {
 
     private List<ElementModule> getElementsForClasse(GroupResponse groupResponse) {
         List<ElementModule> elementModules = new ArrayList<>();
-        if (groupResponse != null && groupResponse.getCourses() != null) {
-            for (SimplifiedCourseResponse course : groupResponse.getCourses()) {
+        if (groupResponse != null && groupResponse.getClassrooms() != null) {
+            for (SimplifiedClassRoomResponse course : groupResponse.getClassrooms()) {
                 if (course != null && course.getElementModules() != null) {
                     elementModules.addAll(course.getElementModules());
                 } else if (course == null) {
                     System.out.println("One of the Course objects in the class is null.");
                 } else {
-                    System.out.println("Modul " + course.getCourseName() + " does not have any ElementModule objects associated with it.");
+                    System.out.println("Modul " + course.getClassroomName() + " does not have any ElementModule objects associated with it.");
                 }
             }
         } else if (groupResponse == null) {
@@ -124,7 +124,7 @@ public class GAlgorithm {
     public void printTimetable(UniversityTimetable universityTimetable) {
         System.out.println("SchoolTimetable with fitness : " + universityTimetable.getFitness() + " %");
         for (int classIndex = 0; classIndex < universityTimetable.getNumberOfClasses(); classIndex++) {
-            System.out.println("Class " + universityTimetable.getTimetable(classIndex).get(0).getCourse().getGroup() + ":");
+            System.out.println("Class " + universityTimetable.getTimetable(classIndex).get(0).getClassRoom().getGroup() + ":");
             List<ElementModule> classTimetable = universityTimetable.getTimetable(classIndex);
             System.out.println("classTimetable size " + classTimetable.size());
             for (ElementModule element : classTimetable) {

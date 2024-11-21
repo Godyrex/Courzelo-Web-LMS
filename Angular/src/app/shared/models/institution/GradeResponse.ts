@@ -1,8 +1,8 @@
 export interface GradeResponse {
     id: string;
     name: string;
-    moduleID: string;
-    moduleName: string;
+    courseID: string;
+    courseName: string;
     scoreToPass: number;
     groupID: string;
     institutionID: string;

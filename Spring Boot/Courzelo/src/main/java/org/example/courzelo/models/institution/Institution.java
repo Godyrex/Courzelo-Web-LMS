@@ -36,7 +36,7 @@ public class Institution {
     private List<String> timeSlotsDays = new ArrayList<>();
     private List<InstitutionTimeSlot> timeSlots = new ArrayList<>();
     private List<String> groupsID = new ArrayList<>();
-    private List<String> coursesID = new ArrayList<>();
+    private List<String> classRoomsID = new ArrayList<>();
     private List<String> programsID = new ArrayList<>();
 
     public List<String> getUsers() {

@@ -4,9 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.courzelo.dto.QuestionDTO;
 import org.example.courzelo.dto.QuizDTO;
 import org.example.courzelo.dto.requests.StudentQuizAnswers;
-import org.example.courzelo.exceptions.ResourceNotFoundException;
 import org.example.courzelo.models.*;
-import org.example.courzelo.models.institution.Course;
+import org.example.courzelo.models.institution.ClassRoom;
 import org.example.courzelo.repositories.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -30,18 +28,18 @@ public class QuizService {
     private final QuestionRepository questionRepository;
     private final AnswerRepository answerRepository;
     private final QuestionService questionService;
-    private final CourseRepository courseRepository;
+    private final ClassRoomRepository classRoomRepository;
     private final UserRepository userRepository;
     private static final Logger logger = LoggerFactory.getLogger(QuizService.class);
 
 
     @Autowired
-    public QuizService(QuizRepository quizRepository, QuestionRepository questionRepository, AnswerRepository answerRepository, QuestionService questionService, CourseRepository courseRepository, UserRepository userRepository) {
+    public QuizService(QuizRepository quizRepository, QuestionRepository questionRepository, AnswerRepository answerRepository, QuestionService questionService, ClassRoomRepository classRoomRepository, UserRepository userRepository) {
         this.quizRepository = quizRepository;
         this.questionRepository = questionRepository;
         this.answerRepository = answerRepository;
         this.questionService = questionService;
-        this.courseRepository = courseRepository;
+        this.classRoomRepository = classRoomRepository;
         this.userRepository = userRepository;
     }
 
@@ -126,21 +124,21 @@ public class QuizService {
         return mapToDTO(quiz);
     }
     public void addQuizToCourse(Quiz quiz, String courseId) {
-        Course course = courseRepository.findById(courseId).orElseThrow(() -> new NoSuchElementException("Course not found"));
-        if(course.getQuizzes() == null) {
+        ClassRoom classRoom = classRoomRepository.findById(courseId).orElseThrow(() -> new NoSuchElementException("Course not found"));
+        if(classRoom.getQuizzes() == null) {
             log.info("Course quizzes is null");
-            course.setQuizzes(List.of(quiz.getId()));
+            classRoom.setQuizzes(List.of(quiz.getId()));
         } else {
             log.info("Course quizzes is not null");
             log.info("QUIZ ID: {}", quiz.getId());
-            course.getQuizzes().add(quiz.getId());
+            classRoom.getQuizzes().add(quiz.getId());
         }
-        courseRepository.save(course);
+        classRoomRepository.save(classRoom);
     }
     public void removeQuizFromCourse(Quiz quiz) {
-        Course course = courseRepository.findById(quiz.getCourse()).orElseThrow(() -> new NoSuchElementException("Course not found"));
-        course.getQuizzes().remove(quiz.getId());
-        courseRepository.save(course);
+        ClassRoom classRoom = classRoomRepository.findById(quiz.getCourse()).orElseThrow(() -> new NoSuchElementException("Course not found"));
+        classRoom.getQuizzes().remove(quiz.getId());
+        classRoomRepository.save(classRoom);
     }
 
 

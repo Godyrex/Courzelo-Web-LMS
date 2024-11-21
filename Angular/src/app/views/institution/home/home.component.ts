@@ -8,8 +8,8 @@ import {DomSanitizer} from '@angular/platform-browser';
 import {SessionStorageService} from '../../../shared/services/user/session-storage.service';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {FormBuilder, Validators} from '@angular/forms';
-import {CourseService} from '../../../shared/services/institution/course.service';
-import {CourseRequest} from '../../../shared/models/institution/CourseRequest';
+import {ClassroomService} from '../../../shared/services/institution/classroom.service';
+import {ClassRoomRequest} from '../../../shared/models/institution/ClassRoomRequest';
 import {AuthenticationService} from '../../../shared/services/user/authentication.service';
 import {GroupResponse} from '../../../shared/models/institution/GroupResponse';
 
@@ -28,7 +28,7 @@ export class HomeComponent implements OnInit {
       private sessionstorage: SessionStorageService,
       private modalService: NgbModal,
       private formBuilder: FormBuilder,
-      private courseService: CourseService,
+      private courseService: ClassroomService,
       private authenticationService: AuthenticationService
   ) { }
   institutionID: string;
@@ -36,7 +36,7 @@ export class HomeComponent implements OnInit {
   loading = false;
     code: string;
   currentInstitution: InstitutionResponse;
-  course: CourseRequest = {} as CourseRequest;
+  course: ClassRoomRequest = {} as ClassRoomRequest;
   teachers ;
   groups: GroupResponse[] = [];
   currentUser = this.sessionstorage.getUserFromSession();

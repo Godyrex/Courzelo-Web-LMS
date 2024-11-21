@@ -1,18 +1,21 @@
-import {CoursePostResponse} from './CoursePostResponse';
-import {Quiz} from '../Quiz';
-import {SafeUrl} from '@angular/platform-browser';
+import {AssessmentRequest} from './AssessmentRequest';
 
 export interface CourseResponse {
-    imageSrc: SafeUrl;
+    classroomTeacher?: string;
     id?: string;
     name?: string;
     description?: string;
-    module?: string;
+    skills?: string[];
+    semester?: string;
+    duration?: string;
+    scoreToPass?: number;
     credit?: number;
-    teacher?: string;
-    group?: string;
+    assessments?: AssessmentRequest[];
+    isFinished?: boolean;
     institutionID?: string;
-    created?: Date;
-    posts?: CoursePostResponse[];
-    quizzes?: Quiz[];
+    program?: string;
+    moduleID?: string;
+    classroomCreated?: boolean;
+    classroomID?: string;
+    courseParts: Map<string, number>;
 }

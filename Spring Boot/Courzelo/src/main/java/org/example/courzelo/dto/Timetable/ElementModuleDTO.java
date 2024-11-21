@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import org.example.courzelo.models.Timetable.Period;
 import org.example.courzelo.models.Timetable.Semester;
-import org.example.courzelo.models.institution.Course;
 
 import java.time.DayOfWeek;
 import java.util.List;

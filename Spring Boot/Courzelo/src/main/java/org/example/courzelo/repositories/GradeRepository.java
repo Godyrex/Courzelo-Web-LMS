@@ -10,8 +10,8 @@ import java.util.Optional;
 @Repository
 public interface GradeRepository extends MongoRepository<Grade, String> {
     Optional<List<Grade>> findAllByGroupID(String groupID);
-    Optional<List<Grade>> findAllByGroupIDAndModuleID(String groupID, String moduleID);
-    Optional<Grade> findByNameAndModuleIDAndStudentEmail(String name, String moduleID, String studentEmail);
-    Optional<List<Grade>> findByModuleIDAndStudentEmail( String moduleID, String studentEmail);
+    Optional<List<Grade>> findAllByGroupIDAndCourseID(String groupID, String courseID);
+    Optional<Grade> findByNameAndCourseIDAndStudentEmail(String name, String courseID, String studentEmail);
+    Optional<List<Grade>> findByCourseIDAndStudentEmail( String courseID, String studentEmail);
     Optional<List<Grade>> findByStudentEmailAndGroupID(String email,String groupID);
 }

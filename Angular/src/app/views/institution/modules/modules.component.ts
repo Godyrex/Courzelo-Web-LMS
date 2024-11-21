@@ -1,27 +1,26 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {FormControl} from '@angular/forms';
-import {ProgramResponse} from '../../../shared/models/institution/ProgramResponse';
-import {ResponseHandlerService} from '../../../shared/services/user/response-handler.service';
-import {ToastrService} from 'ngx-toastr';
-import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
-import {debounceTime} from 'rxjs/operators';
-import {ModuleResponse} from '../../../shared/models/institution/ModuleResponse';
-import {PaginatedModulesResponse} from '../../../shared/models/institution/PaginatedModulesResponse';
-import {ModuleService} from '../../../shared/services/institution/module.service';
-import {AddModuleComponent} from './add-module/add-module.component';
-import {EditModuleComponent} from './edit-module/edit-module.component';
-import {ActivatedRoute} from '@angular/router';
-import {InstitutionResponse} from '../../../shared/models/institution/InstitutionResponse';
-import {InstitutionService} from '../../../shared/services/institution/institution.service';
-import {ManageAssessmentComponent} from './manage-assessment/manage-assessment.component';
-import {ViewModulePartsComponent} from './view-module-parts/view-module-parts.component';
+import {FormControl} from "@angular/forms";
+import {ProgramResponse} from "../../../shared/models/institution/ProgramResponse";
+import {CourseResponse} from "../../../shared/models/institution/CourseResponse";
+import {InstitutionResponse} from "../../../shared/models/institution/InstitutionResponse";
+import {InstitutionService} from "../../../shared/services/institution/institution.service";
+import {ToastrService} from "ngx-toastr";
+import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
+import {ActivatedRoute, Router} from "@angular/router";
+import {debounceTime} from "rxjs/operators";
+import {ModuleResponse} from "../../../shared/models/institution/ModuleResponse";
+import {PaginatedModuleResponse} from "../../../shared/models/institution/PaginatedModuleResponse";
+import {ModuleService} from "../../../shared/services/institution/module.service";
+import {AddModuleComponent} from "./add-module/add-module.component";
+import {EditModuleComponent} from "./edit-module/edit-module.component";
+import {ProgramService} from "../../../shared/services/institution/program.service";
 
 @Component({
   selector: 'app-modules',
   templateUrl: './modules.component.html',
   styleUrls: ['./modules.component.scss']
 })
-export class ModulesComponent implements OnInit {
+export class ModulesComponent implements OnInit{
   loadingModules = false;
   _currentPage = 1;
   totalPages = 0;
@@ -30,22 +29,43 @@ export class ModulesComponent implements OnInit {
   searchControl: FormControl = new FormControl();
   @Input() currentProgram: ProgramResponse;
   currentModule: ModuleResponse;
-  paginatedModules: PaginatedModulesResponse;
+  paginatedModules: PaginatedModuleResponse;
   currentInstitution: InstitutionResponse;
+
   constructor(
       private moduleService: ModuleService,
       private institutionService: InstitutionService,
-      private handleResponse: ResponseHandlerService,
+      private programService: ProgramService,
+      private router: Router,
       private toastr: ToastrService,
       private modalService: NgbModal,
-        private route: ActivatedRoute
-  ) { }
+      private route: ActivatedRoute
+  ) {
+  }
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
       this.currentProgram = history.state.program;
-      this.getModules(this.currentPage, this.itemsPerPage, this.currentProgram.id, null);
-      this.getInstitution(this.currentProgram.institutionID);
+      if (!this.currentProgram) {
+        const programID = params.get('programID');
+        if (programID) {
+          this.programService.getProgram(programID).subscribe(
+              (fetchedProgram: ProgramResponse) => {
+                this.currentProgram = fetchedProgram;
+                this.getModules(this.currentPage, this.itemsPerPage, this.currentProgram.id, "");
+                this.getInstitution(this.currentProgram.institutionID);
+              },
+              error => {
+                this.toastr.error('Failed to fetch program details');
+              }
+          );
+        } else {
+          this.toastr.error('Program ID is missing');
+        }
+      } else {
+        this.getModules(this.currentPage, this.itemsPerPage, this.currentProgram.id, "");
+        this.getInstitution(this.currentProgram.institutionID);
+      }
     });
     this.searchControl.valueChanges
         .pipe(debounceTime(200))
@@ -53,9 +73,11 @@ export class ModulesComponent implements OnInit {
           this.getModules(1, this.itemsPerPage, this.currentProgram.id, value);
         });
   }
+
   get currentPage(): number {
     return this._currentPage;
   }
+
   set currentPage(value: number) {
     this._currentPage = value;
     if (this.searchControl.value == null) {
@@ -64,9 +86,10 @@ export class ModulesComponent implements OnInit {
       this.getModules(this._currentPage, this.itemsPerPage, this.currentProgram.id, this.searchControl.value);
     }
   }
+
   getModules(page: number, sizePerPage: number, programID: string, keyword?: string): void {
     this.loadingModules = true;
-    this.moduleService.getModules(page - 1, sizePerPage, programID, keyword).subscribe(
+    this.moduleService.getAllModules(programID,page - 1, sizePerPage,  keyword).subscribe(
         response => {
           this.paginatedModules = response;
           this.totalPages = response.totalPages;
@@ -75,11 +98,17 @@ export class ModulesComponent implements OnInit {
           this.loadingModules = false;
         },
         error => {
-          this.handleResponse.handleError(error);
+          if(error.error)
+          {
+            this.toastr.error(error.error);
+          }else{
+            this.toastr.error('An error occurred. Please try again later');
+          }
           this.loadingModules = false;
         }
     );
   }
+
   getInstitution(institutionID: string): void {
     this.institutionService.getInstitutionByID(institutionID).subscribe(
         response => {
@@ -87,49 +116,42 @@ export class ModulesComponent implements OnInit {
         }
     );
   }
+
   deleteModule(id: string): void {
     this.loadingModules = true;
     this.moduleService.deleteModule(id).subscribe(
         response => {
-          this.toastr.success('Program deleted successfully');
+          this.toastr.success('Module deleted successfully');
           this.paginatedModules.modules = this.paginatedModules.modules.filter(p => p.id !== id);
           this.loadingModules = false;
         },
         error => {
-          this.handleResponse.handleError(error);
+          if(error.error)
+          {
+            this.toastr.error(error.error);
+          }else{
+            this.toastr.error('An error occurred. Please try again later');
+          }
           this.loadingModules = false;
         }
     );
+  }
+  viewCourses(module: ModuleResponse): void {
+    this.router.navigate(['/institution', this.currentInstitution.id, 'module', module.id, 'courses'], {
+      state: { module }
+    });
   }
   openAddModuleModal() {
     const modalRef = this.modalService.open(AddModuleComponent, {backdrop: false});
     modalRef.componentInstance.programID = this.currentProgram.id;
     modalRef.componentInstance.institution = this.currentInstitution;
     modalRef.componentInstance.moduleAdded.subscribe(() => {
-      this.getModules(this.currentPage, this.itemsPerPage, this.currentProgram.id, null);
+      this.getModules(this.currentPage, this.itemsPerPage, this.currentProgram.id, "");
       modalRef.close();
     });
   }
-  openViewModulePartsModal(module: ModuleResponse) {
-    const modalRef = this.modalService.open(ViewModulePartsComponent, {backdrop: false});
-    modalRef.componentInstance.moduleResponse = module;
-    modalRef.componentInstance.close.subscribe(() => {
-      modalRef.close();
-    });
-  }
-  openManageAssessmentModal(module: ModuleResponse) {
-    const modalRef = this.modalService.open(ManageAssessmentComponent, {size : 'lg', backdrop: false});
-    modalRef.componentInstance.moduleResponse = module;
- //   modalRef.componentInstance.institutionID = this.institutionID;
- /*   modalRef.componentInstance.classAdded.subscribe(() => {
-      this.loadGroups(this.currentPageClasses, this.itemsPerPageClasses);
-      modalRef.close();
-    });*/
-    modalRef.componentInstance.close.subscribe(() => {
-      modalRef.close();
-    });
-  }
-  openEditModuleModal(module: ModuleResponse) {
+
+  openEditModuleModal(module: CourseResponse) {
     const modalRef = this.modalService.open(EditModuleComponent, {backdrop: false});
     modalRef.componentInstance.module = module;
     modalRef.componentInstance.institution = this.currentInstitution;
@@ -147,9 +169,10 @@ export class ModulesComponent implements OnInit {
         }
     );
   }
+
   modalConfirmFunction(content: any, module: ModuleResponse) {
     this.currentModule = module;
-    this.modalService.open(content, { ariaLabelledBy: 'confirm Module', backdrop: false })
+    this.modalService.open(content, {ariaLabelledBy: 'confirm Module', backdrop: false})
         .result.then((result) => {
       if (result === 'Ok') {
         this.deleteModule(this.currentModule.id);

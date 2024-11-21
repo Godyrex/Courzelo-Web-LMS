@@ -1,82 +1,62 @@
 package org.example.courzelo.controllers.institution;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import org.example.courzelo.dto.requests.CoursePostRequest;
-import org.example.courzelo.dto.requests.CourseRequest;
-import org.example.courzelo.dto.responses.CourseResponse;
-import org.example.courzelo.models.institution.Semester;
-import org.example.courzelo.security.CustomAuthorization;
+import org.example.courzelo.dto.requests.course.AssessmentRequest;
+import org.example.courzelo.dto.requests.course.CourseRequest;
+import org.example.courzelo.dto.responses.course.CourseResponse;
+import org.example.courzelo.dto.responses.course.PaginatedCoursesResponse;
 import org.example.courzelo.services.ICourseService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.security.Principal;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/course")
 @AllArgsConstructor
+@PreAuthorize("isAuthenticated()")
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600, allowedHeaders = "*", allowCredentials = "true")
 public class CourseController {
-    private final ICourseService iCourseService;
-    private final CustomAuthorization customAuthorization;
-    @PostMapping("/{institutionID}/add")
-    @PreAuthorize("hasRole('ADMIN')&&@customAuthorization.canCreateCourse(#institutionID)")
-    public ResponseEntity<HttpStatus> addCourse(@PathVariable String institutionID,@RequestBody CourseRequest courseRequest,Principal principal) {
-        return iCourseService.createCourse(institutionID,courseRequest,principal);
+    private final ICourseService courseService;
+    @PostMapping("/create")
+    @PreAuthorize("hasAnyRole('ADMIN')&&@customAuthorization.isAdminInInstitution()")
+    public ResponseEntity<HttpStatus> createCourse(@RequestBody CourseRequest courseRequest){
+        return courseService.createCourse(courseRequest);
     }
-    @PostMapping("/{institutionID}/{programID}/add")
-    @PreAuthorize("hasRole('ADMIN')&&@customAuthorization.canCreateCourse(#institutionID)")
-    public ResponseEntity<HttpStatus> addProgramCourses(@PathVariable String institutionID, @PathVariable String programID, @RequestParam(required = false) Semester semester, Principal principal) {
-        return iCourseService.createProgramCourses(institutionID,programID,semester,principal);
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')&&@customAuthorization.isAdminInInstitution()")
+    public ResponseEntity<HttpStatus> updateCourse(@PathVariable String id, @RequestBody CourseRequest courseRequest){
+        return courseService.updateCourse(id, courseRequest);
     }
-    @PutMapping("/{courseID}/update")
-    @PreAuthorize("hasRole('ADMIN')&&@customAuthorization.canAccessCourse(#courseID)")
-    public ResponseEntity<HttpStatus> updateCourse(@PathVariable String courseID,@RequestBody CourseRequest courseRequest) {
-        return iCourseService.updateCourse(courseID,courseRequest);
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')&&@customAuthorization.isAdminInInstitution()")
+    public ResponseEntity<HttpStatus> deleteCourse(@PathVariable String id){
+        return courseService.deleteCourse(id);
     }
-    @DeleteMapping("/{courseID}/delete")
-    @PreAuthorize("hasRole('ADMIN')&&@customAuthorization.canAccessCourse(#courseID)")
-    public ResponseEntity<HttpStatus> deleteCourse(@PathVariable String courseID) {
-        return iCourseService.deleteCourse(courseID);
+    @GetMapping("/")
+    @PreAuthorize("hasAnyRole('ADMIN')&&@customAuthorization.isAdminInInstitution()")
+    public ResponseEntity<PaginatedCoursesResponse> getCourses(@RequestParam int page, @RequestParam int sizePerPage,
+                                                               @RequestParam(required = false) String keyword, @RequestParam String moduleID){
+        return courseService.getCoursesByProgram(page, sizePerPage, moduleID, keyword);
     }
-    @GetMapping("/{courseID}")
-    @PreAuthorize("isAuthenticated()&&@customAuthorization.canAccessCourse(#courseID)")
-    public ResponseEntity<CourseResponse> getCourse(@PathVariable String courseID) {
-        return iCourseService.getCourse(courseID);
+    @GetMapping("/{id}")
+    @PreAuthorize("@customAuthorization.canAccessCourse(#id)")
+    public ResponseEntity<CourseResponse> getCourse(@PathVariable String id){
+        return courseService.getCourseById(id);
     }
-    @PutMapping("/{courseID}/setTeacher")
-    @PreAuthorize("hasRole('ADMIN')&&@customAuthorization.canAccessCourse(#courseID)")
-    public ResponseEntity<HttpStatus> setTeacher(@PathVariable String courseID,@RequestParam String email) {
-        return iCourseService.setTeacher(courseID,email);
+    @PostMapping("/{id}/create-assessment")
+    @PreAuthorize("hasAnyRole('ADMIN')&&@customAuthorization.isAdminInInstitution()")
+    public ResponseEntity<HttpStatus> createAssessment(@PathVariable String id,@RequestBody AssessmentRequest assessmentRequest){
+        return courseService.createAssessment(id,assessmentRequest);
     }
-    @PutMapping("/{courseID}/addPost")
-    @PreAuthorize("hasRole('TEACHER')&&@customAuthorization.canAccessCourse(#courseID)")
-    public ResponseEntity<HttpStatus> addPost(
-            @PathVariable String courseID,
-            @RequestPart("title") String title,
-            @RequestPart("description") String description,
-            @RequestPart("files") MultipartFile[] files) {
-        CoursePostRequest coursePostRequest = CoursePostRequest.builder().title(title).description(description).build();
-        return iCourseService.addPost(courseID, coursePostRequest, files);
+    @DeleteMapping("/{id}/assessment/{assessmentName}")
+    @PreAuthorize("hasAnyRole('ADMIN')&&@customAuthorization.isAdminInInstitution()")
+    public ResponseEntity<HttpStatus> deleteAssessment(@PathVariable String id, @PathVariable String assessmentName){
+        return courseService.deleteAssessment(id,assessmentName);
     }
-    @PreAuthorize("isAuthenticated()&&@customAuthorization.canAccessCourse(#courseID)")
-    @GetMapping("/{courseID}/{fileName:.+}/download")
-    public ResponseEntity<byte[]> downloadExcel(@PathVariable @NotNull String courseID,@PathVariable @NotNull String fileName) {
-        return iCourseService.downloadFile(courseID,fileName);
-    }
-    @DeleteMapping("/{courseID}/deletePost")
-    @PreAuthorize("hasRole('TEACHER')&&@customAuthorization.canAccessCourse(#courseID)")
-    public ResponseEntity<HttpStatus> deletePost(@PathVariable String courseID,@RequestParam String postID) {
-        return iCourseService.deletePost(courseID,postID);
-    }
-    @GetMapping("/myCourses")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<CourseResponse>> getMyCourses(Principal principal) {
-        return iCourseService.getMyCourses(principal);
+    @PutMapping("/{id}/update-assessment")
+    @PreAuthorize("hasAnyRole('ADMIN')&&@customAuthorization.isAdminInInstitution()")
+    public ResponseEntity<HttpStatus> updateAssessment(@PathVariable String id,@RequestBody AssessmentRequest assessmentRequest){
+        return courseService.updateAssessment(id, assessmentRequest);
     }
 }

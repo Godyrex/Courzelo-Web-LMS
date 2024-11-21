@@ -22,7 +22,7 @@
         <ng-container *ngFor="let day of daysOfWeek; let dayIndex = index">
                 <div *ngIf="hasTimeslot(day, {startTime: time.startTime, endTime: time.endTime})">
                     <div [ngClass]="getTimeslotClass(day, {startTime: time.startTime, endTime: time.endTime})">
-                        <p class="text-center mt-2 module-name">{{ getTimeslotInfo(day, {startTime: time.startTime, endTime: time.endTime}).module }}</p>
+                        <p class="text-center mt-2 course-name">{{ getTimeslotInfo(day, {startTime: time.startTime, endTime: time.endTime}).course }}</p>
                         <p class="text-center mt-2 teacher-name">{{ getTimeslotInfo(day, {startTime: time.startTime, endTime: time.endTime}).teacher }}</p>
                     </div>
                 </div>
@@ -56,7 +56,7 @@
                 <ng-container *ngFor="let day of daysOfWeek; let dayIndex = index">
                     <div *ngIf="hasTimeslotTeacher(day, {startTime: time.startTime, endTime: time.endTime})">
                         <div [ngClass]="getTimeslotClassTeacher(day, {startTime: time.startTime, endTime: time.endTime})">
-                            <p class="text-center mt-2 module-name">{{ getTimeslotInfoTeacher(day, {startTime: time.startTime, endTime: time.endTime}).module }}</p>
+                            <p class="text-center mt-2 course-name">{{ getTimeslotInfoTeacher(day, {startTime: time.startTime, endTime: time.endTime}).course }}</p>
                             <p class="text-center mt-2 teacher-name">{{ getTimeslotInfoTeacher(day, {startTime: time.startTime, endTime: time.endTime}).group }}</p>
                         </div>
                     </div>

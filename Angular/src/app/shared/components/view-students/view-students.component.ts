@@ -1,7 +1,7 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {ToastrService} from 'ngx-toastr';
 import {GroupResponse} from '../../models/institution/GroupResponse';
-import {ModuleResponse} from '../../models/institution/ModuleResponse';
+import {CourseResponse} from '../../models/institution/CourseResponse';
 import {UserService} from '../../services/user/user.service';
 
 @Component({
@@ -12,7 +12,7 @@ import {UserService} from '../../services/user/user.service';
 export class ViewStudentsComponent implements OnInit {
   @Input() group: GroupResponse;
   @Output() close = new EventEmitter<void>();
-  modules: ModuleResponse[] = [];
+  modules: CourseResponse[] = [];
   loading = false;
   studentsWithImages: { email: string, image: string }[] = [];
   constructor(

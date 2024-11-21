@@ -2,14 +2,12 @@ package org.example.courzelo.controllers.Timetable;
 
 import lombok.AllArgsConstructor;
 import org.example.courzelo.dto.Timetable.ElementModuleDTO;
-import org.example.courzelo.dto.responses.CourseResponse;
+import org.example.courzelo.dto.responses.ClassRoomResponse;
 import org.example.courzelo.dto.responses.GroupResponse;
-import org.example.courzelo.dto.responses.UserProfileResponse;
-import org.example.courzelo.dto.responses.UserResponse;
 import org.example.courzelo.models.User;
 import org.example.courzelo.repositories.Timetable.ElementModuleRepo;
 import org.example.courzelo.repositories.UserRepository;
-import org.example.courzelo.serviceImpls.CourseServiceImpl;
+import org.example.courzelo.serviceImpls.ClassRoomServiceImpl;
 import org.example.courzelo.serviceImpls.GroupServiceImpl;
 import org.example.courzelo.serviceImpls.UserServiceImpl;
 import org.example.courzelo.services.Timetable.ElementModuleService;
@@ -28,13 +26,13 @@ public class ElementModuleController {
     private final ElementModuleService elementModuleService;
     private final ElementModuleRepo elementModuleRepo;
     private final UserRepository userRepository;
-    private final CourseServiceImpl courseService;
+    private final ClassRoomServiceImpl courseService;
     private final GroupServiceImpl groupService;
     private final UserServiceImpl userService;
 
     @GetMapping("/courses")
-    public ResponseEntity<List<CourseResponse>> getCourses() {
-        List<CourseResponse> courses = elementModuleService.getAllCourses();
+    public ResponseEntity<List<ClassRoomResponse>> getCourses() {
+        List<ClassRoomResponse> courses = elementModuleService.getAllCourses();
         return ResponseEntity.ok(courses);
     }
 

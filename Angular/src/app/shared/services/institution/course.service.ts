@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {CourseRequest} from '../../models/institution/CourseRequest';
+import {PaginatedCoursesResponse} from '../../models/institution/PaginatedCoursesResponse';
 import {CourseResponse} from '../../models/institution/CourseResponse';
-import {CoursePostRequest} from '../../models/institution/CoursePostRequest';
+import {AssessmentRequest} from '../../models/institution/AssessmentRequest';
 
 @Injectable({
   providedIn: 'root'
@@ -13,61 +14,38 @@ export class CourseService {
 
   constructor(private http: HttpClient) { }
 
-  addCourse(institutionID: string, courseRequest: CourseRequest): Observable<void> {
-    return this.http.post<void>(`${this.baseUrl}/${institutionID}/add`, courseRequest);
-  }
-  addProgramCourses(institutionID: string, semester: string, programID: string): Observable<void> {
-    return this.http.post<void>(`${this.baseUrl}/${institutionID}/${programID}/add`, null, { params: { semester } });
+  createCourse(courseRequest: CourseRequest): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/create`, courseRequest);
   }
 
-  updateCourse(courseID: string, courseRequest: CourseRequest): Observable<void> {
-    return this.http.put<void>(`${this.baseUrl}/${courseID}/update`, courseRequest);
+  updateCourse(id: string, courseRequest: CourseRequest): Observable<void> {
+    return this.http.put<void>(`${this.baseUrl}/${id}`, courseRequest);
   }
 
-  deleteCourse(courseID: string): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/${courseID}/delete`);
+  deleteCourse(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }
 
-  getCourse(courseID: string): Observable<CourseResponse> {
-    return this.http.get<CourseResponse>(`${this.baseUrl}/${courseID}`);
-  }
-  getMyCourses(): Observable<CourseResponse[]> {
-    return this.http.get<CourseResponse[]>(`${this.baseUrl}/myCourses`);
-  }
-  downloadFile(courseID: string, fileName: string): Observable<Blob> {
-    return this.http.get(`${this.baseUrl}/${courseID}/${fileName}/download`, { responseType: 'blob' });
-  }
-  setTeacher(courseID: string, email: string): Observable<void> {
-    return this.http.put<void>(`${this.baseUrl}/${courseID}/setTeacher`, null, { params: { email } });
+  getCourses(page: number, sizePerPage: number, moduleID: string, keyword?: string): Observable<PaginatedCoursesResponse> {
+    let params = new HttpParams()
+        .set('page', page.toString())
+        .set('sizePerPage', sizePerPage.toString())
+        .set('moduleID', moduleID)
+        .set('keyword', keyword ? keyword : '');
+    
+    return this.http.get<PaginatedCoursesResponse>(`${this.baseUrl}/`, { params });
   }
 
-  addStudent(courseID: string, email: string): Observable<void> {
-    return this.http.put<void>(`${this.baseUrl}/${courseID}/addStudent`, null, { params: { email } });
+  getCourse(id: string): Observable<CourseResponse> {
+    return this.http.get<CourseResponse>(`${this.baseUrl}/${id}`);
   }
-
-  removeStudent(courseID: string, email: string): Observable<void> {
-    return this.http.put<void>(`${this.baseUrl}/${courseID}/removeStudent`, null, { params: { email } });
+  createAssessment(id: string, assessmentRequest: AssessmentRequest): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/${id}/create-assessment`, assessmentRequest);
   }
-
-  leaveCourse(courseID: string): Observable<void> {
-    return this.http.put<void>(`${this.baseUrl}/${courseID}/leave`, null);
+  deleteAssessment(id: string, assessmentName: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${id}/assessment/${assessmentName}`);
   }
-
-  addPost(courseID: string, coursePostRequest: CoursePostRequest, files: File[]): Observable<void> {
-    const formData: FormData = new FormData();
-    // Append the coursePostRequest fields to the form data
-    formData.append('title', coursePostRequest.title);
-    formData.append('description', coursePostRequest.description);
-    // Append each file to the form data
-    for (let i = 0; i < files.length; i++) {
-      formData.append('files', files[i], files[i].name);
-    }
-
-    return this.http.put<void>(`${this.baseUrl}/${courseID}/addPost`, formData);
-  }
-
-
-  deletePost(courseID: string, postID: string): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/${courseID}/deletePost`, { params: { postID } });
+  updateAssessment(id: string, assessmentRequest: AssessmentRequest): Observable<void> {
+    return this.http.put<void>(`${this.baseUrl}/${id}/update-assessment`, assessmentRequest);
   }
 }

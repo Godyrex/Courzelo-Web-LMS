@@ -145,10 +145,10 @@ export class NavigationService {
                         type: 'link', roles: ['ADMIN'], mustBeInInstitutions: true },
                     { icon: 'i-Find-User', name: 'Forum', state: 'forum/' + this.user?.education?.institutionID,
                         type: 'link', mustBeInInstitutions: true },
-                    ...(this.user?.education?.courses ? this.user.education.courses.map(course => ({
+                    ...(this.user?.education?.classrooms ? this.user.education.classrooms.map(course => ({
                         icon: 'i-Book',
-                        name: course.courseName,
-                        state: 'institution/course/' + course.courseID,
+                        name: course.classroomName,
+                        state: 'institution/classroom/' + course.classroomID,
                         type: 'link',
                         mustBeInInstitutions: true
                     })) : [])

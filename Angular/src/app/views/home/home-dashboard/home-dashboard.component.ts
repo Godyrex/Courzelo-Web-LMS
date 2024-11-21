@@ -1,10 +1,10 @@
 import {Component, OnInit} from '@angular/core';
 import {SessionStorageService} from '../../../shared/services/user/session-storage.service';
-import {CourseService} from '../../../shared/services/institution/course.service';
+import {ClassroomService} from '../../../shared/services/institution/classroom.service';
 import {ProgramService} from '../../../shared/services/institution/program.service';
 import {ToastrService} from 'ngx-toastr';
-import {CourseResponse} from '../../../shared/models/institution/CourseResponse';
-import {ModuleService} from '../../../shared/services/institution/module.service';
+import {ClassRoomResponse} from '../../../shared/models/institution/ClassRoomResponse';
+import {CourseService} from '../../../shared/services/institution/course.service';
 import { UserService } from 'src/app/shared/services/user/user.service';
 import {DomSanitizer, SafeUrl} from '@angular/platform-browser';
 import {ProgramResponse} from '../../../shared/models/institution/ProgramResponse';
@@ -27,11 +27,11 @@ import {InstitutionTimeSlot} from '../../../shared/models/institution/Institutio
 export class HomeDashboardComponent implements OnInit {
   constructor(
       private sessionstorage: SessionStorageService,
-      private courseService: CourseService,
+      private classroomService: ClassroomService,
       private programService: ProgramService,
       private groupService: GroupService,
       private institutionService: InstitutionService,
-      private moduleService: ModuleService,
+      private courseService: CourseService,
       private toastr: ToastrService,
       private userService: UserService,
       private sanitizer: DomSanitizer,
@@ -47,7 +47,7 @@ export class HomeDashboardComponent implements OnInit {
   timeTableSlots: InstitutionTimeSlot[];
   sanitizedWebsiteUrl: SafeUrl;
   loading = false;
-  courses: CourseResponse[] = [];
+  classrooms: ClassRoomResponse[] = [];
   objectKeys = Object.keys;
   student = { program: 'Bachelor in Computer Science', group: 'Group A', advisor: 'Dr. Emily White' };
   announcements = ['New Semester Registration Open', 'Library Hours Updated'];
@@ -81,10 +81,10 @@ export class HomeDashboardComponent implements OnInit {
   }
   fetchCourses(): void {
     this.loading = true;
-    this.courseService.getMyCourses().subscribe((courses) => {
-      this.courses = courses;
-      this.courses.forEach((course) => {
-        this.moduleService.getModule(course.module).subscribe((module) => {
+    this.classroomService.getMyClassrooms().subscribe((courses) => {
+      this.classrooms = courses;
+      this.classrooms.forEach((course) => {
+        this.courseService.getCourse(course.course).subscribe((module) => {
           course.name = module.name;
           course.description = module.description;
           course.credit = module.credit;
@@ -97,7 +97,7 @@ export class HomeDashboardComponent implements OnInit {
         }
 
       });
-      console.log(this.courses);
+      console.log(this.classrooms);
         this.loading = false;
     }, (error) => {
       if (error.error) {

@@ -8,8 +8,8 @@ import lombok.Data;
 public class GradeResponse {
     private String id;
     private String name;
-    private String moduleID;
-    private String moduleName;
+    private String courseID;
+    private String courseName;
     private Double scoreToPass;
     private String institutionID;
     private boolean valid;

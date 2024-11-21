@@ -2,7 +2,7 @@ package org.example.courzelo.GAlgo;
 
 import org.example.courzelo.models.Timetable.ElementModule;
 import org.example.courzelo.models.User;
-import org.example.courzelo.models.institution.Course;
+import org.example.courzelo.models.institution.ClassRoom;
 import org.example.courzelo.models.institution.Group;
 
 import java.util.ArrayList;
@@ -98,13 +98,13 @@ public class UniversityTimetable {
         return elements;
     }
 
-    public List<Course> getCourses() {
-        List<Course> modules = new ArrayList<>();
+    public List<ClassRoom> getCourses() {
+        List<ClassRoom> modules = new ArrayList<>();
         for (List<ElementModule> timetable : universityTimetables) {
             for (ElementModule element : timetable) {
-                Course course = element.getCourse();
-                if (course != null && !modules.contains(course)) {
-                    modules.add(course);
+                ClassRoom classRoom = element.getClassRoom();
+                if (classRoom != null && !modules.contains(classRoom)) {
+                    modules.add(classRoom);
                 }
             }
         }

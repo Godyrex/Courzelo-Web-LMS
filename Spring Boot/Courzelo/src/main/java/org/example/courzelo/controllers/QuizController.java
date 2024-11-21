@@ -41,7 +41,7 @@ public class QuizController {
     }
 
     @DeleteMapping("/{id}/{quizID}")
-    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')&&@customAuthorization.canAccessCourse(#quizID)")
+    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')&&@customAuthorization.canAccessClassroom(#quizID)")
     public ResponseEntity<QuizDTO> deleteQuiz(@PathVariable String id, @PathVariable String quizID) {
         try {
             quizService.deleteQuiz(id);

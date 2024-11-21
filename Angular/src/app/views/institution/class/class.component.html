@@ -43,7 +43,7 @@
         { name: 'Name' },
         { name: 'Program', cellTemplate: program, width: 200 },
         { name: 'Students', cellTemplate: students, width: 200 },
-        { name: 'Courses', cellTemplate: courses, width: 200 },
+        { name: 'Courses', cellTemplate: cours, width: 200 },
         { name: 'Actions', prop: 'id', cellTemplate: deleteBtnTemplate, width: 290 }
     ]"
                             [headerHeight]="50"
@@ -65,7 +65,7 @@
                             </button>
                         </ng-template>
 
-                        <ng-template #courses let-row="row" let-value="value">
+                        <ng-template #cours let-row="row" let-value="value">
                             <button class="btn btn-link" (click)="openViewCoursesModal(row)">
                                 <i class="fa fa-eye"></i> Show Courses
                             </button>

@@ -13,12 +13,12 @@
         <div *ngIf="!loading" class="row">
             <!-- Loop through each student and display as a card -->
             <div class="col-12" *ngIf="studentGrades.length === 0">
-                        <h5 class="flex-column align-items-center text-center">No students found</h5>
+                        <h5 class="flex-column align-items-center text-center">No students or assessments found</h5>
             </div>
             <div *ngIf="studentGrades.length > 0" class="col-12 mb-4">
                 <h5 class="flex-column align-items-center text-center">
                     Class Average Score:
-                    <span [ngClass]="getScoreColorClass(calculateClassAverage(), moduleResponse.scoreToPass)">
+                    <span [ngClass]="getScoreColorClass(calculateClassAverage(), courseResponse.scoreToPass)">
                         {{ calculateClassAverage() | number:'1.2-2' }}
                     </span>
                 </h5>
@@ -31,7 +31,7 @@
                         <!-- Ensure email wraps if too long -->
                         <p class="card-title text-break w-100">{{ student.studentEmail }}</p>
                         <!-- Input fields for grades -->
-                        <div *ngFor="let assessment of moduleResponse.assessments" class="position-relative">
+                        <div *ngFor="let assessment of courseResponse.assessments" class="position-relative">
                             <label>
                                 {{ assessment.name }}:
                             </label>
@@ -49,24 +49,24 @@
                         <!-- Display average score and pass/fail status -->
                         <p  class="mt-2">
                             Average Score:
-                            <span [ngClass]="getScoreColorClass(calculateStudentAverage(student), moduleResponse?.scoreToPass)">
+                            <span [ngClass]="getScoreColorClass(calculateStudentAverage(student), courseResponse?.scoreToPass)">
                                 {{ calculateStudentAverage(student) | number:'1.2-2' }}
                             </span>
                         </p>
-                        <p  [ngClass]="{'text-success': calculateStudentAverage(student) >= moduleResponse?.scoreToPass, 'text-danger': calculateStudentAverage(student) < moduleResponse.scoreToPass}">
-                            Status: {{ calculateStudentAverage(student) >= moduleResponse?.scoreToPass ? 'Passed' : 'Not Passed' }}
+                        <p  [ngClass]="{'text-success': calculateStudentAverage(student) >= courseResponse?.scoreToPass, 'text-danger': calculateStudentAverage(student) < courseResponse.scoreToPass}">
+                            Status: {{ calculateStudentAverage(student) >= courseResponse?.scoreToPass ? 'Passed' : 'Not Passed' }}
                         </p>
                     </div>
                 </div>
             </div>
             <div class="col-12 mb-4">
-                <h5 *ngIf="moduleResponse?.scoreToPass && moduleResponse?.scoreToPass != 0" class="flex-column text-info">
+                <h5 *ngIf="courseResponse?.scoreToPass && courseResponse?.scoreToPass != 0" class="flex-column text-info">
                     Note:
                     <span class="text-dark">
-      Students with an average score below {{ moduleResponse?.scoreToPass }} will be marked as failed.
+      Students with an average score below {{ courseResponse?.scoreToPass }} will be marked as failed.
     </span>
                 </h5>
-                <h5 *ngIf="!moduleResponse?.scoreToPass || moduleResponse?.scoreToPass == 0" class="flex-column text-warning">
+                <h5 *ngIf="!courseResponse?.scoreToPass || courseResponse?.scoreToPass == 0" class="flex-column text-warning">
                     Warning:
                     <span class="text-dark">
       The score to pass is not set. Students will not be marked as failed.

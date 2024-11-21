@@ -12,7 +12,7 @@ public class Grade {
     @Id
     private String id;
     private String name;
-    private String moduleID;
+    private String courseID;
     private String institutionID;
     private String groupID;
     private String studentEmail;

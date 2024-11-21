@@ -1,6 +1,6 @@
 import {Semester} from './Timetable';
 import {UserResponse} from '../user/UserResponse';
-import {CourseResponse} from '../institution/CourseResponse';
+import {ClassRoomResponse} from '../institution/ClassRoomResponse';
 import {GroupResponse} from '../institution/GroupResponse';
 
 export interface ElementModule {

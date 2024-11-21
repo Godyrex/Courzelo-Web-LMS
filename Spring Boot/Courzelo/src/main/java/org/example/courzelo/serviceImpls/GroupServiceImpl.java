@@ -5,15 +5,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.courzelo.dto.requests.GroupRequest;
 import org.example.courzelo.dto.responses.GroupResponse;
 import org.example.courzelo.dto.responses.PaginatedGroupsResponse;
-import org.example.courzelo.dto.responses.institution.SimplifiedCourseResponse;
+import org.example.courzelo.dto.responses.institution.SimplifiedClassRoomResponse;
 import org.example.courzelo.exceptions.*;
 import org.example.courzelo.models.Role;
 import org.example.courzelo.models.User;
-import org.example.courzelo.models.institution.Course;
+import org.example.courzelo.models.institution.ClassRoom;
 import org.example.courzelo.models.institution.Group;
 import org.example.courzelo.models.institution.Institution;
 import org.example.courzelo.repositories.*;
-import org.example.courzelo.services.ICourseService;
+import org.example.courzelo.services.IClassRoomService;
 import org.example.courzelo.services.IGroupService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -34,8 +34,8 @@ import java.util.stream.Collectors;
 public class GroupServiceImpl implements IGroupService {
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
-    private final CourseRepository courseRepository;
-    private final ICourseService courseService;
+    private final ClassRoomRepository classRoomRepository;
+    private final IClassRoomService courseService;
     private final InstitutionRepository institutionRepository;
     private final ProgramRepository programRepository;
     @Override
@@ -47,13 +47,13 @@ public class GroupServiceImpl implements IGroupService {
                 .name(group.getName())
                 .students(group.getStudents())
                 .institutionID(group.getInstitutionID())
-                .courses(group.getCourses().stream().map(
+                .classrooms(group.getClassRooms().stream().map(
                         courseID -> {
-                            Course course = courseRepository.findById(courseID).orElseThrow(() -> new CourseNotFoundException("Course not found"));
-                            return SimplifiedCourseResponse.builder()
-                                    .courseID(course.getId())
-                                    .teacher(course.getTeacher())
-                                    .module(course.getModule())
+                            ClassRoom classRoom = classRoomRepository.findById(courseID).orElseThrow(() -> new ClassRoomNotFoundException("Course not found"));
+                            return SimplifiedClassRoomResponse.builder()
+                                    .classroomID(classRoom.getId())
+                                    .teacher(classRoom.getTeacher())
+                                    .course(classRoom.getCourse())
                                     .build();
                         }
                         ).toList()
@@ -80,16 +80,16 @@ public class GroupServiceImpl implements IGroupService {
                         .name(group.getName())
                         .institutionID(group.getInstitutionID())
                         .students(group.getStudents())
-                        .courses(group.getCourses().stream().map(
+                        .classrooms(group.getClassRooms() != null ? group.getClassRooms().stream().map(
                                         courseID -> {
-                                            Course course = courseRepository.findById(courseID).orElseThrow(() -> new CourseNotFoundException("Course not found"));
-                                            return SimplifiedCourseResponse.builder()
-                                                    .courseID(course.getId())
-                                                    .teacher(course.getTeacher())
-                                                    .module(course.getModule())
+                                            ClassRoom classRoom = classRoomRepository.findById(courseID).orElseThrow(() -> new ClassRoomNotFoundException("Course not found"));
+                                            return SimplifiedClassRoomResponse.builder()
+                                                    .classroomID(classRoom.getId())
+                                                    .teacher(classRoom.getTeacher())
+                                                    .course(classRoom.getCourse())
                                                     .build();
                                         }
-                                ).toList()
+                                ).toList() : null
                         )
                         .program(group.getProgram()!=null?group.getProgram():null)
                         .build())
@@ -125,7 +125,7 @@ public class GroupServiceImpl implements IGroupService {
                     .name(groupRequest.getName())
                     .institutionID(groupRequest.getInstitutionID())
                     .students(groupRequest.getStudents()!=null && !groupRequest.getStudents().isEmpty() ? groupRequest.getStudents() : new ArrayList<>())
-                    .courses(new ArrayList<>())
+                    .classRooms(new ArrayList<>())
                     .program(groupRequest.getProgram()!=null ? groupRequest.getProgram() : null)
                     .build();
             groupRepository.save(group);
@@ -199,9 +199,9 @@ public class GroupServiceImpl implements IGroupService {
         });
     }
     private void addGroupToCourse(String groupID, String courseID) {
-        courseRepository.findById(courseID).ifPresent(course -> {
+        classRoomRepository.findById(courseID).ifPresent(course -> {
             course.setGroup(groupID);
-            courseRepository.save(course);
+            classRoomRepository.save(course);
         });
     }
     @Override
@@ -255,8 +255,8 @@ public class GroupServiceImpl implements IGroupService {
                     }
                 });
             }
-            group.getCourses().forEach(
-                    this::removeGroupFromCourse
+            group.getClassRooms().forEach(
+                    this::removeGroupFromClassroom
             );
             group.setProgram(groupRequest.getProgram());
                 programRepository.findById(groupRequest.getProgram()).ifPresent(program -> {
@@ -282,10 +282,10 @@ public class GroupServiceImpl implements IGroupService {
                     this::removeGroupFromUser
             );
         }
-        if (group.getCourses() != null) {
+        if (group.getClassRooms() != null) {
             log.info("Removing group from courses");
-            group.getCourses().forEach(
-                    this::removeGroupFromCourse
+            group.getClassRooms().forEach(
+                    this::removeGroupFromClassroom
             );
         }
         Institution institution = institutionRepository.findById(group.getInstitutionID()).orElseThrow(() -> new InstitutionNotFoundException("Institution not found"));
@@ -312,8 +312,8 @@ public class GroupServiceImpl implements IGroupService {
             userRepository.save(user);
         });
     }
-    private void removeGroupFromCourse(String courseID) {
-            courseService.deleteCourse(courseID);
+    private void removeGroupFromClassroom(String courseID) {
+            courseService.deleteClassRoom(courseID);
     }
 
     @Override

@@ -1,10 +1,9 @@
 package org.example.courzelo.controllers.institution;
 
 import lombok.AllArgsConstructor;
-import org.example.courzelo.dto.requests.module.AssessmentRequest;
-import org.example.courzelo.dto.requests.module.ModuleRequest;
-import org.example.courzelo.dto.responses.module.ModuleResponse;
-import org.example.courzelo.dto.responses.module.PaginatedModulesResponse;
+import org.example.courzelo.dto.requests.ModuleRequest;
+import org.example.courzelo.dto.responses.ModuleResponse;
+import org.example.courzelo.dto.responses.PaginatedModuleResponse;
 import org.example.courzelo.services.IModuleService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,49 +13,38 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/module")
 @AllArgsConstructor
-@PreAuthorize("isAuthenticated()")
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600, allowedHeaders = "*", allowCredentials = "true")
+@PreAuthorize("isAuthenticated()")
 public class ModuleController {
     private final IModuleService moduleService;
     @PostMapping("/create")
-    @PreAuthorize("hasAnyRole('ADMIN')&&@customAuthorization.isAdminInInstitution()")
     public ResponseEntity<HttpStatus> createModule(@RequestBody ModuleRequest moduleRequest){
         return moduleService.createModule(moduleRequest);
     }
-    @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN')&&@customAuthorization.isAdminInInstitution()")
+    @PutMapping("/update/{id}")
     public ResponseEntity<HttpStatus> updateModule(@PathVariable String id, @RequestBody ModuleRequest moduleRequest){
         return moduleService.updateModule(id, moduleRequest);
     }
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN')&&@customAuthorization.isAdminInInstitution()")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<HttpStatus> deleteModule(@PathVariable String id){
         return moduleService.deleteModule(id);
     }
-    @GetMapping("/")
-    @PreAuthorize("hasAnyRole('ADMIN')&&@customAuthorization.isAdminInInstitution()")
-    public ResponseEntity<PaginatedModulesResponse> getModules(@RequestParam int page, @RequestParam int sizePerPage,
-                                                               @RequestParam(required = false) String keyword, @RequestParam String programID){
-        return moduleService.getModulesByProgram(page, sizePerPage, programID, keyword);
+    @GetMapping("/get/{id}")
+    public ResponseEntity<ModuleResponse> getModuleById(@PathVariable String id){
+        return moduleService.getModule(id);
     }
-    @GetMapping("/{id}")
-    @PreAuthorize("@customAuthorization.canAccessModule(#id)")
-    public ResponseEntity<ModuleResponse> getModule(@PathVariable String id){
-        return moduleService.getModuleById(id);
+    @GetMapping("/get/all/program/{programID}")
+    public ResponseEntity<PaginatedModuleResponse> getAllModules(@RequestParam(defaultValue = "0") int page,
+                                                                 @RequestParam(defaultValue = "10") int size,
+                                                                 @PathVariable String programID,
+                                                                 @RequestParam(required = false) String keyword){
+        return moduleService.getModulesByProgramAndKeyword( programID, keyword,page, size);
     }
-    @PostMapping("/{id}/create-assessment")
-    @PreAuthorize("hasAnyRole('ADMIN')&&@customAuthorization.isAdminInInstitution()")
-    public ResponseEntity<HttpStatus> createAssessment(@PathVariable String id,@RequestBody AssessmentRequest assessmentRequest){
-        return moduleService.createAssessment(id,assessmentRequest);
-    }
-    @DeleteMapping("/{id}/assessment/{assessmentName}")
-    @PreAuthorize("hasAnyRole('ADMIN')&&@customAuthorization.isAdminInInstitution()")
-    public ResponseEntity<HttpStatus> deleteAssessment(@PathVariable String id, @PathVariable String assessmentName){
-        return moduleService.deleteAssessment(id,assessmentName);
-    }
-    @PutMapping("/{id}/update-assessment")
-    @PreAuthorize("hasAnyRole('ADMIN')&&@customAuthorization.isAdminInInstitution()")
-    public ResponseEntity<HttpStatus> updateAssessment(@PathVariable String id,@RequestBody AssessmentRequest assessmentRequest){
-        return moduleService.updateAssessment(id, assessmentRequest);
+    @GetMapping("/get/all/institution/{institutionID}")
+    public ResponseEntity<PaginatedModuleResponse> getAllModulesByInstitution(@RequestParam(defaultValue = "0") int page,
+                                                        @RequestParam(defaultValue = "10") int size,
+                                                        @PathVariable String institutionID,
+                                                        @RequestParam(required = false) String keyword){
+        return moduleService.getModulesByInstitutionAndKeyword(institutionID, keyword, page, size);
     }
 }

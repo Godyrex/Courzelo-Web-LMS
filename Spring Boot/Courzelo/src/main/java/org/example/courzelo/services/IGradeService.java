@@ -15,7 +15,7 @@ public interface IGradeService {
     ResponseEntity<HttpStatus> deleteGrade(String gradeID);
     ResponseEntity<List<GradeResponse>> getGradesByGroup(String groupID);
 
-    ResponseEntity<List<GradeResponse>> getGradesByGroupAndModule(String groupID, String moduleID);
+    ResponseEntity<List<GradeResponse>> getGradesByGroupAndCourse(String groupID, String courseID);
 
     ResponseEntity<HttpStatus> createGrades(List<GradeRequest> gradeRequests);
 

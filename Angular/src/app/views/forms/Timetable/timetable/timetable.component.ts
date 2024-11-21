@@ -12,8 +12,8 @@ import { jsPDF } from 'jspdf';
 import {SessionStorageService} from '../../../../shared/services/user/session-storage.service';
 import {UserResponse} from '../../../../shared/models/user/UserResponse';
 import {FormGroup, Validators} from '@angular/forms';
-import {CourseResponse} from '../../../../shared/models/institution/CourseResponse';
-import {CourseService} from '../../../../shared/services/institution/course.service';
+import {ClassRoomResponse} from '../../../../shared/models/institution/ClassRoomResponse';
+import {ClassroomService} from '../../../../shared/services/institution/classroom.service';
 import {UserService} from '../../../../shared/services/user/user.service';
 @Component({
   selector: 'app-timetable',
@@ -32,7 +32,7 @@ export class TimetableComponent implements OnInit {
     spinnerGenerate = false;
     generateStatus = false;
     elementModuleForm: FormGroup;
-    courses: CourseResponse[] = [];
+    courses: ClassRoomResponse[] = [];
     teachers: UserResponse[] = [];
     groups: GroupResponse[] = [];
     private fb: any;
@@ -45,7 +45,7 @@ export class TimetableComponent implements OnInit {
         private elementModuleService: ElementModuleService,
         private classService: GroupService,
         private sessionStorage: SessionStorageService,
-        private courseService: CourseService,
+        private courseService: ClassroomService,
         private userService: UserService
     ) {
     }

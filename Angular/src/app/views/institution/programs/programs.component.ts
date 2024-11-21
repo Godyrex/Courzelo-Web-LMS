@@ -12,7 +12,7 @@ import {ProgramService} from '../../../shared/services/institution/program.servi
 import {AddProgramComponent} from './add-program/add-program.component';
 import {debounceTime} from 'rxjs/operators';
 import {EditProgramComponent} from './edit-program/edit-program.component';
-import {CourseService} from '../../../shared/services/institution/course.service';
+import {ClassroomService} from '../../../shared/services/institution/classroom.service';
 import {GenerateCalendarComponent} from "./generate-calendar/generate-calendar.component";
 
 @Component({
@@ -35,7 +35,7 @@ export class ProgramsComponent implements OnInit {
   constructor(
       private institutionService: InstitutionService,
       private programService: ProgramService,
-      private courseService: CourseService,
+      private courseService: ClassroomService,
       private toastr: ToastrService,
       private route: ActivatedRoute,
       private modalService: NgbModal,
@@ -71,7 +71,7 @@ export class ProgramsComponent implements OnInit {
     if (semester === 'BOTH') {
       semester = '';
     }
-  this.courseService.addProgramCourses(this.institutionID, semester, this.currentProgram.id).subscribe(
+  this.courseService.addProgramClassrooms(this.institutionID, semester, this.currentProgram.id).subscribe(
     response => {
       this.toastr.success('Courses created successfully');
     },
@@ -172,6 +172,11 @@ export class ProgramsComponent implements OnInit {
     modalRef.componentInstance.programResponse = program;
     modalRef.componentInstance.close.subscribe(() => {
         modalRef.close();
+    });
+  }
+  viewCourses(program: ProgramResponse): void {
+    this.router.navigate(['/institution', this.currentInstitution.id, 'programs', program.id, 'courses'], {
+      state: { program }
     });
   }
   viewModules(program: ProgramResponse): void {

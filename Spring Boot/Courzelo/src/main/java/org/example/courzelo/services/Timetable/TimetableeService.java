@@ -96,9 +96,9 @@ public class TimetableeService {
 
         List<ElementModule> elementModules = new ArrayList<>();
         for (ElementModule elementModule : teacher.getEducation().getElementModules()) {
-            if (elementModule.getCourse().getGroup().equals(Semester.S3.name()) ||
-                    elementModule.getCourse().getGroup().equals(Semester.S5.name()) ||
-                    elementModule.getCourse().getGroup().equals(Semester.S1.name())) {
+            if (elementModule.getClassRoom().getGroup().equals(Semester.S3.name()) ||
+                    elementModule.getClassRoom().getGroup().equals(Semester.S5.name()) ||
+                    elementModule.getClassRoom().getGroup().equals(Semester.S1.name())) {
                 elementModules.add(elementModule);
             }
         }

@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import {ModuleRequest} from '../../models/institution/ModuleRequest';
-import {PaginatedModulesResponse} from '../../models/institution/PaginatedModulesResponse';
-import {ModuleResponse} from '../../models/institution/ModuleResponse';
-import {AssessmentRequest} from '../../models/institution/AssessmentRequest';
+import {ModuleRequest} from "../../models/institution/ModuleRequest";
+import {ModuleResponse} from "../../models/institution/ModuleResponse";
+import {PaginatedModuleResponse} from "../../models/institution/PaginatedModuleResponse";
 
 @Injectable({
   providedIn: 'root'
@@ -19,34 +18,30 @@ export class ModuleService {
   }
 
   updateModule(id: string, moduleRequest: ModuleRequest): Observable<void> {
-    return this.http.put<void>(`${this.baseUrl}/${id}`, moduleRequest);
+    return this.http.put<void>(`${this.baseUrl}/update/${id}`, moduleRequest);
   }
 
   deleteModule(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/${id}`);
+    return this.http.delete<void>(`${this.baseUrl}/delete/${id}`);
   }
 
-  getModules(page: number, sizePerPage: number, programID: string, keyword?: string): Observable<PaginatedModulesResponse> {
+  getModuleById(id: string): Observable<ModuleResponse> {
+    return this.http.get<ModuleResponse>(`${this.baseUrl}/get/${id}`);
+  }
+
+  getAllModules(programID: string, page: number = 0, size: number = 10, keyword: string = ''): Observable<PaginatedModuleResponse> {
     let params = new HttpParams()
         .set('page', page.toString())
-        .set('sizePerPage', sizePerPage.toString())
-        .set('programID', programID);
-    if (keyword) {
-      params = params.set('keyword', keyword);
-    }
-    return this.http.get<PaginatedModulesResponse>(`${this.baseUrl}/`, { params });
+        .set('size', size.toString())
+        .set('keyword', keyword);
+    return this.http.get<PaginatedModuleResponse>(`${this.baseUrl}/get/all/program/${programID}`, { params });
   }
 
-  getModule(id: string): Observable<ModuleResponse> {
-    return this.http.get<ModuleResponse>(`${this.baseUrl}/${id}`);
-  }
-  createAssessment(id: string, assessmentRequest: AssessmentRequest): Observable<void> {
-    return this.http.post<void>(`${this.baseUrl}/${id}/create-assessment`, assessmentRequest);
-  }
-  deleteAssessment(id: string, assessmentName: string): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/${id}/assessment/${assessmentName}`);
-  }
-  updateAssessment(id: string, assessmentRequest: AssessmentRequest): Observable<void> {
-    return this.http.put<void>(`${this.baseUrl}/${id}/update-assessment`, assessmentRequest);
+  getAllModulesByInstitution(institutionID: string, page: number = 0, size: number = 10, keyword: string = ''): Observable<PaginatedModuleResponse> {
+    let params = new HttpParams()
+        .set('page', page.toString())
+        .set('size', size.toString())
+        .set('keyword', keyword);
+    return this.http.get<PaginatedModuleResponse>(`${this.baseUrl}/get/all/institution/${institutionID}`, { params });
   }
 }

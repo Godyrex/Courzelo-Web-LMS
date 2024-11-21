@@ -56,9 +56,11 @@
                             [limit]="itemsPerPage"
                             [rows]="paginatedPrograms.programs | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }">
                     </ngx-datatable>
-
                     <ng-template #modulesTemplate let-row="row" let-value="value">
                         <button class="btn btn-link" (click)="viewModules(row)">View Modules</button>
+                    </ng-template>
+                    <ng-template #coursesTemplate let-row="row" let-value="value">
+                        <button class="btn btn-link" (click)="viewCourses(row)">View Courses</button>
                     </ng-template>
                     <ng-template #deleteBtnTemplate let-row="row" let-value="value">
                         <button class="btn btn-primary btn-rounded m-1 mr-2" (click)="openGenerateCalendarModal(row)">
@@ -87,8 +89,8 @@
             </button>
         </div>
         <div class="modal-body">
-            <p><strong>Are you sure you want to delete the program <span class="text-primary">{{ currentProgram.name }}</span> and all its modules from {{currentInstitution.name}}?</strong></p>
-            <p>All information associated with this program and its modules will be permanently deleted from the institution.
+            <p><strong>Are you sure you want to delete the program <span class="text-primary">{{ currentProgram.name }}</span> and all its courses from {{currentInstitution.name}}?</strong></p>
+            <p>All information associated with this program and its courses will be permanently deleted from the institution.
                 <span class="text-danger">This operation cannot be undone.</span>
             </p>
         </div>
@@ -99,13 +101,13 @@
     </ng-template>
     <ng-template #modalCreateCourses let-modal>
         <div class="modal-header">
-            <h4 class="modal-title" id="modal-title-create-courses">Create Program Courses</h4>
+            <h4 class="modal-title" id="modal-title-create-cours">Create Program Courses</h4>
             <button type="button" class="close" aria-label="Close button" aria-describedby="modal-title" (click)="modal.dismiss('Cross click')">
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
         <div *ngIf="currentInstitution.secondSemesterStart &&currentInstitution.firstSemesterStart" class="modal-body">
-            <p><strong>Select the semester for which you want to create courses for the program <span class="text-primary">{{ currentProgram.name }}</span>:</strong></p>
+            <p><strong>Select the semester for which you want to create cours for the program <span class="text-primary">{{ currentProgram.name }}</span>:</strong></p>
             <div class="form-group">
                 <button type="button" class="btn btn-primary btn-rounded m-1" (click)="createCourses('FIRST_SEMESTER'); modal.close('Ok')">First Semester</button>
                 <button type="button" class="btn btn-primary btn-rounded m-1" (click)="createCourses('SECOND_SEMESTER'); modal.close('Ok')">Second Semester</button>
@@ -113,7 +115,7 @@
             </div>
         </div>
         <div *ngIf="!currentInstitution.secondSemesterStart && !currentInstitution.firstSemesterStart" class="modal-body">
-            <p><strong>Create courses for the program <span class="text-primary">{{ currentProgram.name }}</span>:</strong></p>
+            <p><strong>Create cours for the program <span class="text-primary">{{ currentProgram.name }}</span>:</strong></p>
             <div class="form-group">
                 <button type="button" class="btn btn-primary btn-rounded m-1" (click)="createCourses('BOTH'); modal.close('Ok')">Create Courses</button>
             </div>

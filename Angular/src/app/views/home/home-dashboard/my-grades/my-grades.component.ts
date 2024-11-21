@@ -4,12 +4,12 @@ import {SessionStorageService} from '../../../../shared/services/user/session-st
 import {GradeService} from '../../../../shared/services/institution/grade.service';
 import {ToastrService} from 'ngx-toastr';
 import {MyGradesResponse} from '../../../../shared/models/institution/MyGradesResponse';
-import {ModuleResponse} from '../../../../shared/models/institution/ModuleResponse';
+import {CourseResponse} from '../../../../shared/models/institution/CourseResponse';
 import {GradeResponse} from '../../../../shared/models/institution/GradeResponse';
 import {ProgramService} from '../../../../shared/services/institution/program.service';
 import {ProgramResponse} from '../../../../shared/models/institution/ProgramResponse';
 export interface ModuleGradesResponse {
-    module: ModuleResponse;
+    course: CourseResponse;
     grades: GradeResponse[];
     average: number;
 }
@@ -98,16 +98,16 @@ export class MyGradesComponent implements OnInit {
         let total = 0;
         let weightSum = 0;
         for (const grade of moduleGradesResponse.grades) {
-            total += grade.grade * moduleGradesResponse.module.assessments.find(assessment => assessment.name === grade.name).weight;
-            weightSum += moduleGradesResponse.module.assessments.find(assessment => assessment.name === grade.name).weight;
+            total += grade.grade * moduleGradesResponse.course.assessments.find(assessment => assessment.name === grade.name).weight;
+            weightSum += moduleGradesResponse.course.assessments.find(assessment => assessment.name === grade.name).weight;
         }
         moduleGradesResponse.average = total / weightSum;
     }
     calculateStudentTotalCredits() {
         let total = 0;
         for (const moduleGradesResponse of this.gradesResponse.grades) {
-            if (moduleGradesResponse.average >= moduleGradesResponse.module.scoreToPass) {
-                total += moduleGradesResponse.module.credit;
+            if (moduleGradesResponse.average >= moduleGradesResponse.course.scoreToPass) {
+                total += moduleGradesResponse.course.credit;
             }
         }
         return total;
@@ -117,9 +117,9 @@ export class MyGradesComponent implements OnInit {
         let weightSum = 0;
         for (const moduleGradesResponse of this.gradesResponse.grades) {
             for (const grade of moduleGradesResponse.grades) {
-                total += moduleGradesResponse.average * moduleGradesResponse.module.assessments.find(
+                total += moduleGradesResponse.average * moduleGradesResponse.course.assessments.find(
                     assessment => assessment.name === grade.name).weight;
-                weightSum += moduleGradesResponse.module.assessments.find(assessment => assessment.name === grade.name).weight;
+                weightSum += moduleGradesResponse.course.assessments.find(assessment => assessment.name === grade.name).weight;
             }
         }
         return total / weightSum;

@@ -1,15 +1,16 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {GroupResponse} from '../../../../shared/models/institution/GroupResponse';
-import {ModuleService} from '../../../../shared/services/institution/module.service';
-import {ModuleResponse} from '../../../../shared/models/institution/ModuleResponse';
-import {ToastrService} from 'ngx-toastr';
 import {CourseService} from '../../../../shared/services/institution/course.service';
-import {CourseRequest} from '../../../../shared/models/institution/CourseRequest';
+import {CourseResponse} from '../../../../shared/models/institution/CourseResponse';
+import {ToastrService} from 'ngx-toastr';
+import {ClassroomService} from '../../../../shared/services/institution/classroom.service';
+import {ClassRoomRequest} from '../../../../shared/models/institution/ClassRoomRequest';
 import {GroupService} from '../../../../shared/services/institution/group.service';
-import {ViewStudentsComponent} from '../../../../shared/components/view-students/view-students.component';
 import {AssignTeacherComponent} from './assign-teacher/assign-teacher.component';
 import {NgbModal, NgbModalRef} from '@ng-bootstrap/ng-bootstrap';
 import {StudentGradesComponent} from '../../../../shared/components/student-grades/student-grades.component';
+import {ModuleService} from "../../../../shared/services/institution/module.service";
+import {ModuleResponse} from "../../../../shared/models/institution/ModuleResponse";
 
 @Component({
   selector: 'app-view-courses',
@@ -20,17 +21,19 @@ export class ViewCoursesComponent implements OnInit {
 
   @Input() program: string;
   @Input() group: GroupResponse;
-  @Input() module: ModuleResponse;
-    currentCourse: ModuleResponse;
+  @Input() module: CourseResponse;
+    currentCourse: CourseResponse;
+    modules: ModuleResponse[] = [];
   @Output() close = new EventEmitter<void>();
   loading = false;
     showFullDescription: { [key: string]: boolean } = {};
-    modules: ModuleResponse[] = [];
+    courses: CourseResponse[] = [];
   constructor(
-      private moduleService: ModuleService,
-      private toastr: ToastrService,
       private courseService: CourseService,
+      private toastr: ToastrService,
+      private classroomService: ClassroomService,
       private groupService: GroupService,
+      private moduleService: ModuleService,
       private modalService: NgbModal,
   ) {
   }
@@ -38,23 +41,51 @@ export class ViewCoursesComponent implements OnInit {
   this.fetchModules();
   }
     fetchModules() {
-      this.loading = true;
-        this.moduleService.getModules(0, 500, this.program, null).subscribe(
+        this.loading = true;
+        this.moduleService.getAllModules(this.program, 0, 99, "").subscribe(
             modules => {
                 this.modules = modules.modules;
-                this.modules.forEach(module => {
-                    module.courseCreated = false; // Initialize as false
-                    for (const course of this.group.courses) {
-                        if (course.module === module.id) {
-                            module.courseCreated = true;
-                            module.courseID = course.courseID;
-                            module.courseTeacher = course.teacher;
-                            console.log('modules after checking courses :' + modules);
-                            break;
+                if(modules.modules.length > 0){
+                let remainingModules = modules.modules.length;
+                console.log(modules.modules.length);
+                modules.modules.forEach(module => {
+                    module.courses = [];
+                    this.courseService.getCourses(0,99,module.id,"").subscribe(
+                        courses => {
+                            courses.courses.forEach(course => {
+                                course.classroomCreated = false;
+                                if(this.group.classrooms) {
+                                    for (const classroom of this.group.classrooms) {
+                                        if (classroom.course === course.id) {
+                                            course.classroomCreated = true;
+                                            course.classroomID = classroom.classroomID;
+                                            course.classroomTeacher = classroom.teacher;
+                                            break;
+                                        }
+                                    }
+                                }
+                                module.courses.push(course);
+                                console.log(courses);
+                            });
+
+                            remainingModules--;
+                            if (remainingModules === 0) {
+                                this.loading = false;
+                                console.log(this.courses);
+                            }
+                        },
+                        error => {
+                            this.toastr.error('Failed to fetch courses for module ' + module.id);
+                            remainingModules--;
+                            if (remainingModules === 0) {
+                                this.loading = false;
+                            }
                         }
-                    }
+                    );
                 });
-                this.loading = false;
+                }else{
+                    this.loading = false;
+                }
             },
             error => {
                 this.toastr.error('Failed to fetch modules');
@@ -65,12 +96,12 @@ export class ViewCoursesComponent implements OnInit {
     toggleDescription(moduleId: string) {
         this.showFullDescription[moduleId] = !this.showFullDescription[moduleId];
     }
-    openDeleteCourseModal(module: ModuleResponse, content: NgbModalRef) {
+    openDeleteCourseModal(module: CourseResponse, content: NgbModalRef) {
         this.currentCourse = module;
         this.modalService.open(content, { ariaLabelledBy: 'modal-title-course' , backdrop: false }).result.then(
             result => {
                 if (result === 'Ok') {
-                    this.deleteCourse(module.courseID);
+                    this.deleteClassroom(module.classroomID);
                 }
             },
             reason => {}
@@ -79,13 +110,13 @@ export class ViewCoursesComponent implements OnInit {
     onClose() {
         this.close.emit();
     }
-    deleteCourse(id: string) {
+    deleteClassroom(id: string) {
         this.loading = true;
-        this.courseService.deleteCourse(id).subscribe(
+        this.classroomService.deleteClassroom(id).subscribe(
         () => {
             this.toastr.success('Course deleted successfully');
             this.currentCourse = null;
-            this.modules = this.modules.filter(m => m.courseID !== id);
+            this.courses = this.courses.filter(m => m.classroomID !== id);
             this.toastr.info('Refresh your page to see changes');
             this.loading = false;
             },
@@ -98,13 +129,13 @@ export class ViewCoursesComponent implements OnInit {
             this.loading = false;
         });
     }
-    createCourse(moduleResponse: ModuleResponse) {
-     const courseRequest: CourseRequest = {
-            module: moduleResponse.id,
+    createClassroom(courseResponse: CourseResponse) {
+     const courseRequest: ClassRoomRequest = {
+            course: courseResponse.id,
             group: this.group.id,
      };
      this.loading = true;
-   this.courseService.addCourse(this.group.institutionID, courseRequest).subscribe(
+   this.classroomService.addClassroom(this.group.institutionID, courseRequest).subscribe(
          course => {
               this.toastr.success('Course created successfully');
               console.log(this.group);
@@ -135,16 +166,16 @@ export class ViewCoursesComponent implements OnInit {
          }
    );
     }
-    openStudentsGradesModal(moduleResponse: ModuleResponse) {
+    openStudentsGradesModal(courseResponse: CourseResponse) {
         const modalRef = this.modalService.open(StudentGradesComponent, {size : 'lg', backdrop: false});
         modalRef.componentInstance.groupResponse = this.group;
-        modalRef.componentInstance.moduleResponse = moduleResponse;
+        modalRef.componentInstance.courseResponse = courseResponse;
         modalRef.componentInstance.mode = 'admin';
         modalRef.componentInstance.close.subscribe(() => {
             modalRef.close();
         });
     }
-    openAsssignTeacherModal(module: ModuleResponse) {
+    openAsssignTeacherModal(module: CourseResponse) {
         const modalRef = this.modalService.open(AssignTeacherComponent, { size : 'sm' , backdrop: false});
         modalRef.componentInstance.module = module;
         modalRef.componentInstance.close.subscribe(() => {

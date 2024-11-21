@@ -2,9 +2,6 @@ package org.example.courzelo.serviceImpls;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.example.courzelo.dto.requests.institution.CalendarEventRequest;
 import org.example.courzelo.dto.requests.institution.InstitutionMapRequest;
 import org.example.courzelo.dto.requests.institution.InstitutionRequest;
 import org.example.courzelo.dto.requests.UserEmailsRequest;
@@ -21,13 +18,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -50,9 +45,9 @@ public class InstitutionServiceImpl implements IInstitutionService {
     private final IMailService mailService;
     private final IGroupService groupService;
     private final GroupRepository groupRepository;
-    private final CourseRepository courseRepository;
+    private final ClassRoomRepository classRoomRepository;
     private final IGroupService iGroupService;
-    private final ICourseService iCourseService;
+    private final IClassRoomService iClassRoomService;
     private final IInvitationService iInvitationService;
     private final InvitationRepository invitationRepository;
     private final CodeVerificationRepository codeVerificationRepository;
@@ -245,7 +240,7 @@ public class InstitutionServiceImpl implements IInstitutionService {
             if (institution.getTeachers().contains(user.getEmail())){
                 institution.getTeachers().remove(user.getEmail());
                 user.getRoles().remove(Role.TEACHER);
-                iCourseService.removeTeacherFromCourses(user.getEmail());
+                iClassRoomService.removeTeacherFromClassRooms(user.getEmail());
                 log.info("User removed from teachers");
             }
             if (institution.getStudents().contains(user.getEmail())){
@@ -512,13 +507,13 @@ public class InstitutionServiceImpl implements IInstitutionService {
                         .id(group.getId())
                         .name(group.getName())
                         .students(group.getStudents())
-                        .courses(group.getCourses().stream().map(
+                        .classrooms(group.getClassRooms().stream().map(
                                         courseID -> {
-                                            Course course = courseRepository.findById(courseID).orElseThrow(() -> new CourseNotFoundException("Course not found"));
-                                            return SimplifiedCourseResponse.builder()
-                                                    .courseID(course.getId())
-                                                    .teacher(course.getTeacher())
-                                                    .module(course.getModule())
+                                            ClassRoom classRoom = classRoomRepository.findById(courseID).orElseThrow(() -> new ClassRoomNotFoundException("Course not found"));
+                                            return SimplifiedClassRoomResponse.builder()
+                                                    .classroomID(classRoom.getId())
+                                                    .teacher(classRoom.getTeacher())
+                                                    .course(classRoom.getCourse())
                                                     .build();
                                         }
                                 ).toList()

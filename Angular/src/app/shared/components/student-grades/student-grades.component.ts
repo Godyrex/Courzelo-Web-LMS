@@ -3,8 +3,8 @@ import {ToastrService} from 'ngx-toastr';
 import {GradeService} from '../../services/institution/grade.service';
 import {GroupResponse} from '../../models/institution/GroupResponse';
 import {GroupService} from '../../services/institution/group.service';
-import {ModuleService} from '../../services/institution/module.service';
-import {ModuleResponse} from '../../models/institution/ModuleResponse';
+import {CourseService} from '../../services/institution/course.service';
+import {CourseResponse} from '../../models/institution/CourseResponse';
 import {StudentGrades} from '../../models/institution/StudentGrades';
 import {UserService} from '../../services/user/user.service';
 
@@ -16,7 +16,7 @@ import {UserService} from '../../services/user/user.service';
 export class StudentGradesComponent implements OnInit {
   studentGrades: StudentGrades[] = [];
   @Input() groupResponse: GroupResponse;
-  @Input() moduleResponse: ModuleResponse;
+  @Input() courseResponse: CourseResponse;
     @Input() groupID: string;
     @Input() moduleID: string;
   @Input() mode: 'admin' | 'teacher' = 'teacher';
@@ -27,7 +27,7 @@ export class StudentGradesComponent implements OnInit {
       private toastr: ToastrService,
       private gradeService: GradeService,
       private groupService: GroupService,
-      private moduleService: ModuleService,
+      private moduleService: CourseService,
       private userService: UserService
   ) {
   }
@@ -35,7 +35,7 @@ export class StudentGradesComponent implements OnInit {
   ngOnInit(): void {
       this.loading = true;
       console.log(this.groupResponse);
-        console.log(this.moduleResponse);
+        console.log(this.courseResponse);
         console.log(this.groupID);
         console.log(this.moduleID);
       if (this.groupResponse == null && this.groupID != null) {
@@ -55,15 +55,15 @@ export class StudentGradesComponent implements OnInit {
               }
           );
       }
-      if (this.groupResponse && this.moduleResponse) {
+      if (this.groupResponse && this.courseResponse) {
             this.loadStudentGrades();
       }
   }
   checkAndLoadModule(): void {
-      if (this.moduleResponse == null && this.moduleID != null) {
-          this.moduleService.getModule(this.moduleID).subscribe(
+      if (this.courseResponse == null && this.moduleID != null) {
+          this.moduleService.getCourse(this.moduleID).subscribe(
               module => {
-                  this.moduleResponse = module;
+                  this.courseResponse = module;
                   this.loadStudentGrades();
               },
               error => {
@@ -75,9 +75,9 @@ export class StudentGradesComponent implements OnInit {
                   this.loading = false;
               }
           );
-      } else if (this.groupResponse && this.moduleResponse) {
+      } else if (this.groupResponse && this.courseResponse) {
           console.log(this.groupResponse);
-          console.log(this.moduleResponse);
+          console.log(this.courseResponse);
           this.loadStudentGrades();
       }
   }
@@ -108,7 +108,7 @@ export class StudentGradesComponent implements OnInit {
     calculateStudentAverage(studentGrade: StudentGrades): number {
         let total = 0;
         let weightSum = 0;
-        this.moduleResponse.assessments.forEach(assessment => {
+        this.courseResponse.assessments.forEach(assessment => {
             total += studentGrade.grades[assessment.name].score * assessment.weight;
             weightSum += assessment.weight;
         });
@@ -136,8 +136,8 @@ export class StudentGradesComponent implements OnInit {
   loadStudentGrades(): void {
     this.loading = true;
     console.log(this.groupResponse);
-    console.log(this.moduleResponse);
-    if (!this.groupResponse || !this.moduleResponse || !this.groupResponse.students || !this.moduleResponse.assessments) {
+    console.log(this.courseResponse);
+    if (!this.groupResponse || !this.courseResponse || !this.groupResponse.students || !this.courseResponse.assessments) {
         this.loading = false;
         return;
     }
@@ -147,9 +147,10 @@ export class StudentGradesComponent implements OnInit {
             image: '',
             grades: {},
         };
-        this.moduleResponse.assessments.forEach(assessment => {
+        this.courseResponse.assessments.forEach(assessment => {
             studentGrade.grades[assessment.name] = { gradeID: '', score: 0, valid: true, validityFound: false };
         });
+
 
         this.studentGrades.push(studentGrade);
     });
@@ -166,10 +167,10 @@ export class StudentGradesComponent implements OnInit {
               }
           );
       });
-    this.gradeService.getGradesByGroupAndModule(this.groupResponse.id, this.moduleResponse.id).subscribe(
+    this.gradeService.getGradesByGroupAndCourse(this.groupResponse.id, this.courseResponse.id).subscribe(
         grades => {
             this.studentGrades.forEach(studentGrade => {
-            this.moduleResponse.assessments.forEach(assessment => {
+            this.courseResponse.assessments.forEach(assessment => {
                 const grade = grades.find(g => g.studentEmail === studentGrade.studentEmail && g.name === assessment.name);
                 if (grade) {
                     studentGrade.grades[assessment.name].gradeID = grade.id;
@@ -199,7 +200,7 @@ export class StudentGradesComponent implements OnInit {
         Object.keys(studentGrade.grades).forEach(assessmentName => {
             const gradeRequest = {
                 groupID: this.groupResponse.id,
-                moduleID: this.moduleResponse.id,
+                moduleID: this.courseResponse.id,
                 studentEmail: studentGrade.studentEmail,
                 name: assessmentName,
                 grade: studentGrade.grades[assessmentName].score,

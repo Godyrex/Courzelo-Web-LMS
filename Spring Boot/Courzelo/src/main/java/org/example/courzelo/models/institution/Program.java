@@ -19,6 +19,7 @@ public class Program {
     private String duration;
     private String institutionID;
     private byte[] excelFile;
+    private List<String> courses;
     private List<String> modules;
     private List<String> groups;
 }

@@ -3,7 +3,7 @@
         <div class="col-12">
             <div class="jumbotron text-center  bg-primary text-white p-5 rounded">
                 <h1 class=" text-white">Welcome,<span class=" text-secondary"> {{currentUser.profile.name +" "+currentUser.profile.lastname || "User"}}</span></h1>
-                <p class="lead">Stay up to date with your courses and institution.</p>
+                <p class="lead">Stay up to date with your cours and institution.</p>
                 <button class="btn btn-outline-secondary mr-2" [routerLink]="'/pages/profile/' + currentUser?.email">My Profile</button>
                 <button class="btn btn-outline-secondary mr-2" *ngIf="currentUser.roles.includes('STUDENT')" (click)="openMyGradesModal()">My Grades</button>
             </div>
@@ -20,25 +20,25 @@
                 <div class="loader-bubble loader-bubble-primary d-block"></div>
             </div>
             <div *ngIf="!loading" class="row">
-                <div *ngIf="courses.length === 0" class="col-12 d-flex justify-content-center align-items-center" style="height: 200px;">
+                <div *ngIf="classrooms.length === 0" class="col-12 d-flex justify-content-center align-items-center" style="height: 200px;">
                     <h1 class="text-white text-center">
-                        You have no courses.
+                        You have no cours.
                     </h1>
                 </div>
-                <div *ngFor="let course of courses" class="col-md-6 mb-3">
+                <div *ngFor="let classRoom of classrooms" class="col-md-6 mb-3">
                     <div class="card bg-secondary h-100">
                         <div class="card-body d-flex align-items-center">
                             <div class="flex-grow-1">
-                                <h5 class="card-title">{{ course.name }}</h5>
-                                <p class="card-text">Instructor: {{ course.teacher || 'Not assigned' }}</p>
-                                <p class="card-text">Credits: {{ course.credit }}</p>
+                                <h5 class="card-title">{{ classRoom.name }}</h5>
+                                <p class="card-text">Instructor: {{ classRoom.teacher || 'Not assigned' }}</p>
+                                <p class="card-text">Credits: {{ classRoom.credit }}</p>
 
                                 <div class="d-flex justify-content-start mt-3">
-                                    <a [routerLink]="'/institution/course/' + course.id" class="btn btn-outline-primary mr-2">
+                                    <a [routerLink]="'/institution/classroom/' + classRoom.id" class="btn btn-outline-primary mr-2">
                                         Go to Course
                                     </a>
                                     <a *ngIf="currentUser.roles.includes('ADMIN') || currentUser.roles.includes('TEACHER')"
-                                       (click)="openStudentsGradesModal(course.group, course.module)"
+                                       (click)="openStudentsGradesModal(classRoom.group, classRoom.course)"
                                        class="btn btn-outline-primary mr-2">
                                         Check Grades
                                     </a>
@@ -48,7 +48,7 @@
                             <!-- Profile Image -->
                             <div class="user-info ms-3">
                                 <img class="profile-picture rounded-circle avatar-lg mb-2"
-                                     [src]="course.imageSrc || 'assets/default-image.jpg'"
+                                     [src]="classRoom.imageSrc || 'assets/default-image.jpg'"
                                      alt="Course image">
                             </div>
                         </div>
@@ -88,20 +88,18 @@
                 </div>
             </div>
         </div>
-        <div class="col-lg-12 mb-4">
-            <div class="card bg-primary rounded">
+          <div class="col-lg-12 mb-4">
+              <div class="card bg-primary rounded">
 
-                <div *ngIf="loadingTimetable" class="loadscreen mt-5">
-                    <img src="assets/images/logo.png" class="logo mb-3" style="display: none" alt="">
-                    <div class="loader-bubble loader-bubble-primary d-block"></div>
-                </div>
-                <div *ngIf="!loadingTimetable" >
-                    <!-- Message for no timetable -->
+                  <div *ngIf="loadingTimetable" class="loadscreen mt-5">
+                      <img src="assets/images/logo.png" class="logo mb-3" style="display: none" alt="">
+                      <div class="loader-bubble loader-bubble-primary d-block"></div>
+                  </div>
+                  <div *ngIf="!loadingTimetable" >
                     <div *ngIf="!timetable || timetable.groupTimetables === 0" class="text-center">
                         No timetable available.
                     </div>
 
-                    <!-- Timetable Display -->
                     <div *ngIf="timetable && timetable.groupTimetables" class="timetable-container">
                         <ng-container *ngFor="let groupKey of objectKeys(timetable.groupTimetables)">
                             <app-view-timetable [timeTableSlots]="timeTableSlots" [group]="getGroupObject(groupKey)"  [timetableWeek]="timetable.timetableWeek"></app-view-timetable>
